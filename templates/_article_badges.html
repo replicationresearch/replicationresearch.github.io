@@ -1,0 +1,7 @@
+<p class="article-links">
+  {% if a.pdf %}<a class="pill pill-pdf" href="{{ base }}articles/{{ a.urlPath }}/#preview">Read PDF</a>{% endif %}
+  {% if a.stats %}
+  <span class="pill pill-stat" title="Abstract views">👁 {{ a.stats.abstractViews }}</span>
+  <span class="pill pill-stat" title="PDF downloads">⬇ {{ a.stats.pdfDownloads }}</span>
+  {% endif %}
+</p>

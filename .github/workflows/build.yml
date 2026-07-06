@@ -1,0 +1,69 @@
+name: Fetch content and deploy mirror
+
+on:
+  schedule:
+    # Daily, off the hour (GitHub delays/drops on-the-hour cron jobs).
+    # 04:23 UTC = 06:23 CEST / 05:23 CET.
+    - cron: "23 4 * * *"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: write   # commit refreshed data/ and assets/
+  pages: write      # deploy to GitHub Pages
+  id-token: write   # required by actions/deploy-pages
+
+concurrency:
+  group: mirror-build
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch content from OJS
+        env:
+          OJS_API_KEY: ${{ secrets.OJS_API_KEY }}
+        run: python scripts/fetch.py
+
+      - name: Commit refreshed content if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data assets
+          if git diff --cached --quiet; then
+            echo "No content changes."
+          else
+            git commit -m "chore: refresh mirrored content ($(date -u +%Y-%m-%d))"
+            git pull --rebase --autostash origin main || true
+            git push
+          fi
+
+      - name: Build static site
+        env:
+          BASE_URL: /${{ github.event.repository.name }}/
+        run: python scripts/build.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

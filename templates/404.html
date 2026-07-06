@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body page-narrow">
+  <h1 class="page-heading">Page not found</h1>
+  <p>The page you are looking for does not exist on this mirror.
+     It may be available on the <a href="{{ journal.ojsUrl }}">journal’s OJS site</a>.</p>
+  <p><a class="btn btn-primary" href="{{ base }}">Back to the homepage</a></p>
+</div>
+{% endblock %}

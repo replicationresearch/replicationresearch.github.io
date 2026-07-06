@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Announcements · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body page-narrow">
+  <h1 class="page-heading">Announcements</h1>
+  <ul class="announcement-list">
+    {% for ann in announcements %}
+    <li class="announcement-item">
+      <p class="meta">{{ ann.date }}</p>
+      <h2><a href="{{ base }}announcements/{{ ann.id }}/">{{ ann.title }}</a></h2>
+      <p>{{ ann.html | excerpt(240) }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

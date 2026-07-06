@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ issue.title }} · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <a href="{{ base }}issues/">Issues</a> / <span>{{ issue.title }}</span></nav>
+  <div class="issue-header">
+    {% if issue.cover %}<img class="issue-cover-lg" src="{{ issue.cover }}" alt="Cover of {{ issue.title }}">{% endif %}
+    <div>
+      <h1 class="page-heading">{{ issue.title }}</h1>
+      {% if issue.datePublished %}<p class="meta">Published {{ issue.datePublished }}</p>{% endif %}
+      {% if issue.descriptionHtml %}<div class="prose">{{ issue.descriptionHtml | safe }}</div>{% endif %}
+    </div>
+  </div>
+  {% for section in issue.sections %}
+  <section class="toc-section">
+    <h2 class="toc-section-title">{{ section.title }}</h2>
+    <ul class="article-list">
+      {% for path in section.articles %}
+        {% set a = articles_by_path[path] %}
+        <li class="article-card">
+          <h3><a href="{{ base }}articles/{{ a.urlPath }}/">{{ a.title }}{% if a.subtitle %}<span class="subtitle">: {{ a.subtitle }}</span>{% endif %}</a></h3>
+          <p class="article-authors">{% for au in a.authors %}{{ au.name }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+          {% if a.abstractHtml %}<p class="article-excerpt">{{ a.abstractHtml | excerpt(260) }}</p>{% endif %}
+          {% include "_article_badges.html" %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body page-narrow">
+  <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <span>{{ page.title }}</span></nav>
+  <h1 class="page-heading">{{ page.title }}</h1>
+  <div class="prose">{{ page.html | safe }}</div>
+</div>
+{% endblock %}

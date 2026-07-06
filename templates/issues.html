@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Issues · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <h1 class="page-heading">Issues</h1>
+  <div class="issue-grid">
+    {% for issue in issues %}
+    <a class="issue-card" href="{{ base }}issues/{{ issue.id }}/">
+      {% if issue.cover %}<img src="{{ issue.cover }}" alt="Cover of {{ issue.title }}">{% endif %}
+      <div class="issue-card-body">
+        <h2>{{ issue.title }}</h2>
+        {% if issue.datePublished %}<p class="meta">Published {{ issue.datePublished }}</p>{% endif %}
+        <p class="meta">{{ issue.sections | map(attribute="articles") | map("length") | sum }} article(s)</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

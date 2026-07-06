@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ journal.name }}{% endblock %}</title>
+<meta name="description" content="{% block description %}{{ journal.description }}{% endblock %}">
+{% if journal.favicon %}<link rel="icon" href="{{ journal.favicon }}">{% endif %}
+<link rel="stylesheet" href="{{ base }}static/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{{ base }}">
+      {% if journal.logo %}<img src="{{ journal.logo }}" alt="{{ journal.name }}">{% else %}{{ journal.name }}{% endif %}
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Menu"><span></span></label>
+    <nav class="site-nav" aria-label="Main navigation">
+      <ul>
+        {% for item in nav %}
+        <li{% if item.children %} class="has-children"{% endif %}>
+          <a href="{{ item.url }}">{{ item.label }}</a>
+          {% if item.children %}
+          <ul class="dropdown">
+            {% for child in item.children %}
+            <li><a href="{{ child.url }}">{{ child.label }}</a></li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        {% endfor %}
+        <li class="nav-cta"><a class="btn btn-primary" href="{{ journal.submitUrl }}">Submit manuscript</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    {% set visible_blocks = journal.sidebarBlocks | selectattr("titleHidden", "equalto", false) | list %}
+    {% if visible_blocks %}
+    <div class="footer-partners">
+      {% for block in visible_blocks %}
+      <section class="partner-block">
+        <h2>{{ block.title }}</h2>
+        <div class="partner-content">{{ block.html | safe }}</div>
+      </section>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="footer-meta">
+      <div class="footer-links">{{ journal.footerHtml | safe }}</div>
+      <p class="mirror-note">
+        This site mirrors the journal’s
+        <a href="{{ journal.ojsUrl }}">Open Journal Systems installation</a>,
+        where all content is authored and archived.
+        Content updated automatically · last build {{ built }}.
+      </p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

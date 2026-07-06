@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ announcement.title }} · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body page-narrow">
+  <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <a href="{{ base }}announcements/">Announcements</a></nav>
+  <h1 class="page-heading">{{ announcement.title }}</h1>
+  <p class="meta">{{ announcement.date }}</p>
+  <div class="prose">{{ announcement.html | safe }}</div>
+</div>
+{% endblock %}

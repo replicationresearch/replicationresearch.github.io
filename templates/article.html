@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} · {{ journal.name }}{% endblock %}
+{% block description %}{{ article.abstractHtml | excerpt(200) }}{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <nav class="breadcrumbs">
+    <a href="{{ base }}">Home</a> /
+    <a href="{{ base }}issues/{{ article.issueId }}/">{{ article.issueTitle }}</a> /
+    <span>{{ article.section }}</span>
+  </nav>
+
+  <article class="article-page">
+    <header class="article-header">
+      {% if article.section %}<p class="article-section">{{ article.section }}</p>{% endif %}
+      <h1>{{ article.title }}</h1>
+      {% if article.subtitle %}<p class="article-subtitle">{{ article.subtitle }}</p>{% endif %}
+      <ul class="author-list">
+        {% for au in article.authors %}
+        <li>
+          <span class="author-name">{{ au.name }}</span>{% if au.orcid %}<a class="orcid" href="{{ au.orcid }}" title="ORCID profile of {{ au.name }}" aria-label="ORCID profile of {{ au.name }}"><svg viewBox="0 0 256 256" width="14" height="14" aria-hidden="true"><path fill="#A6CE39" d="M256 128c0 70.7-57.3 128-128 128S0 198.7 0 128 57.3 0 128 0s128 57.3 128 128z"/><path fill="#fff" d="M86.3 186.2H70.9V79.1h15.4v107.1zM108.9 79.1h41.6c39.6 0 57 28.3 57 53.6 0 27.5-21.5 53.6-56.8 53.6h-41.8V79.1zm15.4 93.3h24.5c34.9 0 42.9-26.5 42.9-39.7 0-21.5-13.7-39.7-43.7-39.7h-23.7v79.4zM88.7 56.8c0 5.5-4.5 10.1-10.1 10.1s-10.1-4.6-10.1-10.1c0-5.6 4.5-10.1 10.1-10.1s10.1 4.6 10.1 10.1z"/></svg></a>{% endif %}
+          {% if au.affiliation %}<span class="author-affiliation">{{ au.affiliation }}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </header>
+
+    <div class="article-layout">
+      <div class="article-main">
+        {% if article.abstractHtml %}
+        <section class="article-abstract">
+          <h2>Abstract</h2>
+          <div class="prose">{{ article.abstractHtml | safe }}</div>
+        </section>
+        {% endif %}
+
+        {% if article.keywords %}
+        <p class="keyword-row">
+          {% for kw in article.keywords %}<span class="pill pill-keyword">{{ kw }}</span>{% endfor %}
+        </p>
+        {% endif %}
+
+        {% if article.pdf %}
+        <section class="pdf-preview" id="preview">
+          <div class="pdf-preview-head">
+            <h2>Read the article</h2>
+            <span class="meta">Use the viewer toolbar to zoom, search, and page through the PDF.</span>
+          </div>
+          <iframe class="pdf-frame" src="{{ article.viewerUrl }}" title="PDF preview of {{ article.title }}" loading="lazy" allowfullscreen></iframe>
+        </section>
+        {% endif %}
+
+        {% if article.referencesHtml %}
+        <details class="article-references">
+          <summary><h2>References</h2></summary>
+          <div class="prose references-body">{{ article.referencesHtml | safe }}</div>
+        </details>
+        {% endif %}
+      </div>
+
+      <aside class="article-aside">
+        {% if article.pdf %}
+        <div class="aside-box aside-actions">
+          <a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">View PDF</a>
+          <a class="btn btn-ghost btn-block" href="{{ article.pdfLocalUrl }}" download>Download (mirror)</a>
+        </div>
+        {% endif %}
+
+        {% if article.stats %}
+        <div class="aside-box">
+          <h2>Usage</h2>
+          <p class="stat-row"><span class="stat-num">{{ article.stats.abstractViews }}</span> abstract views</p>
+          <p class="stat-row"><span class="stat-num">{{ article.stats.pdfDownloads }}</span> PDF downloads</p>
+          <p class="meta">OJS statistics as of {{ article.stats.asOf }}</p>
+        </div>
+        {% endif %}
+
+        <div class="aside-box">
+          <h2>Details</h2>
+          <dl class="detail-list">
+            {% if article.datePublished %}<dt>Published</dt><dd>{{ article.datePublished }}</dd>{% endif %}
+            <dt>Issue</dt><dd><a href="{{ base }}issues/{{ article.issueId }}/">{{ article.issueTitle }}</a></dd>
+            {% if article.section %}<dt>Section</dt><dd>{{ article.section }}</dd>{% endif %}
+            {% if article.categories %}<dt>Categories</dt><dd>{{ article.categories | join(", ") }}</dd>{% endif %}
+            {% if article.doi %}<dt>DOI</dt><dd><a href="{{ article.doiUrl }}">{{ article.doi }}</a></dd>{% endif %}
+          </dl>
+        </div>
+
+        {% if article.citation %}
+        <div class="aside-box">
+          <h2>How to cite</h2>
+          <p class="citation-text">{{ article.citation }}</p>
+          <p class="citation-links">
+            {% if article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
+            {% if article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        {% if article.licenseHtml %}
+        <div class="aside-box license-box">
+          <h2>License</h2>
+          <div class="prose">{{ article.licenseHtml | safe }}</div>
+        </div>
+        {% endif %}
+
+        <div class="aside-box">
+          <p class="meta">Canonical version: <a href="{{ article.ojsUrl }}">journal website (OJS)</a></p>
+        </div>
+      </aside>
+    </div>
+  </article>
+</div>
+{% endblock %}

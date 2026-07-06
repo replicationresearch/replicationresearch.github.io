@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="wrap">
+    <p class="hero-kicker">Diamond Open Access · ISSN {{ journal.issn }}</p>
+    <h1>{{ journal.name }}</h1>
+    <p class="hero-tagline">{{ journal.description }}</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="{{ journal.submitUrl }}">Submit manuscript</a>
+      {% if current_issue %}
+      <a class="btn btn-ghost btn-lg" href="{{ base }}issues/{{ current_issue.id }}/">Current issue</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if current_issue %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Current issue</h2>
+      <a class="more" href="{{ base }}issues/">All issues →</a>
+    </div>
+    <div class="issue-feature">
+      {% if current_issue.cover %}
+      <a href="{{ base }}issues/{{ current_issue.id }}/" class="issue-cover">
+        <img src="{{ current_issue.cover }}" alt="Cover of {{ current_issue.title }}">
+      </a>
+      {% endif %}
+      <div class="issue-feature-body">
+        <h3><a href="{{ base }}issues/{{ current_issue.id }}/">{{ current_issue.title }}</a></h3>
+        {% if current_issue.datePublished %}<p class="meta">Published {{ current_issue.datePublished }}</p>{% endif %}
+        <ul class="article-list">
+          {% for section in current_issue.sections %}
+            {% for path in section.articles %}
+              {% set a = articles_by_path[path] %}
+              <li class="article-card">
+                <p class="article-section">{{ section.title }}</p>
+                <h4><a href="{{ base }}articles/{{ a.urlPath }}/">{{ a.title }}{% if a.subtitle %}<span class="subtitle">: {{ a.subtitle }}</span>{% endif %}</a></h4>
+                <p class="article-authors">{% for au in a.authors %}{{ au.name }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                {% include "_article_badges.html" %}
+              </li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if journal.homepageHtml %}
+<section class="section section-alt">
+  <div class="wrap prose home-about">
+    {{ journal.homepageHtml | safe }}
+  </div>
+</section>
+{% endif %}
+
+{% if recent_announcements %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>News</h2>
+      <a class="more" href="{{ base }}announcements/">All announcements →</a>
+    </div>
+    <div class="news-grid">
+      {% for ann in recent_announcements %}
+      <article class="news-card">
+        <p class="meta">{{ ann.date }}</p>
+        <h3><a href="{{ base }}announcements/{{ ann.id }}/">{{ ann.title }}</a></h3>
+        <p>{{ ann.html | excerpt(180) }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

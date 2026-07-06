@@ -1,0 +1,97 @@
+{
+ "description": "Replication Research is a diamond open-access and researcher-led journal that publishes reproductions, replications, and conceptual articles on repetitive research",
+ "favicon": "__BASE__assets/img/781c3f26-favicon_en_US.png",
+ "footerHtml": "<p><a href=\"__BASE__legal-disclosure/\" title=\"Legal Disclosure\">Legal Disclosure</a> | <a href=\"https://ejournals.uni-muenster.de/index.php/index/dataprotectionpolicy\" rel=\"noopener\" target=\"_blank\" title=\"Privacy Statement\">Data Protection Policy</a> | <a href=\"https://www.ulb.uni-muenster.de/en/index.html\" rel=\"noopener\" target=\"_blank\" title=\"University and State Library of Münster\">University and State Library of Münster</a></p>\n<p>ISSN: 3052-5977</p>\n<p><a href=\"https://www.hbz-nrw.de/de/\"><img height=\"200\" src=\"__BASE__assets/img/6b2f095e-hbznrw_en_transparent.png\" width=\"402\"/></a></p>",
+ "homepageHtml": "<div class=\"content column-page-left\" id=\"quarto-document-content\">\n<section class=\"level2\" id=\"free-to-read-free-to-publish\">\n<h2 data-anchor-id=\"free-to-read-free-to-publish\">Free to read, free to publish</h2>\n<p><em>Replication Research</em> is a Diamond Open Access Journal with strict and entirely transparent quality control and no article processing charges. We publish close and conceptual replications as well as reproductions.</p>\n</section>\n<section class=\"level2\" id=\"valuing-high-quality-replication-research-and-interdisciplinary-discussions\">\n<h2 data-anchor-id=\"valuing-high-quality-replication-research-and-interdisciplinary-discussions\">Valuing high-quality replication research and interdisciplinary discussions</h2>\n<p>Replications, that is the repeated testing of previously published claims, should be the foundation for cumulative and quantitative science but they are not. We are here to change this. If you seek to publish replication research such as reproductions (same data) or replications (different data) with rigorous and transparent quality assurance (open and persistent peer review, reproducibility check) in an open and accessible way, we are here for you.</p>\n<p>Due to replication research gaining momentum across fields such as economics, psychology, biostatistics, earth science, humanities, and medicine, new methods to conduct and assess replications are being developed. Currently, researchers work in parallel and thus do double work. <em>Replication Research</em> is a place where expertise from different fields comes together in form of theory papers to shape the gold standard for transdisciplinary replication research.</p>\n<div class=\"callout callout-style-default callout-tip callout-titled\">\n<div class=\"callout-header d-flex align-content-center\">\n<div class=\"callout-icon-container\"> </div>\n<div class=\"callout-title-container flex-fill\">Fields from which <em>Replication Research</em> welcomes submissions (conceptual, qualitative and quantitative):</div>\n</div>\n<div class=\"callout-body-container callout-body\">\n<ul>\n<li>Digital Humanities</li>\n<li>Educational Sciences</li>\n<li>Experimental Philosophy</li>\n<li>Geoscience</li>\n<li>Linguistics</li>\n<li>Management Sciences</li>\n<li>Marketing</li>\n<li>Medicine</li>\n<li>Mental health</li>\n<li>Metascience</li>\n<li>Neuroimaging</li>\n<li>Neuroscience</li>\n<li>Political Science</li>\n<li>Psychology</li>\n<li>Qualitative and Quantitative Research Methods</li>\n</ul>\n</div>\n</div>\n</section>\n<section class=\"level2\" id=\"researcher-led\">\n<h2 data-anchor-id=\"researcher-led\">Researcher-led</h2>\n<p><em>Replication Research</em> is hosted by the University of Münster and maintained by the <a data-original-href=\"https://www.uni-muenster.de/MueCOS/en/index.html\" href=\"https://www.uni-muenster.de/MueCOS/en/index.html\" rel=\"noopener\" target=\"_blank\" title=\"MüCOS\">Münster Center for Open Science (MüCOS)</a> and the <a data-original-href=\"https://forrt.org/\" href=\"https://forrt.org/\" rel=\"noopener\" target=\"_blank\" title=\"FORRT\">Framework for Open and Reproducible Research Training (FORRT)</a>.</p>\n</section>\n</div>",
+ "issn": "3052-5977",
+ "keywords": "replication, reproduction, replication study, conceptual replication, direct replication, failed replication, meta-science, open science, research transparency, scientific reproducibility, methodology, empirical research, preregistration, diamond open access",
+ "logo": "__BASE__assets/img/519176b5-pageHeaderLogoImage_en_US.png",
+ "name": "Replication Research",
+ "nav": [
+  {
+   "label": "Replication Research",
+   "path": "home"
+  },
+  {
+   "label": "About the Journal",
+   "path": "about"
+  },
+  {
+   "label": "Editorial Team",
+   "path": "about/editorialTeam"
+  },
+  {
+   "label": "Mentorship Program",
+   "path": "mentorshipprogram"
+  },
+  {
+   "label": "Constitution",
+   "path": "constitution"
+  },
+  {
+   "label": "Contact",
+   "path": "about/contact"
+  },
+  {
+   "label": "Issues",
+   "path": "issues"
+  },
+  {
+   "label": "Current Issue",
+   "path": "issue/current"
+  },
+  {
+   "label": "Back Issues",
+   "path": "issue/archive"
+  },
+  {
+   "label": "Submissions",
+   "path": "about/submissions"
+  },
+  {
+   "label": "Reviewer Guidelines",
+   "path": "reviewer-guidelines"
+  }
+ ],
+ "ojsUrl": "https://ejournals.uni-muenster.de/replicationresearch",
+ "sidebarBlocks": [
+  {
+   "html": "<p><a href=\"__BASE__about/submissions/\" rel=\"noopener\" target=\"_blank\" title=\"Make a Submission\"><img alt=\"\" height=\"40\" src=\"__BASE__assets/img/e04ee3d6-make-a-submission.png\" width=\"200\"/></a></p>\n<p><a href=\"https://forms.gle/g2y5DvLs5oumrvEx9\" rel=\"noopener\" target=\"_blank\" title=\"Pre-Submission Inquiry\"><img alt=\"\" height=\"40\" src=\"__BASE__assets/img/e79ba727-pre-submission-inquiry.png\" width=\"200\"/></a></p>\n<p> </p>\n<p> </p>",
+   "id": "customblock-submission",
+   "title": "Submission",
+   "titleHidden": true
+  },
+  {
+   "html": "<p> </p>\n<hr/>\n<p><strong><a href=\"https://listserv.uni-muenster.de/mailman/listinfo/replication-research\" rel=\"noopener\" target=\"_blank\" title=\"Replication Research mailing list\"><img alt=\"\" height=\"80\" src=\"__BASE__assets/img/fc7c4c41-subscribe-to-mailing-list-081de3e39ddb02ff80e4825c55c6455f.png\" width=\"400\"/></a></strong></p>\n<p><strong><a href=\"https://docs.google.com/forms/d/e/1FAIpQLSfrftKIFbNtqsfrx4jsB2tLC5IcEfFnHH26yhV24ugOzozaAQ/viewform?usp=publish-editor\" rel=\"noopener\" target=\"_blank\" title=\"Become a Reviewer\"><img alt=\"\" height=\"80\" src=\"__BASE__assets/img/f0fafa35-become-a-reviewer.png\" width=\"400\"/></a></strong></p>\n<p><a href=\"https://forrt.org/replication-hub/\" rel=\"noopener\" target=\"_blank\"><strong><img alt=\"\" height=\"80\" src=\"__BASE__assets/img/63c4776b-forrt-replication-hub.png\" width=\"400\"/></strong></a></p>\n<hr/>\n<p style=\"white-space: nowrap;\"><a href=\"https://bsky.app/profile/r2journal.bsky.social\" rel=\"noopener\" style=\"display: inline-block; margin-right: 8px;\" target=\"_blank\" title=\"R2 on Bluesky\"> <img alt=\"\" src=\"__BASE__assets/img/5abc86b6-bluesky.png\" style=\"height: 50px !important; width: auto !important; vertical-align: middle; display: inline-block;\"/> </a> <a href=\"https://sciences.social/@replicationresearch\" rel=\"noopener\" style=\"display: inline-block; margin-right: 8px;\" target=\"_blank\" title=\"R2 on Mastodon\"> <img alt=\"\" src=\"__BASE__assets/img/e776ff5c-mastodon-a082e27053c85fdb26a25f797be1763f.png\" style=\"vertical-align: middle; display: inline-block; height: 50px; width: 75px;\"/> </a> <a href=\"https://www.linkedin.com/company/replication-research/\" rel=\"noopener\" style=\"display: inline-block;\" target=\"_blank\" title=\"R2 on LinkedIn\"> <img alt=\"\" src=\"__BASE__assets/img/ea78d4ac-linkedin.png\" style=\"height: 50px !important; width: auto !important; vertical-align: middle; display: inline-block;\"/> </a></p>",
+   "id": "customblock-links",
+   "title": "Links",
+   "titleHidden": true
+  },
+  {
+   "html": "<p><a href=\"https://forrt.org\" rel=\"noopener\" target=\"_blank\" title=\"FORRT\"><img height=\"79\" src=\"__BASE__assets/img/7be8ce1b-forrt-logo-6e991fb702082d8c2e15d77c16e6ccd2.png\" width=\"250\"/></a></p>\n<p> </p>\n<p><a href=\"https://www.uni-muenster.de/MueCOS/en/index.html\" rel=\"noopener\" target=\"_blank\" title=\"Münster Center for Open Science\"><img height=\"84\" src=\"__BASE__assets/img/be6ba8b4-mucos-logo-klein-transparent.png\" width=\"250\"/></a></p>",
+   "id": "customblock-organizers",
+   "title": "Organizers",
+   "titleHidden": false
+  },
+  {
+   "html": "<p><a href=\"https://www.uni-muenster.de/en/\" rel=\"noopener\" target=\"_blank\" title=\"University of Münster\"><img height=\"70\" src=\"__BASE__assets/img/a290f375-logo-unimuenster-2023-rgb.png\" width=\"254\"/></a></p>\n<p> </p>\n<p><a href=\"https://openaccess.nrw\" rel=\"noopener\" target=\"_blank\"><img height=\"90\" src=\"__BASE__assets/img/0753a75b-mceclip1.png\" width=\"249\"/></a></p>",
+   "id": "customblock-funders",
+   "title": "Funders",
+   "titleHidden": false
+  },
+  {
+   "html": "<p><a href=\"https://jcr-econ.org\" rel=\"noopener\" target=\"_blank\"><img alt=\"\" height=\"72\" src=\"__BASE__assets/img/e5258227-jcre.jpg\" width=\"150\"/></a></p>\n<p><a href=\"https://metaror.org/partner-journals/\" rel=\"noopener\" target=\"_blank\"><img alt=\"\" height=\"67\" src=\"__BASE__assets/img/588f5514-bild-2026-02-04-112824337.png\" width=\"150\"/></a></p>\n<p><a href=\"https://site.uit.no/trolling/about\" rel=\"noopener\" target=\"_blank\"><img alt=\"\" height=\"103\" src=\"__BASE__assets/img/e03f4340-trolling-logo.png\" width=\"150\"/></a></p>\n<p><a href=\"https://www.lmu.de/psy/de/forschung/meta-rep/\" rel=\"noopener\" target=\"_blank\" title=\"METAREP\"><img alt=\"\" height=\"83\" src=\"__BASE__assets/img/2b49bf4f-metarep.png\" width=\"150\"/></a></p>\n<p><a href=\"https://forrt.org/rjf/\" rel=\"noopener\" target=\"_blank\"><img height=\"116\" src=\"__BASE__assets/img/21342b24-rjf.png\" width=\"150\"/></a></p>",
+   "id": "customblock-partners",
+   "title": "Partners",
+   "titleHidden": false
+  },
+  {
+   "html": "<p>R2 is a PCI-friendly journal. For specific requirements, see the Submission section.</p>\n<p> </p>\n<p><a href=\"https://peercommunityin.org/current-pcis/\" rel=\"noopener\" target=\"_blank\" title=\"Peer Community in\"><img alt=\"\" height=\"55\" src=\"__BASE__assets/img/4b24b9ce-pci.png\" width=\"200\"/></a></p>",
+   "id": "customblock-pci",
+   "title": "PCIs",
+   "titleHidden": false
+  }
+ ],
+ "submissionsInfoUrl": "https://ejournals.uni-muenster.de/replicationresearch/about/submissions",
+ "submitUrl": "https://ejournals.uni-muenster.de/replicationresearch/submission/wizard"
+}
