@@ -517,6 +517,57 @@ def scrape_article(url_path, issue):
     return art
 
 
+def _team_slug(name):
+    """Filename slug for a team member's photo: 'Lukas Röseler' -> 'lukas-roeseler'."""
+    import unicodedata
+    for de, ascii_ in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss"),
+                       ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue")):
+        name = name.replace(de, ascii_)
+    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def parse_team(page_html):
+    """Turn the editorial-team page (p>strong headings + ul lists) into
+    structured sections. Sections before 'Advisory Board' get photo circles.
+    """
+    doc = BeautifulSoup(page_html, "html.parser")
+    sections = []
+    current = None
+    advisory_seen = False
+    for node in doc.find_all(["p", "ul"], recursive=False):
+        if node.name == "p":
+            strong = node.find("strong")
+            if strong and text_of(strong) == text_of(node):
+                title = text_of(strong)
+                if "advisory" in title.lower():
+                    advisory_seen = True
+                current = {"title": title, "members": [],
+                           "hasPhotos": not advisory_seen, "noteHtml": ""}
+                sections.append(current)
+            elif current is not None:
+                current["noteHtml"] += str(node)
+        elif node.name == "ul" and current is not None:
+            for li in node.find_all("li", recursive=False):
+                text = text_of(li)
+                m = (re.match(r"^([^(]+?)\s*\((.*?)\)\s*(?::\s*(.*))?$", text)
+                     or re.match(r"^([^(]+?)\s*\((.*)$", text))
+                if m:
+                    groups = m.groups() + ("",)
+                    name = groups[0].strip()
+                    affiliation = groups[1].rstrip(") ").strip()
+                    roles = (groups[2] or "").strip()
+                else:
+                    name, affiliation, roles = text, "", ""
+                current["members"].append({
+                    "name": name,
+                    "affiliation": affiliation,
+                    "roles": roles,
+                    "slug": _team_slug(name),
+                })
+    return {"sections": [s for s in sections if s["members"]]}
+
+
 def scrape_announcements():
     print("Scraping announcements ...")
     index_url = JOURNAL + "/announcement"
@@ -671,6 +722,14 @@ def main():
         except RuntimeError as e:
             print("  page /%s failed: %s" % (path, e), file=sys.stderr)
 
+    team = {"sections": []}
+    for page in pages:
+        if page["slug"] == "about/editorialTeam":
+            team = parse_team(page["html"])
+            if not team["sections"]:
+                print("  editorial team page did not parse into sections; "
+                      "the generic page layout will be used", file=sys.stderr)
+
     announcements = scrape_announcements()
     mirror_pdfs(articles)
     stats = fetch_stats(articles)
@@ -699,6 +758,7 @@ def main():
     write_json("issues.json", issues)
     write_json("articles.json", articles)
     write_json("pages.json", pages)
+    write_json("team.json", team)
     write_json("announcements.json", announcements)
     if stats or not os.path.exists(os.path.join(DATA_DIR, "stats.json")):
         write_json("stats.json", stats)

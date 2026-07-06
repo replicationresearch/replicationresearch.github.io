@@ -49,9 +49,15 @@ def main():
     announcements = load("announcements.json")
     stats = load("stats.json")
 
+    team = {}
+    team_path = os.path.join(DATA, "team.json")
+    if os.path.exists(team_path):
+        team = team_with_photos(load("team.json"))
+
     articles_by_path = {a["urlPath"]: a for a in articles}
     for a in articles:
         a["stats"] = stats.get(a["submissionId"]) or None
+        a["statsChart"] = stats_chart(a["stats"]) if a["stats"] else ""
         pdf = next((g for g in a["galleys"] if g["localPdf"]), None)
         a["pdf"] = pdf
         if pdf:
@@ -115,7 +121,10 @@ def main():
 
     for page in pages:
         out = os.path.join(*page["slug"].split("/"), "index.html")
-        render("page.html", out, page=page)
+        if page["slug"] == "about/editorialTeam" and team.get("sections"):
+            render("team.html", out, page=page, team=team)
+        else:
+            render("page.html", out, page=page)
 
     render("404.html", "404.html")
 
@@ -126,6 +135,61 @@ def main():
 
     n_pages = sum(len(files) for _, _, files in os.walk(OUT))
     print("Built %d files into _site/ (base URL %s)" % (n_pages, BASE))
+
+
+def stats_chart(stats, width=256, height=96):
+    """Inline SVG grouped-bar chart of monthly views and downloads."""
+    views = stats.get("monthlyViews") or {}
+    downloads = stats.get("monthlyDownloads") or {}
+    months = sorted(set(views) | set(downloads))
+    if len(months) < 2:
+        return ""
+    peak = max([*views.values(), *downloads.values(), 1])
+    label_h = 14
+    plot_h = height - label_h
+    group_w = width / len(months)
+    bar_w = max(2.0, min(9.0, group_w / 2 - 1.5))
+    bars = []
+    for i, month in enumerate(months):
+        x0 = i * group_w + (group_w - 2 * bar_w - 1) / 2
+        for offset, series, css in ((0, views, "bar-views"),
+                                    (bar_w + 1, downloads, "bar-downloads")):
+            value = series.get(month, 0)
+            h = plot_h * value / peak
+            bars.append(
+                '<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.1f">'
+                '<title>%s: %d %s</title></rect>'
+                % (css, x0 + offset, plot_h - h, bar_w, max(h, 0.5), month,
+                   value, "views" if css == "bar-views" else "downloads"))
+    labels = (
+        '<text class="chart-label" x="0" y="%d">%s</text>'
+        '<text class="chart-label" x="%d" y="%d" text-anchor="end">%s</text>'
+        % (height - 2, months[0], width, height - 2, months[-1]))
+    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" '
+            'aria-label="Monthly views and downloads">%s%s</svg>'
+            % (width, height, "".join(bars), labels))
+
+
+TEAM_IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp")
+
+
+def team_with_photos(team):
+    """Attach photo URLs (assets/team/<slug>.*) and initials to members."""
+    team_dir = os.path.join(ROOT, "assets", "team")
+    for section in team.get("sections", []):
+        for member in section["members"]:
+            slug = member["slug"]
+            member["photo"] = ""
+            for ext in TEAM_IMG_EXTS:
+                if os.path.exists(os.path.join(team_dir, slug + ext)):
+                    member["photo"] = BASE + "assets/team/" + slug + ext
+                    break
+            parts = [p for p in member["name"].split() if p]
+            member["initials"] = (parts[0][0] + parts[-1][0]).upper() \
+                if len(parts) > 1 else (parts[0][:2].upper() if parts else "?")
+            # Deterministic accent tone for the placeholder circle.
+            member["hue"] = sum(ord(c) for c in slug) % 5
+    return team
 
 
 def excerpt(html, length=220):

@@ -61,7 +61,6 @@
         {% if article.pdf %}
         <div class="aside-box aside-actions">
           <a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">View PDF</a>
-          <a class="btn btn-ghost btn-block" href="{{ article.pdfLocalUrl }}" download>Download (mirror)</a>
         </div>
         {% endif %}
 
@@ -70,6 +69,13 @@
           <h2>Usage</h2>
           <p class="stat-row"><span class="stat-num">{{ article.stats.abstractViews }}</span> abstract views</p>
           <p class="stat-row"><span class="stat-num">{{ article.stats.pdfDownloads }}</span> PDF downloads</p>
+          {% if article.statsChart %}
+          <div class="stats-chart">{{ article.statsChart | safe }}</div>
+          <p class="chart-legend">
+            <span class="legend-dot legend-views"></span> views / month
+            <span class="legend-dot legend-downloads"></span> downloads / month
+          </p>
+          {% endif %}
           <p class="meta">OJS statistics as of {{ article.stats.asOf }}</p>
         </div>
         {% endif %}

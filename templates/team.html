@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} · {{ journal.name }}{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <span>{{ page.title }}</span></nav>
+  <h1 class="page-heading">{{ page.title }}</h1>
+
+  {% for section in team.sections %}
+  <section class="team-section">
+    <h2 class="team-section-title">{{ section.title }}</h2>
+    {% if section.hasPhotos %}
+    <ul class="team-grid">
+      {% for m in section.members %}
+      <li class="team-card">
+        {% if m.photo %}
+        <img class="team-photo" src="{{ m.photo }}" alt="Portrait of {{ m.name }}" loading="lazy">
+        {% else %}
+        <span class="team-photo team-placeholder hue-{{ m.hue }}" aria-hidden="true">{{ m.initials }}</span>
+        {% endif %}
+        <h3 class="team-name">{{ m.name }}</h3>
+        {% if m.affiliation %}<p class="team-affiliation">{{ m.affiliation }}</p>{% endif %}
+        {% if m.roles %}<p class="team-roles">{{ m.roles }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <ul class="team-plain">
+      {% for m in section.members %}
+      <li><span class="team-name">{{ m.name }}</span>{% if m.affiliation %} · <span class="team-affiliation">{{ m.affiliation }}</span>{% endif %}{% if m.roles %} — {{ m.roles }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if section.noteHtml %}<div class="prose team-note">{{ section.noteHtml | safe }}</div>{% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,311 @@
+{
+ "sections": [
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University of Münster",
+     "name": "Lukas Röseler",
+     "roles": "Journal Manager, Editor-in-Chief",
+     "slug": "lukas-roeseler"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Miriam Müller",
+     "roles": "Editorial Assistant",
+     "slug": "miriam-mueller"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Prince Oppong Boakye",
+     "roles": "Research Intern",
+     "slug": "prince-oppong-boakye"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Neele Kolber",
+     "roles": "Research Intern",
+     "slug": "neele-kolber"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Victoria Moser",
+     "roles": "Editorial Assistant",
+     "slug": "victoria-moser"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Journal Management"
+  },
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University of Utrecht",
+     "name": "Flavio Azevedo",
+     "roles": "Founding Editor; Political Science",
+     "slug": "flavio-azevedo"
+    },
+    {
+     "affiliation": "Birkbeck University of London",
+     "name": "Lukas Wallrich",
+     "roles": "Founding Editor; Management Sciences, Psychology, Educational Sciences, Methods",
+     "slug": "lukas-wallrich"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Senior Editors"
+  },
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University of Münster",
+     "name": "Edzer Pebesma",
+     "roles": "Geosciences",
+     "slug": "edzer-pebesma"
+    },
+    {
+     "affiliation": "University of Cologne",
+     "name": "Elen Le Foll",
+     "roles": "Linguistics",
+     "slug": "elen-le-foll"
+    },
+    {
+     "affiliation": "University of Amsterdam",
+     "name": "Ingmar Visser",
+     "roles": "Developmental Psychology, Quantitative Methods",
+     "slug": "ingmar-visser"
+    },
+    {
+     "affiliation": "University of Hamburg",
+     "name": "Jan Horstmann",
+     "roles": "Digital Humanities",
+     "slug": "jan-horstmann"
+    },
+    {
+     "affiliation": "Department of Psychiatry and Neuroscience, Campus Benjamin Franklin, Charité–Universitätsmedizin Berlin",
+     "name": "Janik Goltermann",
+     "roles": "Mental Health, Neuroimaging, Clinical Psychology",
+     "slug": "janik-goltermann"
+    },
+    {
+     "affiliation": "University of Amsterdam",
+     "name": "Karina van Dalen-Oskam",
+     "roles": "Digital Humanities",
+     "slug": "karina-van-dalen-oskam"
+    },
+    {
+     "affiliation": "Marburg University",
+     "name": "Lydia Riedl",
+     "roles": "Linguistics, Neuroscience, Metascience",
+     "slug": "lydia-riedl"
+    },
+    {
+     "affiliation": "Haukeland University Hospital",
+     "name": "Max Korbmacher",
+     "roles": "Neuroscience, Psychology, Metascience, Medicine, Neurology, Radiology",
+     "slug": "max-korbmacher"
+    },
+    {
+     "affiliation": "Erasmus University Rotterdam",
+     "name": "Steven Verheyen",
+     "roles": "Cognitive Psychology, Methods, Experimental Philosophy",
+     "slug": "steven-verheyen"
+    },
+    {
+     "affiliation": "Utrecht University",
+     "name": "Sebastian Kurten",
+     "roles": "Youth Studies & Interdisciplinary Social Science (Quantitative Methods)",
+     "slug": "sebastian-kurten"
+    },
+    {
+     "affiliation": "Ludwig-Maximilians-Universität München",
+     "name": "Susanne Adler",
+     "roles": "Marketing",
+     "slug": "susanne-adler"
+    },
+    {
+     "affiliation": "Tilburg University",
+     "name": "Tamarinde Haven",
+     "roles": "Qualitative research, Mixed-Methods Research, Psychological and Social Science",
+     "slug": "tamarinde-haven"
+    },
+    {
+     "affiliation": "University of Greenwich",
+     "name": "Thomas Rhys Evans",
+     "roles": "Psychology, Methods, Metascience",
+     "slug": "thomas-rhys-evans"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Ulrike Gut",
+     "roles": "Linguistics",
+     "slug": "ulrike-gut"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Associate Editors"
+  },
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University of Minnesota",
+     "name": "Moin Syed",
+     "roles": "",
+     "slug": "moin-syed"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Ombudsperson"
+  },
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University of Greenwich",
+     "name": "Thomas Rhys Evans",
+     "roles": "",
+     "slug": "thomas-rhys-evans"
+    },
+    {
+     "affiliation": "University of Utrecht",
+     "name": "Flavio Azevedo",
+     "roles": "",
+     "slug": "flavio-azevedo"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Social Responsibility Champions"
+  },
+  {
+   "hasPhotos": true,
+   "members": [
+    {
+     "affiliation": "University Hospital Essen",
+     "name": "Helena Hartmann",
+     "roles": "",
+     "slug": "helena-hartmann"
+    }
+   ],
+   "noteHtml": "",
+   "title": "Science Communication Champion"
+  },
+  {
+   "hasPhotos": false,
+   "members": [
+    {
+     "affiliation": "University of Sydney, Australia",
+     "name": "Alex Holcombe",
+     "roles": "",
+     "slug": "alex-holcombe"
+    },
+    {
+     "affiliation": "Center for Open Science & University of Virginia, USA",
+     "name": "Brian Nosek",
+     "roles": "",
+     "slug": "brian-nosek"
+    },
+    {
+     "affiliation": "Trier University, Germany",
+     "name": "Christof Schöch",
+     "roles": "",
+     "slug": "christof-schoech"
+    },
+    {
+     "affiliation": "Center for Open Science, USA",
+     "name": "Crystal N. Steltenpohl",
+     "roles": "",
+     "slug": "crystal-n-steltenpohl"
+    },
+    {
+     "affiliation": "ZBW – Leibniz Information Centre for Economics, Germany",
+     "name": "Guido Scherp",
+     "roles": "",
+     "slug": "guido-scherp"
+    },
+    {
+     "affiliation": "Digital Research Academy, Germany",
+     "name": "Heidi Seibold",
+     "roles": "",
+     "slug": "heidi-seibold"
+    },
+    {
+     "affiliation": "Dutch Research Council, Netherlands",
+     "name": "Jeroen Sondervan",
+     "roles": "",
+     "slug": "jeroen-sondervan"
+    },
+    {
+     "affiliation": "University of Pittsburgh, USA",
+     "name": "Kevin McManus",
+     "roles": "",
+     "slug": "kevin-mcmanus"
+    },
+    {
+     "affiliation": "Leiden University, Netherlands",
+     "name": "Louise Bezuidenhout",
+     "roles": "",
+     "slug": "louise-bezuidenhout"
+    },
+    {
+     "affiliation": "ZBW – Leibniz Information Centre for Economics, Germany",
+     "name": "Marianne Saam",
+     "roles": "",
+     "slug": "marianne-saam"
+    },
+    {
+     "affiliation": "Ludwig-Maximilians-Universität München, Germany",
+     "name": "Mario Gollwitzer",
+     "roles": "",
+     "slug": "mario-gollwitzer"
+    },
+    {
+     "affiliation": "Stanford University, USA",
+     "name": "Michael C. Frank",
+     "roles": "",
+     "slug": "michael-c-frank"
+    },
+    {
+     "affiliation": "University of Münster, Germany",
+     "name": "Mitja Back",
+     "roles": "",
+     "slug": "mitja-back"
+    },
+    {
+     "affiliation": "University of Minnesota, USA",
+     "name": "Moin Syed",
+     "roles": "",
+     "slug": "moin-syed"
+    },
+    {
+     "affiliation": "University of Coimbra, Portugal",
+     "name": "Priya Silverstein",
+     "roles": "",
+     "slug": "priya-silverstein"
+    },
+    {
+     "affiliation": "Vienna University of Economics and Business, Austria",
+     "name": "Rima-Maria Rahal",
+     "roles": "",
+     "slug": "rima-maria-rahal"
+    },
+    {
+     "affiliation": "Technische Universität Dresden, Germany",
+     "name": "Susann Auer",
+     "roles": "",
+     "slug": "susann-auer"
+    },
+    {
+     "affiliation": "University of Zurich, Switzerland",
+     "name": "Tobias Dienlin",
+     "roles": "",
+     "slug": "tobias-dienlin"
+    }
+   ],
+   "noteHtml": "<p>Advisory Board members are invited by the Senior Editors and the EiC. Their tasks include participating in an annual, 90-minute online meeting with the editorial board to discuss journal strategy, offering symbolic support by promoting R2 within their networks, and suggesting potential reviewers or associate editors to improve our editorial workflow. Advisory board members are publicly credited on <a href=\"https://forrt.org/contributors\">FORRT’s Contributors</a> page.</p><p><strong>Institutional OJS Support</strong><br/>We are grateful to the University of Münster's OJS team, consisting of Stephanie Klötgen, Elisabeth Sawatzky, Jens Unkenholz and Claudia Mohr, for their wonderful support in working with Open Journal Systems.</p>",
+   "title": "Advisory Board"
+  }
+ ]
+}

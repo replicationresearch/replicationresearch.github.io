@@ -54,6 +54,30 @@
       {% endfor %}
     </div>
     {% endif %}
+    <div class="footer-connect">
+      <section class="connect-block">
+        <h2>Get involved</h2>
+        <ul class="connect-list">
+          <li><a href="https://docs.google.com/forms/d/e/1FAIpQLScktynmACLlyYc7Ezp1dmcEWoyvr02Xy2D59F8o3JZyhCCaGw/viewform">Pre-submission inquiry</a></li>
+          <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfrftKIFbNtqsfrx4jsB2tLC5IcEfFnHH26yhV24ugOzozaAQ/viewform">Become a reviewer</a></li>
+          <li><a href="https://listserv.uni-muenster.de/mailman/listinfo/replication-research">Join the mailing list</a></li>
+          <li><a href="{{ journal.submitUrl }}">Submit a manuscript</a></li>
+        </ul>
+      </section>
+      <section class="connect-block">
+        <h2>Follow us</h2>
+        <ul class="connect-list">
+          <li><a href="https://bsky.app/profile/r2journal.bsky.social"><svg class="social-icon" viewBox="0 0 600 530" aria-hidden="true"><path fill="currentColor" d="M135.72 44.03C202.216 93.951 273.74 195.17 300 249.49c26.262-54.316 97.782-155.54 164.28-205.46C512.26 8.009 590-19.862 590 68.825c0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.38-3.69-10.832-3.708-7.896-.017-2.936-1.193.516-3.707 7.896-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.45-163.25-81.433C20.15 217.613 9.997 86.535 9.997 68.825c0-88.687 77.742-60.816 125.72-24.795z"/></svg> Bluesky</a></li>
+          <li><a href="https://sciences.social/@replicationresearch" rel="me"><svg class="social-icon" viewBox="0 0 448 512" aria-hidden="true"><path fill="currentColor" d="M433 179.11c0-97.2-63.71-125.7-63.71-125.7-62.52-28.7-228.56-28.4-290.48 0 0 0-63.72 28.5-63.72 125.7 0 115.7-6.6 259.4 105.63 289.1 40.51 10.7 75.32 13 103.33 11.4 50.81-2.8 79.32-18.1 79.32-18.1l-1.7-36.9s-36.31 11.4-77.12 10.1c-40.41-1.4-83-4.4-89.63-54a102.54 102.54 0 0 1-.9-13.9c85.63 20.9 158.65 9.1 178.75 6.7 56.12-6.7 105-41.3 111.23-72.9 9.8-49.8 9-121.5 9-121.5zm-75.12 125.2h-46.63v-114.2c0-49.7-64-51.6-64 6.9v62.5h-46.33V197c0-58.5-64-56.6-64-6.9v114.2H90.19c0-122.1-5.2-147.9 18.41-175 25.9-28.9 79.82-30.8 103.83 6.1l11.6 19.5 11.6-19.5c24.11-37.1 78.12-34.8 103.83-6.1 23.71 27.3 18.4 53 18.4 175z"/></svg> Mastodon</a></li>
+          <li><a href="https://www.linkedin.com/company/110100397"><svg class="social-icon" viewBox="0 0 448 512" aria-hidden="true"><path fill="currentColor" d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg> LinkedIn</a></li>
+        </ul>
+      </section>
+      <section class="connect-block ojs-badge">
+        <a href="https://ejournals.uni-muenster.de/replicationresearch/about/aboutThisPublishingSystem" title="More information about the publishing system, Platform and Workflow by OJS/PKP.">
+          <img src="{{ base }}static/img/ojs_brand.png" alt="Platform and workflow by OJS / PKP" width="150">
+        </a>
+      </section>
+    </div>
     <div class="footer-meta">
       <div class="footer-links">{{ journal.footerHtml | safe }}</div>
       <p class="mirror-note">
