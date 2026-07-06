@@ -642,7 +642,7 @@ def fetch_stats(articles):
 def write_json(name, payload):
     path = os.path.join(DATA_DIR, name)
     tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
+    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=1, sort_keys=True)
         fh.write("\n")
     os.replace(tmp, path)
