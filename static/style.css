@@ -102,6 +102,50 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   font-weight: 700; color: var(--accent); margin: 0 0 .8rem;
 }
 .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0 0 1rem; }
+
+/* Layered logo: black ink image + color layer shown through the blue-parts
+   mask, so the accent color can animate while staying pixel-aligned. */
+.hero-logo {
+  position: relative; max-width: 620px; margin: 0 auto 1.2rem;
+}
+.hero-logo img { display: block; width: 100%; height: auto; }
+.logo-color {
+  position: absolute; inset: 0; background-color: #009fd4;
+  -webkit-mask-image: url("img/logo-mask.png");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("img/logo-mask.png");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  animation: logo-cycle 60s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .logo-color { animation: none; } }
+/* Blue -> green -> fluorescent orange -> light reddish purple ->
+   friendly red -> grey -> blue; one stop every 10 s, drifting so slowly
+   the change is imperceptible. */
+@keyframes logo-cycle {
+  0%      { background-color: #009fd4; }
+  16.67%  { background-color: #02c665; }
+  33.33%  { background-color: #ff6a00; }
+  50%     { background-color: #c46fd1; }
+  66.67%  { background-color: #e85d5d; }
+  83.33%  { background-color: #8f979f; }
+  100%    { background-color: #009fd4; }
+}
+
+/* Split action bubble: submit on the left, pre-submission on the right */
+.btn-split {
+  display: inline-flex; border-radius: 999px; overflow: hidden;
+  border: 1.5px solid var(--accent); box-shadow: var(--shadow);
+}
+.btn-split a {
+  display: inline-block; padding: .75rem 1.5rem; font-weight: 600;
+  font-size: 1rem; text-decoration: none !important; transition: background .15s ease;
+}
+.split-left { background: var(--accent); color: #fff; }
+.split-left:hover { background: var(--accent-dark); color: #fff; }
+.split-right { background: #fff; color: var(--accent-dark); border-left: 1.5px solid var(--accent); }
+.split-right:hover { background: var(--accent-soft); color: var(--accent-dark); }
 .hero-tagline {
   max-width: 46rem; margin: 0 auto 1.8rem; color: var(--ink-soft);
   font-size: 1.12rem;

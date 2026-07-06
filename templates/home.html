@@ -3,10 +3,16 @@
 <section class="hero">
   <div class="wrap">
     <p class="hero-kicker">Diamond Open Access · ISSN {{ journal.issn }}</p>
-    <h1>{{ journal.name }}</h1>
+    <h1 class="hero-logo" aria-label="{{ journal.name }}">
+      <img src="{{ base }}static/img/logo-black.png" alt="" width="1841" height="355">
+      <span class="logo-color" aria-hidden="true"></span>
+    </h1>
     <p class="hero-tagline">{{ journal.description }}</p>
     <div class="hero-actions">
-      <a class="btn btn-primary btn-lg" href="{{ journal.submitUrl }}">Submit manuscript</a>
+      <span class="btn-split">
+        <a class="split-left" href="{{ journal.submitUrl }}">Submit manuscript</a>
+        <a class="split-right" href="https://docs.google.com/forms/d/e/1FAIpQLScktynmACLlyYc7Ezp1dmcEWoyvr02Xy2D59F8o3JZyhCCaGw/viewform">Pre-submission inquiry</a>
+      </span>
       {% if current_issue %}
       <a class="btn btn-ghost btn-lg" href="{{ base }}issues/{{ current_issue.id }}/">Current issue</a>
       {% endif %}
