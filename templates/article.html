@@ -34,23 +34,18 @@
         {% endif %}
 
         {% if article.keywords %}
-        <p class="keyword-row">
-          {% for kw in article.keywords %}<span class="pill pill-keyword">{{ kw }}</span>{% endfor %}
-        </p>
+        <p class="keyword-row">Keywords: {{ article.keywords | join(", ") }}</p>
         {% endif %}
 
         {% if article.pdf %}
         <section class="pdf-preview" id="preview">
-          <div class="pdf-preview-head">
-            <h2>Read the article</h2>
-            <span class="meta">Use the viewer toolbar to zoom, search, and page through the PDF.</span>
-          </div>
+          <h2>Article</h2>
           <iframe class="pdf-frame" src="{{ article.viewerUrl }}" title="PDF preview of {{ article.title }}" loading="lazy" allowfullscreen></iframe>
         </section>
         {% endif %}
 
         {% if article.referencesHtml %}
-        <details class="article-references">
+        <details class="article-references" open>
           <summary><h2>References</h2></summary>
           <div class="prose references-body">{{ article.referencesHtml | safe }}</div>
         </details>
@@ -84,13 +79,13 @@
           </p>
           {% endif %}
           <p class="meta">
-            {% if article.stats.asOf %}OJS statistics as of {{ article.stats.asOf }}.{% endif %}
-            Views on OJS are only counted on the
-            <a href="{{ article.ojsUrl }}">journal site</a> itself; views on
-            this mirror are tracked separately with
-            <a href="https://www.goatcounter.com/">GoatCounter</a>, a
-            cookie-less analytics tool. Downloads count either way, since
-            the Download PDF button links straight to OJS.
+            Views on OJS and PDF downloads come from the
+            <a href="{{ article.ojsUrl }}">journal site</a>{% if article.stats.asOf %} as of {{ article.stats.asOf }}{% endif %}
+            and only count activity on OJS itself. Views on this mirror are
+            tracked separately with <a href="https://www.goatcounter.com/">GoatCounter</a>,
+            a cookie-less analytics tool, and update whenever this site
+            rebuilds. Downloads are counted either way, since the Download
+            PDF button links straight to the OJS download URL.
           </p>
         </div>
         {% endif %}

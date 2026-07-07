@@ -62,7 +62,6 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .pill-download { background: transparent; color: var(--accent-dark); border: 1.5px solid var(--accent); }
 .pill-download:hover { background: var(--accent-soft); text-decoration: none; }
 .pill-stat { background: var(--bg-alt); color: var(--ink-soft); border: 1px solid var(--rule); }
-.pill-keyword { background: var(--accent-soft); color: var(--accent-dark); }
 
 /* Header (dark) */
 .site-header {
@@ -224,17 +223,18 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .breadcrumbs { font-size: .85rem; color: var(--muted); margin-bottom: .6rem; }
 .breadcrumbs a { color: var(--muted); }
 
-/* Issue grid & TOC */
-.issue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.4rem; }
-.issue-card {
-  display: block; background: #fff; border: 1px solid var(--rule);
-  border-radius: var(--radius); overflow: hidden; color: var(--ink);
-  transition: box-shadow .15s ease; text-decoration: none !important;
+/* Issues list (all-issues page) */
+.issue-list { display: block; }
+.issue-feature-body h2 { font-size: 1.35rem; margin: 0 0 .3rem; }
+.issue-articles { margin-top: .9rem; }
+.issue-articles > summary {
+  cursor: pointer; list-style: none; font-size: .85rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--accent-dark);
+  margin-bottom: .8rem;
 }
-.issue-card:hover { box-shadow: var(--shadow); }
-.issue-card img { width: 100%; display: block; }
-.issue-card-body { padding: 1rem 1.2rem; }
-.issue-card-body h2 { font-size: 1.15rem; margin: 0 0 .3rem; }
+.issue-articles > summary::-webkit-details-marker { display: none; }
+.issue-articles > summary::before { content: "▾ "; }
+.issue-articles:not([open]) > summary::before { content: "▸ "; }
 .issue-header { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; align-items: start; margin-bottom: 2rem; }
 .issue-cover-lg { max-width: 200px; }
 .toc-section-title {
@@ -255,10 +255,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .author-affiliation { display: block; color: var(--muted); font-size: .84rem; }
 .article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 2.5rem; align-items: start; }
 .article-abstract h2, .pdf-preview h2 { font-size: 1.35rem; margin: 0 0 .6rem; }
-.keyword-row { margin: 1.2rem 0; }
+.keyword-row { margin: 1.2rem 0; font-size: .93rem; color: var(--ink-soft); }
 
 .pdf-preview { margin-top: 2.2rem; }
-.pdf-preview-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .pdf-frame {
   width: 100%; height: min(78vh, 900px); border: 1px solid var(--rule);
   border-radius: var(--radius); box-shadow: var(--shadow); background: #525659;

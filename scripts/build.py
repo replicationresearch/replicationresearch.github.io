@@ -139,7 +139,8 @@ def main():
     articles_by_path = {a["urlPath"]: a for a in articles}
     for a in articles:
         a["stats"] = normalize_article_stats(stats.get(a["submissionId"]))
-        a["statsChart"] = stats_chart(a["stats"]) if a["stats"] else ""
+        pub_month = a["datePublished"][:7] if a.get("datePublished") else None
+        a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
         pdf = next((g for g in a["galleys"] if g["localPdf"]), None)
         a["pdf"] = pdf
         if pdf:
@@ -185,7 +186,8 @@ def main():
            recent_announcements=announcements[:3],
            further_projects=FURTHER_PROJECTS)
 
-    render("issues.html", os.path.join("issues", "index.html"))
+    render("issues.html", os.path.join("issues", "index.html"),
+           articles_by_path=articles_by_path)
     for issue in issues:
         render("issue.html", os.path.join("issues", issue["id"], "index.html"),
                issue=issue, articles_by_path=articles_by_path)
@@ -234,16 +236,24 @@ def main():
     print("Built %d files into _site/ (base URL %s)" % (n_pages, BASE))
 
 
-def stats_chart(stats, width=256, height=96):
+def stats_chart(stats, min_month=None, width=256, height=96):
     """Inline SVG grouped-bar chart of monthly OJS views and PDF downloads.
+
+    min_month (a "YYYY-MM" string, typically the article's publication
+    month) drops earlier months: an article published in April naturally
+    has zero views/downloads for October through March because it didn't
+    exist yet, and charting those as real zeros is misleading rather than
+    informative.
 
     Mirror-page views (GoatCounter) are not charted here - GoatCounter's
     tracking only started once the snippet was added, so a full monthly
     history isn't meaningful yet; the total is shown as a plain number
     instead (see the article page's Usage box).
     """
-    views = stats.get("monthlyOjsViews") or {}
-    downloads = stats.get("monthlyDownloads") or {}
+    views = {m: v for m, v in (stats.get("monthlyOjsViews") or {}).items()
+             if not min_month or m >= min_month}
+    downloads = {m: v for m, v in (stats.get("monthlyDownloads") or {}).items()
+                 if not min_month or m >= min_month}
     months = sorted(set(views) | set(downloads))
     if len(months) < 2:
         return ""
