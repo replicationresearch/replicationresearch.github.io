@@ -1,1 +1,137 @@
-[]
+[
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Indridason",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "Lukas Wallrich, SRC: Flavio Azevedo",
+  "id": "11",
+  "preprintUrl": "",
+  "status": "Under review",
+  "submissionDate": "2026-06-04",
+  "title": "Indidason Re-analyzing COVDI-19"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Caroline Kaicher",
+    "orcid": "https://orcid.org/0009-0007-4628-7165"
+   },
+   {
+    "affiliation": "",
+    "name": "Ellen Markman",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Laura Gwilliams",
+    "orcid": "https://orcid.org/0000-0002-9213-588X"
+   }
+  ],
+  "handlingEditor": "Lydia Riedl",
+  "id": "9",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/5e8mz_v1",
+  "status": "Under review",
+  "submissionDate": "2026-05-02",
+  "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, &amp;amp; McClelland (2007)"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Lakens",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "Ingmar Visser",
+  "id": "8",
+  "preprintUrl": "",
+  "status": "Under review",
+  "submissionDate": "2026-04-30",
+  "title": "Lakens How to Analyze"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Schimke",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "Susanne Adler",
+  "id": "7",
+  "preprintUrl": "",
+  "status": "Under review",
+  "submissionDate": "2026-04-22",
+  "title": "Schimke Factorial Surveys"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Wang",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "Elen Le Foll",
+  "id": "4",
+  "preprintUrl": "https://doi.org/10.48550/arXiv.2208.07395",
+  "status": "Under review (round 2)",
+  "submissionDate": "2026-03-04",
+  "title": "Stylometry"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Traini",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "Lukas Wallrich",
+  "id": "3",
+  "preprintUrl": "",
+  "status": "Pre-Review revision",
+  "submissionDate": "2026-02-25",
+  "title": "Labour Market Allocation and Equality of Educational Opportunity"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Ian Hussey",
+    "orcid": "https://orcid.org/0000-0001-8906-7559"
+   }
+  ],
+  "handlingEditor": "Janik Goltermann",
+  "id": "2",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/ab7de_v5",
+  "status": "With author (2nd revision)",
+  "submissionDate": "2026-02-03",
+  "title": "No evidence of differences between hierarchical versus distinction relations in self-based ACT exercises: A critical reanalysis of Foody et al. (2013) and Foody et al. (2015)"
+ },
+ {
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Daniela Ibarra",
+    "orcid": "https://orcid.org/0009-0003-3769-355X"
+   },
+   {
+    "affiliation": "",
+    "name": "Gaurav Suri",
+    "orcid": "https://orcid.org/0000-0002-0423-060X"
+   }
+  ],
+  "handlingEditor": "Steven Verheyen",
+  "id": "1",
+  "preprintUrl": "https://doi.org/10.1101/2025.11.02.686051",
+  "status": "With author (1st revision)",
+  "submissionDate": "2025-11-15",
+  "title": "Perceptual Decoys Do Not Reliably Bias Choice: Boundary-Condition Evidence"
+ }
+]
