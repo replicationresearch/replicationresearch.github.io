@@ -20,6 +20,12 @@ A beautiful, static, self-updating mirror of the journal
   pages come from [GoatCounter](https://www.goatcounter.com) (free, no
   cookies), tracked via the snippet in `templates/base.html` and read back
   through its API (`GOATCOUNTER_API_TOKEN`).
+- **"Under Review"** on the home page lists submissions still active in
+  review. The editors maintain this themselves in a Google Sheet (view-only
+  link, read via its CSV export - no credentials needed); a row only shows
+  up once its "Stage website" column is filled in, so nothing goes public
+  before an editor chooses to. Titles/authors come from Crossref when a
+  preprint DOI is given, else fall back to the sheet's own columns.
 
 ## How it works
 

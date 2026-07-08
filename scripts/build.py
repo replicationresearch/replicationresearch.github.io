@@ -174,6 +174,11 @@ def main():
     if os.path.exists(team_path):
         team = team_with_photos(load("team.json"))
 
+    under_review = []
+    under_review_path = os.path.join(DATA, "under_review.json")
+    if os.path.exists(under_review_path):
+        under_review = load("under_review.json")
+
     articles_by_path = {a["urlPath"]: a for a in articles}
     issues = sort_issues_newest_first(issues, articles_by_path)
     for a in articles:
@@ -223,7 +228,8 @@ def main():
     render("home.html", "index.html",
            articles_by_path=articles_by_path,
            recent_announcements=announcements[:3],
-           further_projects=FURTHER_PROJECTS)
+           further_projects=FURTHER_PROJECTS,
+           under_review=under_review)
 
     render("issues.html", os.path.join("issues", "index.html"),
            articles_by_path=articles_by_path)

@@ -58,6 +58,36 @@
         </p>
       </div>
     </div>
+    <div class="issue-feature issue-feature-follow">
+      <span class="issue-cover">
+        <img src="{{ base }}static/img/under-review-cover.png" alt="">
+      </span>
+      <div class="issue-feature-body">
+        <h3>Under Review</h3>
+        <p>Get in touch at <a href="mailto:contact@replicationresearch.org">contact@replicationresearch.org</a>
+          if you want to join review or do a review via
+          <a href="https://www.prereview.org/">PREreview.org</a>.</p>
+        {% if under_review %}
+        <ul class="article-list">
+          {% for r in under_review %}
+          <li class="article-card">
+            <p class="article-section">{{ r.status }}</p>
+            <h4>{{ r.title }}</h4>
+            <p class="article-authors">
+              {% for au in r.authors %}{{ au.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+              {% if r.handlingEditor %}{% if r.authors %} · {% endif %}Handling editor: {{ r.handlingEditor }}{% endif %}
+            </p>
+            {% if r.preprintUrl %}
+            <p class="article-links"><a class="pill pill-pdf" href="{{ r.preprintUrl }}">Preprint</a></p>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="meta">No submissions are currently listed as under review.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </section>
 {% endif %}

@@ -9,6 +9,8 @@ Sources:
   * GoatCounter API (optional,
     GOATCOUNTER_API_TOKEN)      -> mirror-page view counts (see base.html for
                                    the tracking snippet)
+  * Editors' Google Sheet (view-only CSV export) + Crossref
+                                 -> the home page's "Under Review" list
   * PDF galleys                 -> mirrored into assets/pdf/ so the GitHub
                                    Pages site can render them same-origin with
                                    pdf.js (the OJS server sends no CORS headers)
@@ -840,6 +842,109 @@ def fetch_submission_stats():
 
 
 # ---------------------------------------------------------------------------
+# "Under Review" home-page list: manually maintained by the editors in a
+# Google Sheet (view-only link), read back via its CSV export - no API key
+# needed since it's shared as "anyone with the link can view". Author names
+# for entries with a preprint DOI are resolved via Crossref; entries without
+# a DOI fall back to the sheet's own "First Author" column.
+# ---------------------------------------------------------------------------
+
+SHEET_ID = "1aayvi3FR25suhT_DNPQXsef6YObErgIF1iGP6OS1R-w"
+SHEET_TAB = "Submissions"
+SHEET_CSV_URL = ("https://docs.google.com/spreadsheets/d/%s/gviz/tq"
+                  "?tqx=out:csv&sheet=%s" % (SHEET_ID, SHEET_TAB))
+CROSSREF_MAILTO = "contact@replicationresearch.org"
+
+
+def _crossref_work(doi):
+    """{title, authors} from Crossref for a DOI, or None on any failure."""
+    try:
+        r = get("https://api.crossref.org/works/%s" % doi,
+                params={"mailto": CROSSREF_MAILTO})
+        msg = r.json().get("message", {})
+    except Exception as e:  # noqa: BLE001 - one bad DOI must not block the rest
+        print("  Crossref lookup failed for %s: %s" % (doi, e), file=sys.stderr)
+        return None
+    title = (msg.get("title") or [""])[0].strip()
+    authors = []
+    for a in msg.get("author") or []:
+        name = " ".join(p for p in (a.get("given"), a.get("family")) if p)
+        if name:
+            authors.append({"name": name, "affiliation": "",
+                             "orcid": a.get("ORCID") or ""})
+    if not title and not authors:
+        return None
+    return {"title": title, "authors": authors}
+
+
+def _parse_sheet_date(raw):
+    """'15.11.2025' -> '2025-11-15'; keeps the raw string if unparseable."""
+    import datetime
+    try:
+        return datetime.datetime.strptime(raw.strip(), "%d.%m.%Y").date().isoformat()
+    except (ValueError, AttributeError):
+        return raw.strip()
+
+
+def fetch_under_review():
+    """Submissions still active in review, for the home page's "Under
+    Review" card. Only rows where the editors have filled in "Stage
+    website" are shown - that column is the explicit public-facing status,
+    kept separate from the free-text internal "Stage" notes column so
+    nothing gets published before an editor has actually chosen to.
+    """
+    import csv
+    import io
+
+    print("Fetching Under Review list from the editors' Google Sheet ...")
+    try:
+        r = get(SHEET_CSV_URL)
+        rows = list(csv.DictReader(io.StringIO(r.text)))
+    except Exception as e:  # noqa: BLE001
+        print("  sheet fetch failed: %s" % e, file=sys.stderr)
+        return None
+
+    # Belt-and-braces: even though "Stage website" is meant to be curated
+    # specifically for public display, don't show something under "Under
+    # Review" if the editors' own status text says it's actually finished.
+    terminal = re.compile(
+        r"\b(published|accepted|withdrawn|declined|rejected|desk reject)\b",
+        re.IGNORECASE)
+
+    entries = []
+    for row in rows:
+        status = (row.get("Stage website") or "").strip()
+        sub_id = (row.get("ID") or "").strip()
+        if not status or not sub_id.isdigit() or terminal.search(status):
+            continue
+
+        folder = (row.get("GDrive Folder") or "").strip().strip("—-")
+        fallback_title = re.sub(r"^\d+\s*", "", folder).strip() or folder
+        first_author = (row.get("First Author") or "").strip()
+
+        doi_url = (row.get("Preprint") or "").strip()
+        doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi_url)
+        crossref = _crossref_work(doi) if doi else None
+
+        entries.append({
+            "id": sub_id,
+            "title": (crossref or {}).get("title") or fallback_title
+                     or "Untitled submission",
+            "authors": (crossref or {}).get("authors")
+                       or ([{"name": first_author, "affiliation": "", "orcid": ""}]
+                           if first_author else []),
+            "preprintUrl": doi_url,
+            "status": status,
+            "handlingEditor": (row.get("Handling Editor") or "").strip(),
+            "submissionDate": _parse_sheet_date(row.get("Submission Date") or ""),
+        })
+
+    entries.sort(key=lambda e: e["submissionDate"], reverse=True)
+    print("  %d submissions listed as under review" % len(entries))
+    return entries
+
+
+# ---------------------------------------------------------------------------
 
 def write_json(name, payload):
     path = os.path.join(DATA_DIR, name)
@@ -907,6 +1012,7 @@ def main():
     mirror_pdfs(articles)
     stats = fetch_stats(articles)
     submission_stats = fetch_submission_stats()
+    under_review = fetch_under_review()
 
     # Sanity checks: never publish an obviously broken harvest.
     problems = []
@@ -942,6 +1048,10 @@ def main():
         write_json("submissions.json", submission_stats)
     else:
         print("Keeping previous submissions.json (fetch unavailable).")
+    if under_review is not None:
+        write_json("under_review.json", under_review)
+    else:
+        print("Keeping previous under_review.json (fetch unavailable).")
 
     print("Done: %d issues, %d articles, %d pages, %d announcements, %d PDFs."
           % (len(issues), len(articles), len(pages), len(announcements),
