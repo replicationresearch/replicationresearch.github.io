@@ -79,17 +79,28 @@ the domain's DNS at GitHub Pages.
 
 ## Citable snapshot for Zenodo
 
-**Actions → "Build Zenodo snapshot export" → Run workflow** builds the site
-with root-relative paths, zips it, and attaches the zip to a new GitHub
-Release (tagged `zenodo-export-<date>`) — run it whenever you want a new,
-dated, citable version. Download the zip from the release and upload it to
-Zenodo yourself, or connect this repo to
+**Actions → "Build Zenodo snapshot export" → Run workflow** builds the site,
+then flattens every issue/article/announcement/page into one self-contained
+`r2-mirror-snapshot-<date>.html` file (CSS and images inlined, no companion
+folder) and attaches it to a new GitHub Release (tagged `zenodo-export-<date>`)
+— run it whenever you want a new, dated, citable version. Download it from
+the release and upload it to Zenodo yourself, or connect this repo to
 [Zenodo's GitHub integration](https://docs.github.com/en/repositories/archiving-a-github-repository/referencing-and-citing-content)
 once, and every release you create this way becomes a new Zenodo version
-automatically. To browse the zip's contents locally before uploading, unzip
-it and run `python3 -m http.server` inside the folder (its own
-README-SNAPSHOT.txt repeats this) — the root-relative links only resolve
-correctly through a server, not by double-clicking `index.html`.
+automatically.
+
+Open the file directly (double-click, no server needed) to browse it before
+uploading. Each section is labelled with its original path on the live site
+(e.g. `/articles/9577`), and the table of contents at the top links to every
+one via a same-document fragment — so a specific page inside an archived
+snapshot can be cited or linked to directly, e.g.
+`r2-mirror-snapshot-2026-07-10.html#articles/9577`.
+
+`scripts/assemble_snapshot.py` does the flattening: it reads the multi-file
+`_site/` build (root-relative links, one directory per page — the same
+output `scripts/build.py` produces for the live GitHub Pages deploy) and
+combines it into the single file, rewriting internal links to fragment
+anchors and inlining local images/CSS as it goes.
 
 ## Notes
 

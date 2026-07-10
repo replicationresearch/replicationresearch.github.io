@@ -25,46 +25,23 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build with root-relative paths
-        # BASE_URL "/" (rather than "/<repo>/") so the export is portable:
-        # unzip it anywhere and serve the folder with any static file
-        # server rooted at its own top level (see the README this step
-        # writes into the export) instead of GitHub Pages' /<repo>/ prefix.
+        # assemble_snapshot.py (next step) expects this exact input: every
+        # internal link starting with a single "/", so it can turn each one
+        # into a same-document "#path" anchor.
         env:
           BASE_URL: /
         run: python scripts/build.py
 
-      - name: Add a README to the export
-        run: |
-          cat > _site/README-SNAPSHOT.txt <<'EOF'
-          Replication Research (R2) mirror - static snapshot
-          ====================================================
-
-          This is a point-in-time, self-contained copy of the R2 mirror site
-          (the live version normally runs at https://lukasroeseler.github.io/r2/,
-          built from https://github.com/LukasRoeseler/r2).
-
-          To browse it exactly as it looked live, unzip this archive and serve
-          the folder with any static file server, then open the printed URL:
-
-              python3 -m http.server 8000
-              # or: npx serve .
-
-          Opening index.html directly by double-clicking (file://) will not
-          resolve internal links correctly, since they are root-relative
-          paths meant for a server - please serve the folder instead.
-          EOF
-
-      - name: Zip the export
-        run: |
-          DATE=$(date -u +%Y-%m-%d)
-          echo "SNAPSHOT_DATE=$DATE" >> "$GITHUB_ENV"
-          cd _site && zip -r "../r2-mirror-snapshot-$DATE.zip" . -x '.git*'
+      - name: Assemble into one self-contained HTML file
+        run: python scripts/assemble_snapshot.py
 
       - name: Create GitHub Release with the snapshot attached
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "zenodo-export-${SNAPSHOT_DATE}" \
-            "r2-mirror-snapshot-${SNAPSHOT_DATE}.zip" \
-            --title "Snapshot ${SNAPSHOT_DATE}" \
-            --notes "Static HTML snapshot of the R2 mirror, for archiving on Zenodo. See README-SNAPSHOT.txt inside the zip for how to browse it locally."
+          DATE=$(date -u +%Y-%m-%d)
+          mv _site/r2-mirror-snapshot.html "r2-mirror-snapshot-$DATE.html"
+          gh release create "zenodo-export-${DATE}" \
+            "r2-mirror-snapshot-${DATE}.html" \
+            --title "Snapshot ${DATE}" \
+            --notes "Single self-contained HTML file with the full text of the R2 mirror as of ${DATE} - open it directly (double-click, no server needed) for archiving on Zenodo. Every issue/article/announcement/page is a section labelled with its original site path (e.g. /articles/9577); link or cite a specific one via that path as a fragment, e.g. this file's name + #articles/9577."
