@@ -325,9 +325,17 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .citation-links a { margin-right: .9rem; font-size: .88rem; font-weight: 600; }
 .license-box img { margin-top: .4rem; }
 
+/* Usage chart */
+.stats-chart { margin-top: .2rem; }
+.stats-chart svg { display: block; }
+.bar-views { fill: #7fb3d8; }
+.bar-downloads { fill: var(--accent-dark); }
 .chart-label { font-size: 9px; fill: var(--muted); font-family: var(--sans); }
+.chart-legend { font-size: .78rem; color: var(--muted); margin: .3rem 0 0; }
 .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin: 0 .25rem 0 .6rem; vertical-align: -1px; }
 .legend-dot:first-child { margin-left: 0; }
+.legend-views { background: #7fb3d8; }
+.legend-downloads { background: var(--accent-dark); }
 
 /* Submissions page: resources + funnel charts */
 .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.1rem; margin: 1.4rem 0 2.4rem; }

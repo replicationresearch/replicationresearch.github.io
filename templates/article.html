@@ -69,10 +69,23 @@
             {% if article.section %}<dt>Section</dt><dd>{{ article.section }}</dd>{% endif %}
             {% if article.categories %}<dt>Categories</dt><dd>{{ article.categories | join(", ") }}</dd>{% endif %}
             {% if article.doi %}<dt>DOI</dt><dd><a href="{{ article.doiUrl }}">{{ article.doi }}</a></dd>{% endif %}
+            {% if not article.statsChart %}
             {% if article.stats and article.stats.totalViews is not none %}<dt>Views</dt><dd>{{ article.stats.totalViews }}</dd>{% endif %}
             {% if article.stats and article.stats.pdfDownloads is not none %}<dt>Downloads</dt><dd>{{ article.stats.pdfDownloads }}</dd>{% endif %}
+            {% endif %}
           </dl>
         </div>
+
+        {% if article.statsChart %}
+        <div class="aside-box">
+          <h2>Usage</h2>
+          <div class="stats-chart">{{ article.statsChart | safe }}</div>
+          <p class="chart-legend">
+            <span class="legend-dot legend-views"></span> views / month
+            <span class="legend-dot legend-downloads"></span> downloads / month
+          </p>
+        </div>
+        {% endif %}
 
         {% if article.citation %}
         <div class="aside-box">

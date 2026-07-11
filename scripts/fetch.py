@@ -747,7 +747,9 @@ def fetch_stats(articles):
         views = goatcounter_views.get(art["urlPath"])
         if views is None:
             continue
-        stats.setdefault(sid, {})["mirrorViews"] = views
+        entry = stats.setdefault(sid, {})
+        entry["mirrorViews"] = views["total"]
+        entry["monthlyMirrorViews"] = views["monthly"]
 
     return stats
 
@@ -775,9 +777,27 @@ def _site_base_path():
     return base
 
 
+def _month_ranges(start_iso):
+    """[(YYYY-MM, first-day, first-day-of-next-month), ...] from start_iso's
+    month through the current month, for slicing GoatCounter queries into
+    calendar months (its hits API returns one total per query range)."""
+    import datetime
+    start = datetime.date.fromisoformat(start_iso).replace(day=1)
+    today = datetime.date.today()
+    ranges = []
+    cur = start
+    while cur <= today:
+        nxt = (cur.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+        ranges.append((cur.strftime("%Y-%m"), cur, nxt))
+        cur = nxt
+    return ranges
+
+
 def fetch_goatcounter_views(articles):
-    """{urlPath: view count} for every article's mirror page, or {} if the
-    GOATCOUNTER_API_TOKEN secret isn't configured yet (skip, don't fail).
+    """{urlPath: {"total": n, "monthly": {YYYY-MM: n}}} for every article's
+    mirror page, or {} if the GOATCOUNTER_API_TOKEN secret isn't configured
+    yet (skip, don't fail). Monthly numbers come from one hits query per
+    calendar month, since the API only reports a single total per range.
     """
     if not GOATCOUNTER_TOKEN:
         print("GOATCOUNTER_API_TOKEN not set - skipping mirror-view stats.")
@@ -791,25 +811,34 @@ def fetch_goatcounter_views(articles):
     url = "https://%s.goatcounter.com/api/v0/stats/hits" % GOATCOUNTER_SITE
     headers = {"Authorization": "Bearer " + GOATCOUNTER_TOKEN,
                "Content-Type": "application/json"}
-    try:
+
+    def hits_between(start, end):
         r = session.get(url, headers=headers, timeout=30, params={
             "include_paths": list(paths.values()),
             "path_by_name": "true",
-            "start": DATE_START + "T00:00:00Z",
+            "start": start,
+            "end": end,
             "limit": 100,
         })
         r.raise_for_status()
-        data = r.json()
+        return {hit.get("path"): hit.get("count", 0)
+                for hit in r.json().get("hits", [])}
+
+    result = {url_path: {"total": 0, "monthly": {}} for url_path in paths}
+    try:
+        for ym, first, nxt in _month_ranges(DATE_START):
+            by_full_path = hits_between("%sT00:00:00Z" % first.isoformat(),
+                                        "%sT00:00:00Z" % nxt.isoformat())
+            for url_path, full_path in paths.items():
+                count = by_full_path.get(full_path)
+                if count:
+                    result[url_path]["monthly"][ym] = count
+                    result[url_path]["total"] += count
     except Exception as e:  # noqa: BLE001 - analytics must never block a build
         print("  GoatCounter fetch failed, skipping: %s" % e, file=sys.stderr)
         return {}
-    by_full_path = {hit.get("path"): hit.get("count", 0)
-                    for hit in data.get("hits", [])}
-    result = {}
-    for url_path, full_path in paths.items():
-        if full_path in by_full_path:
-            result[url_path] = by_full_path[full_path]
-    print("  got mirror views for %d/%d articles" % (len(result), len(paths)))
+    got = sum(1 for v in result.values() if v["total"])
+    print("  got mirror views for %d/%d articles" % (got, len(paths)))
     return result
 
 

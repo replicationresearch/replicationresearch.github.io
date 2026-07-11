@@ -188,6 +188,8 @@ def main():
     issues = sort_issues_newest_first(issues, articles_by_path)
     for a in articles:
         a["stats"] = normalize_article_stats(stats.get(a["submissionId"]))
+        pub_month = a["datePublished"][:7] if a.get("datePublished") else None
+        a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
         extras = published_extras.get((a.get("doi") or "").strip().lower())
         a["peerReviewUrl"] = (extras or {}).get("peerReviewUrl") or ""
         a["reproCertUrl"] = (extras or {}).get("reproCertUrl") or ""
@@ -289,6 +291,58 @@ def main():
 
     n_pages = sum(len(files) for _, _, files in os.walk(OUT))
     print("Built %d files into _site/ (base URL %s)" % (n_pages, BASE))
+
+
+def stats_chart(stats, min_month=None, width=256, height=96):
+    """Inline SVG grouped-bar chart of monthly views and PDF downloads.
+
+    The views series is OJS abstract views plus GoatCounter mirror views,
+    summed per month - the same combination shown as the single "views"
+    number on article cards, just over time. Downloads come straight from
+    OJS (the mirror's Download button hits the canonical OJS URL, so OJS
+    counts those too).
+
+    min_month (a "YYYY-MM" string, typically the article's publication
+    month) drops earlier months: an article published in April naturally
+    has zero views/downloads for October through March because it didn't
+    exist yet, and charting those as real zeros is misleading rather than
+    informative.
+    """
+    ojs = stats.get("monthlyOjsViews") or {}
+    mirror = stats.get("monthlyMirrorViews") or {}
+    views = {m: ojs.get(m, 0) + mirror.get(m, 0)
+             for m in set(ojs) | set(mirror)
+             if not min_month or m >= min_month}
+    downloads = {m: v for m, v in (stats.get("monthlyDownloads") or {}).items()
+                 if not min_month or m >= min_month}
+    months = sorted(set(views) | set(downloads))
+    if len(months) < 2:
+        return ""
+    peak = max([*views.values(), *downloads.values(), 1])
+    label_h = 14
+    plot_h = height - label_h
+    group_w = width / len(months)
+    bar_w = max(2.0, min(9.0, group_w / 2 - 1.5))
+    bars = []
+    for i, month in enumerate(months):
+        x0 = i * group_w + (group_w - 2 * bar_w - 1) / 2
+        for offset, series, css, kind in ((0, views, "bar-views", "views"),
+                                          (bar_w + 1, downloads, "bar-downloads",
+                                           "downloads")):
+            value = series.get(month, 0)
+            h = plot_h * value / peak
+            bars.append(
+                '<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.1f">'
+                '<title>%s: %d %s</title></rect>'
+                % (css, x0 + offset, plot_h - h, bar_w, max(h, 0.5), month,
+                   value, kind))
+    labels = (
+        '<text class="chart-label" x="0" y="%d">%s</text>'
+        '<text class="chart-label" x="%d" y="%d" text-anchor="end">%s</text>'
+        % (height - 2, months[0], width, height - 2, months[-1]))
+    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" '
+            'aria-label="Monthly views and PDF downloads">%s%s</svg>'
+            % (width, height, "".join(bars), labels))
 
 
 def simple_bar_chart(values, css_class, aria_label, width=280, height=90):
