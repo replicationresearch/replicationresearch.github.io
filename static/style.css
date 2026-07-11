@@ -63,6 +63,30 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .pill-download:hover { background: var(--accent-soft); text-decoration: none; }
 .pill-stat { background: var(--bg-alt); color: var(--ink-soft); border: 1px solid var(--rule); }
 
+/* Compact Read|Download split pill on article cards, mirroring the hero's
+   split bubble at pill scale. */
+.pill-split {
+  display: inline-flex; border-radius: 999px; overflow: hidden;
+  border: 1.5px solid var(--accent); margin: 0 .3rem .3rem 0;
+}
+.pill-split a {
+  padding: .12rem .7rem; font-size: .8rem; font-weight: 600;
+  text-decoration: none !important; transition: background .15s ease;
+}
+.split-read { background: var(--accent); color: #fff; }
+.split-read:hover { background: var(--accent-dark); color: #fff; }
+.split-dl { background: #fff; color: var(--accent-dark); }
+.split-dl:hover { background: var(--accent-soft); }
+
+/* Quiet per-article usage numbers at the bottom right of a card. */
+.article-links { display: flex; align-items: center; flex-wrap: wrap; }
+.article-stats {
+  margin-left: auto; display: inline-flex; gap: .9rem;
+  color: var(--muted); font-size: .78rem;
+}
+.stat-item { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+.stat-item svg { flex-shrink: 0; }
+
 /* Header (dark) */
 .site-header {
   position: sticky; top: 0; z-index: 50; background: rgba(38, 45, 52, .97);
@@ -469,7 +493,19 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 /* Responsive */
 @media (max-width: 900px) {
-  .article-layout { grid-template-columns: minmax(0, 1fr); }
+  /* Single column, but interleave main and aside content into a sensible
+     reading order: abstract, then the action buttons (Download PDF etc.),
+     then the PDF viewer and references, then the remaining aside boxes
+     (details, usage, citation, license). display:contents lifts the boxes
+     out of their two columns so flex order can arrange them. */
+  .article-layout { display: flex; flex-direction: column; }
+  .article-main, .article-aside { display: contents; }
+  .article-abstract { order: 1; }
+  .keyword-row { order: 2; }
+  .article-aside .aside-box { order: 6; }
+  .article-aside .aside-actions { order: 3; }
+  .pdf-preview { order: 4; }
+  .article-references { order: 5; }
   .issue-feature, .issue-header { grid-template-columns: 1fr; }
   .issue-cover img, .issue-cover-lg { max-width: 190px; }
 }

@@ -53,11 +53,14 @@
       </div>
 
       <aside class="article-aside">
-        {% if article.pdf %}
+        {% if article.pdf or article.pubpeerUrl %}
         <div class="aside-box aside-actions">
-          <a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">Download PDF</a>
+          {% if article.pdf %}<a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">Download PDF</a>{% endif %}
           {% if article.peerReviewUrl %}<a class="btn btn-ghost btn-block" href="{{ article.peerReviewUrl }}">Peer Review Report</a>{% endif %}
           {% if article.reproCertUrl %}<a class="btn btn-ghost btn-block" href="{{ article.reproCertUrl }}">Reproducibility Certificate</a>{% endif %}
+          {% if article.dataUrl %}<a class="btn btn-ghost btn-block" href="{{ article.dataUrl }}">Deposited Data</a>{% endif %}
+          {% if article.readmeUrl %}<a class="btn btn-ghost btn-block" href="{{ article.readmeUrl }}">Reproduction Instructions</a>{% endif %}
+          {% if article.pubpeerUrl %}<a class="btn btn-ghost btn-block" href="{{ article.pubpeerUrl }}">Discuss on PubPeer</a>{% endif %}
         </div>
         {% endif %}
 

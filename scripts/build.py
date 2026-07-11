@@ -191,8 +191,11 @@ def main():
         pub_month = a["datePublished"][:7] if a.get("datePublished") else None
         a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
         extras = published_extras.get((a.get("doi") or "").strip().lower())
-        a["peerReviewUrl"] = (extras or {}).get("peerReviewUrl") or ""
-        a["reproCertUrl"] = (extras or {}).get("reproCertUrl") or ""
+        for key in ("peerReviewUrl", "reproCertUrl", "dataUrl", "readmeUrl"):
+            a[key] = (extras or {}).get(key) or ""
+        a["pubpeerUrl"] = ("https://pubpeer.com/search?q="
+                           + urllib.parse.quote(a["doi"], safe="")
+                           if a.get("doi") else "")
         pdf = next((g for g in a["galleys"] if g["localPdf"]), None)
         a["pdf"] = pdf
         if pdf:

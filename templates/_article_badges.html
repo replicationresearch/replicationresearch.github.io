@@ -1,12 +1,18 @@
 <p class="article-links">
   {% if a.pdf %}
-  <a class="pill pill-pdf" href="{{ base }}articles/{{ a.urlPath }}/#preview">Read</a>
-  <a class="pill pill-download" href="{{ a.pdf.downloadUrl }}">Download</a>
+  <span class="pill-split">
+    <a class="split-read" href="{{ base }}articles/{{ a.urlPath }}/#preview">Read</a>
+    <a class="split-dl" href="{{ a.pdf.downloadUrl }}">Download</a>
+  </span>
   {% endif %}
-  {% if a.stats and a.stats.totalViews is not none %}
-  <span class="pill pill-stat" title="{{ a.stats.viewsBreakdown }}">👁 {{ a.stats.totalViews }}</span>
-  {% endif %}
-  {% if a.stats and a.stats.pdfDownloads is not none %}
-  <span class="pill pill-stat" title="PDF downloads">⬇ {{ a.stats.pdfDownloads }}</span>
+  {% if a.stats and (a.stats.totalViews is not none or a.stats.pdfDownloads is not none) %}
+  <span class="article-stats">
+    {% if a.stats.totalViews is not none %}
+    <span class="stat-item" title="{{ a.stats.viewsBreakdown }}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> {{ a.stats.totalViews }} views</span>
+    {% endif %}
+    {% if a.stats.pdfDownloads is not none %}
+    <span class="stat-item" title="PDF downloads"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg> {{ a.stats.pdfDownloads }} downloads</span>
+    {% endif %}
+  </span>
   {% endif %}
 </p>

@@ -1112,12 +1112,12 @@ def _doi_or_url(value):
 
 
 def fetch_published_extras():
-    """Peer Review Report / Reproducibility Certificate links for published
-    articles, keyed by the article's own (published) DOI. Editors fill in
-    the "Published DOI", "Peer Review Report", and "Repro Cert" columns on
-    the same tracking sheet once a submission is accepted; editorial
-    communications never get these filled in, so they never get the extra
-    buttons on the article page.
+    """Per-article links the editors track in the sheet rather than in OJS
+    - peer review report, reproducibility certificate, deposited data, and
+    reproduction instructions - keyed by the article's own (published) DOI
+    via the "Published DOI" column. Editorial communications never get
+    these columns filled in, so they never get the extra buttons on the
+    article page.
     """
     import csv
     import io
@@ -1130,13 +1130,16 @@ def fetch_published_extras():
         print("  sheet fetch failed: %s" % e, file=sys.stderr)
         return None
 
+    columns = {"peerReviewUrl": "Peer Review Report",
+               "reproCertUrl": "Repro Cert",
+               "dataUrl": "Data",
+               "readmeUrl": "Readme"}
     extras = {}
     for row in rows:
         doi = _bare_doi(row.get("Published DOI"))
-        review_url = _doi_or_url(row.get("Peer Review Report"))
-        cert_url = _doi_or_url(row.get("Repro Cert"))
-        if doi and (review_url or cert_url):
-            extras[doi] = {"peerReviewUrl": review_url, "reproCertUrl": cert_url}
+        links = {key: _doi_or_url(row.get(col)) for key, col in columns.items()}
+        if doi and any(links.values()):
+            extras[doi] = links
 
     print("  %d published article(s) with review/certificate links"
           % len(extras))
