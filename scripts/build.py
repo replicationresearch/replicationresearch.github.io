@@ -321,28 +321,32 @@ def stats_chart(stats, min_month=None, width=256, height=96):
     peak = max([*views.values(), *downloads.values(), 1])
     label_h = 14
     plot_h = height - label_h
-    group_w = width / len(months)
-    bar_w = max(2.0, min(9.0, group_w / 2 - 1.5))
-    bars = []
-    for i, month in enumerate(months):
-        x0 = i * group_w + (group_w - 2 * bar_w - 1) / 2
-        for offset, series, css, kind in ((0, views, "bar-views", "views"),
-                                          (bar_w + 1, downloads, "bar-downloads",
-                                           "downloads")):
-            value = series.get(month, 0)
-            h = plot_h * value / peak
-            bars.append(
-                '<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.1f">'
-                '<title>%s: %d %s</title></rect>'
-                % (css, x0 + offset, plot_h - h, bar_w, max(h, 0.5), month,
-                   value, kind))
+    pad = 5
+    step = (width - 2 * pad) / (len(months) - 1)
+
+    def point(i, value):
+        # 4px headroom so the peak's dot isn't clipped at the top edge.
+        return (pad + i * step,
+                4 + (plot_h - 8) * (1 - value / peak))
+
+    parts = []
+    for series, css, kind in ((views, "views", "views"),
+                              (downloads, "downloads", "downloads")):
+        coords = [point(i, series.get(m, 0)) for i, m in enumerate(months)]
+        parts.append('<polyline class="line-%s" points="%s"/>'
+                     % (css, " ".join("%.1f,%.1f" % c for c in coords)))
+        for (x, y), month in zip(coords, months):
+            parts.append(
+                '<circle class="dot-%s" cx="%.1f" cy="%.1f" r="2.5">'
+                '<title>%s: %d %s</title></circle>'
+                % (css, x, y, month, series.get(month, 0), kind))
     labels = (
         '<text class="chart-label" x="0" y="%d">%s</text>'
         '<text class="chart-label" x="%d" y="%d" text-anchor="end">%s</text>'
         % (height - 2, months[0], width, height - 2, months[-1]))
     return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" '
             'aria-label="Monthly views and PDF downloads">%s%s</svg>'
-            % (width, height, "".join(bars), labels))
+            % (width, height, "".join(parts), labels))
 
 
 def simple_bar_chart(values, css_class, aria_label, width=280, height=90):
