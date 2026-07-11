@@ -70,6 +70,7 @@
             {% if article.categories %}<dt>Categories</dt><dd>{{ article.categories | join(", ") }}</dd>{% endif %}
             {% if article.doi %}<dt>DOI</dt><dd><a href="{{ article.doiUrl }}">{{ article.doi }}</a></dd>{% endif %}
             {% if article.stats and article.stats.totalViews is not none %}<dt>Views</dt><dd>{{ article.stats.totalViews }}</dd>{% endif %}
+            {% if article.stats and article.stats.pdfDownloads is not none %}<dt>Downloads</dt><dd>{{ article.stats.pdfDownloads }}</dd>{% endif %}
           </dl>
         </div>
 

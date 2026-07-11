@@ -6,4 +6,7 @@
   {% if a.stats and a.stats.totalViews is not none %}
   <span class="pill pill-stat" title="{{ a.stats.viewsBreakdown }}">👁 {{ a.stats.totalViews }}</span>
   {% endif %}
+  {% if a.stats and a.stats.pdfDownloads is not none %}
+  <span class="pill pill-stat" title="PDF downloads">⬇ {{ a.stats.pdfDownloads }}</span>
+  {% endif %}
 </p>
