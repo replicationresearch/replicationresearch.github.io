@@ -323,7 +323,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .author-name { font-weight: 600; }
 .orcid { margin-left: .3rem; vertical-align: -1px; }
 .author-affiliation { display: block; color: var(--muted); font-size: .84rem; }
-.article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 2.5rem; align-items: start; }
+.article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 2.5rem; align-items: start; position: relative; }
 .article-abstract h2, .article-lay-summary h2, .pdf-preview h2 { font-size: 1.35rem; margin: 0 0 .6rem; }
 .article-lay-summary { margin-top: 1.6rem; }
 .keyword-row { margin: 1.2rem 0; font-size: .93rem; color: var(--ink-soft); }
@@ -345,24 +345,30 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 /* Merged sidebar: one column, separated from the article by a single
    subtle rule rather than each block being its own boxed card. Individual
    .aside-section blocks get a thin divider between them instead. */
-.article-aside { position: relative; border-left: 1px solid var(--rule); padding-left: 1.8rem; }
+.article-aside { border-left: 1px solid var(--rule); padding-left: 1.8rem; }
 .aside-section { padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--rule); }
 .aside-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .aside-section h2 { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .6rem; }
 .aside-actions .altmetric-embed { margin-top: .7rem; }
 
+/* Sits on .article-layout, not inside .article-aside, so it stays visible
+   (and clickable) even when the sidebar itself is display:none - otherwise
+   collapsing removes the only way to expand it again. */
 .sidebar-toggle { display: none; }
 @media (min-width: 901px) {
   .sidebar-toggle {
     display: flex; align-items: center; justify-content: center;
-    position: absolute; top: -2px; left: -15px; width: 28px; height: 28px;
-    background: #fff; border: 1px solid var(--rule); border-radius: 50%;
-    font: 700 .68rem var(--sans); color: var(--muted); cursor: pointer;
-    transition: color .15s ease, border-color .15s ease; z-index: 2;
+    position: absolute; top: 2px; right: calc(300px - 15px); width: 30px; height: 30px;
+    padding: 0; background: #fff; border: 1.5px solid var(--rule); border-radius: 50%;
+    box-shadow: var(--shadow); color: var(--muted); cursor: pointer; z-index: 3;
+    transition: right .2s ease, color .15s ease, border-color .15s ease;
   }
   .sidebar-toggle:hover { color: var(--accent-dark); border-color: var(--accent); }
+  .sidebar-toggle-icon { display: block; transition: transform .2s ease; }
   .article-layout.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
   .article-layout.sidebar-collapsed .article-aside { display: none; }
+  .article-layout.sidebar-collapsed .sidebar-toggle { right: 8px; }
+  .article-layout.sidebar-collapsed .sidebar-toggle-icon { transform: rotate(180deg); }
 }
 .detail-list { margin: 0; }
 .detail-list dt { font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: .6rem; }

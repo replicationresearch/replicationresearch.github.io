@@ -59,8 +59,11 @@
         {% endif %}
       </div>
 
+      <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar">
+        <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+
       <aside class="article-aside">
-        <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar">&gt;|</button>
         <div class="aside-inner">
           {% if article.pdf or article.doi %}
           <div class="aside-section aside-actions">
@@ -145,7 +148,6 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   var collapsed = localStorage.getItem('r2-sidebar-collapsed') === '1';
   function apply() {
     layout.classList.toggle('sidebar-collapsed', collapsed);
-    toggle.textContent = collapsed ? '|<' : '>|';
     toggle.setAttribute('aria-expanded', String(!collapsed));
     toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
   }
