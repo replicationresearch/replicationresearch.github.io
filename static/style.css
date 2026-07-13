@@ -104,6 +104,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .site-nav a:not(.btn):hover { color: #fff; background: rgba(255, 255, 255, .1); text-decoration: none; }
 .nav-cta { margin-left: .5rem; }
+/* Quiet Login link in the top-right corner: OJS's /submissions route shows
+   the login form to anonymous visitors (returning here after login) and the
+   user's own dashboard to anyone already signed in - authors included. */
+.site-nav .nav-login a { font-size: .78rem; font-weight: 500; color: #8ba2b5; }
+.site-nav .nav-login a:hover { color: #fff; }
 
 /* "About"-style dropdowns use <details>, so they open on tap/click on every
    device - a hover-only menu is unreachable on touchscreens (tablets,
@@ -537,6 +542,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   .nav-toggle:checked ~ .site-nav { display: block; }
   .site-nav > ul { flex-direction: column; align-items: stretch; gap: 0; padding-bottom: .8rem; }
   .site-nav a:not(.btn), .nav-dropdown > summary { padding: .75rem .7rem; font-size: 1rem; }
+  .site-nav .nav-login a { font-size: .85rem; }
   .dropdown { border: none; box-shadow: none; padding-left: 1rem; }
   .nav-toggle-label { padding: .8rem; }
   .nav-cta { margin: .6rem 0 0; }
