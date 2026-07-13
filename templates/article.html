@@ -60,63 +60,66 @@
       </div>
 
       <aside class="article-aside">
-        {% if article.pdf or article.doi %}
-        <div class="aside-actions">
-          {% if article.pdf %}<a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">Download PDF</a>{% endif %}
-          {% if article.doi %}<div class="altmetric-embed" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="{{ article.doi }}"></div>{% endif %}
-        </div>
-        {% endif %}
+        <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar">&gt;|</button>
+        <div class="aside-inner">
+          {% if article.pdf or article.doi %}
+          <div class="aside-section aside-actions">
+            {% if article.pdf %}<a class="btn btn-primary btn-block" href="{{ article.pdf.downloadUrl }}">Download PDF</a>{% endif %}
+            {% if article.doi %}<div class="altmetric-embed" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="{{ article.doi }}"></div>{% endif %}
+          </div>
+          {% endif %}
 
-        <div class="aside-box">
-          <h2>Details</h2>
-          <dl class="detail-list">
-            {% if article.datePublished %}<dt>Published</dt><dd>{{ article.datePublished }}</dd>{% endif %}
-            <dt>Issue</dt><dd><a href="{{ base }}issues/{{ article.issueId }}/">{{ article.issueTitle }}</a></dd>
-            {% if article.section %}<dt>Section</dt><dd>{{ article.section }}</dd>{% endif %}
-            {% if article.categories %}<dt>Categories</dt><dd>{{ article.categories | join(", ") }}</dd>{% endif %}
-            {% if article.doi %}<dt>DOI</dt><dd><a href="{{ article.doiUrl }}">{{ article.doi }}</a></dd>{% endif %}
-            {% for m in article.materials %}
-            <dt>{{ m.label }}</dt><dd><a href="{{ m.url }}">{{ m.url }}</a></dd>
-            {% endfor %}
-            {% if not article.statsChart %}
-            {% if article.stats and article.stats.totalViews is not none %}<dt>Views</dt><dd>{{ article.stats.totalViews }}</dd>{% endif %}
-            {% if article.stats and article.stats.pdfDownloads is not none %}<dt>Downloads</dt><dd>{{ article.stats.pdfDownloads }}</dd>{% endif %}
-            {% endif %}
-          </dl>
-        </div>
+          <div class="aside-section">
+            <h2>Details</h2>
+            <dl class="detail-list">
+              {% if article.datePublished %}<dt>Published</dt><dd>{{ article.datePublished }}</dd>{% endif %}
+              <dt>Issue</dt><dd><a href="{{ base }}issues/{{ article.issueId }}/">{{ article.issueTitle }}</a></dd>
+              {% if article.section %}<dt>Section</dt><dd>{{ article.section }}</dd>{% endif %}
+              {% if article.categories %}<dt>Categories</dt><dd>{{ article.categories | join(", ") }}</dd>{% endif %}
+              {% if article.doi %}<dt>DOI</dt><dd><a href="{{ article.doiUrl }}">{{ article.doi }}</a></dd>{% endif %}
+              {% for m in article.materials %}
+              <dt>{{ m.label }}</dt><dd><a href="{{ m.url }}">{{ m.url }}</a></dd>
+              {% endfor %}
+              {% if not article.statsChart %}
+              {% if article.stats and article.stats.totalViews is not none %}<dt>Views</dt><dd>{{ article.stats.totalViews }}</dd>{% endif %}
+              {% if article.stats and article.stats.pdfDownloads is not none %}<dt>Downloads</dt><dd>{{ article.stats.pdfDownloads }}</dd>{% endif %}
+              {% endif %}
+            </dl>
+          </div>
 
-        {% if article.statsChart %}
-        <div class="aside-box">
-          <h2>Monthly Readers</h2>
-          <div class="stats-chart">{{ article.statsChart | safe }}</div>
-          <p class="chart-legend">
-            <span class="legend-dot legend-views"></span> views
-            <span class="legend-dot legend-downloads"></span> downloads
-          </p>
-        </div>
-        {% endif %}
+          {% if article.statsChart %}
+          <div class="aside-section">
+            <h2>Monthly Readers</h2>
+            <div class="stats-chart">{{ article.statsChart | safe }}</div>
+            <p class="chart-legend">
+              <span class="legend-dot legend-views"></span> views
+              <span class="legend-dot legend-downloads"></span> downloads
+            </p>
+          </div>
+          {% endif %}
 
-        {% if article.citation %}
-        <div class="aside-box cite-box">
-          <h2>How to cite</h2>
-          <button class="copy-btn" type="button" aria-label="Copy citation to clipboard">Copy</button>
-          <p class="citation-text">{{ article.citation }}</p>
-          <p class="citation-links">
-            {% if article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
-            {% if article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
-          </p>
-        </div>
-        {% endif %}
+          {% if article.citation %}
+          <div class="aside-section cite-box">
+            <h2>How to cite</h2>
+            <button class="copy-btn" type="button" aria-label="Copy citation to clipboard">Copy</button>
+            <p class="citation-text">{{ article.citation }}</p>
+            <p class="citation-links">
+              {% if article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
+              {% if article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
+            </p>
+          </div>
+          {% endif %}
 
-        {% if article.licenseHtml %}
-        <div class="aside-box license-box">
-          <h2>License</h2>
-          <div class="prose">{{ article.licenseHtml | safe }}</div>
-        </div>
-        {% endif %}
+          {% if article.licenseHtml %}
+          <div class="aside-section license-box">
+            <h2>License</h2>
+            <div class="prose">{{ article.licenseHtml | safe }}</div>
+          </div>
+          {% endif %}
 
-        <div class="aside-box">
-          <p class="meta">Canonical version: <a href="{{ article.ojsUrl }}">journal website (OJS)</a></p>
+          <div class="aside-section">
+            <p class="meta">Canonical version: <a href="{{ article.ojsUrl }}">journal website (OJS)</a></p>
+          </div>
         </div>
       </aside>
     </div>
@@ -133,6 +136,26 @@ if (window.matchMedia('(max-width: 900px)').matches) {
     d.removeAttribute('open');
   });
 }
+
+// Desktop-only sidebar collapse, remembered across article pages.
+(function () {
+  var toggle = document.querySelector('.sidebar-toggle');
+  var layout = document.querySelector('.article-layout');
+  if (!toggle || !layout) return;
+  var collapsed = localStorage.getItem('r2-sidebar-collapsed') === '1';
+  function apply() {
+    layout.classList.toggle('sidebar-collapsed', collapsed);
+    toggle.textContent = collapsed ? '|<' : '>|';
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+  }
+  apply();
+  toggle.addEventListener('click', function () {
+    collapsed = !collapsed;
+    localStorage.setItem('r2-sidebar-collapsed', collapsed ? '1' : '0');
+    apply();
+  });
+})();
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
     var text = btn.parentElement.querySelector('.citation-text').textContent.trim();

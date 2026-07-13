@@ -247,7 +247,16 @@ def clean_fragment(node, page_url):
 # ---------------------------------------------------------------------------
 
 def text_of(node):
-    return re.sub(r"\s+", " ", node.get_text(" ", strip=True)) if node else ""
+    """Flattened text of a BeautifulSoup node. get_text(" ") inserts a space
+    between every child tag's text regardless of what's next to it, which
+    leaves stray spaces before punctuation when OJS wraps citation parts in
+    separate <span>s (e.g. "Research , 2 ." instead of "Research, 2.") -
+    collapse those away.
+    """
+    if not node:
+        return ""
+    text = re.sub(r"\s+", " ", node.get_text(" ", strip=True))
+    return re.sub(r"\s+([,.;:])", r"\1", text)
 
 
 def scrape_journal():

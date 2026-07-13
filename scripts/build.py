@@ -132,6 +132,52 @@ def sort_issues_newest_first(issues, articles_by_path):
     return issues
 
 
+def build_articles_index(articles):
+    """Payload for the client-side Articles browsing page: one compact
+    record per article - search/filter/sort all happen in the browser
+    against this, so it only carries what's shown or filtered on, not
+    full abstracts/references - plus the distinct sections/categories and
+    year span needed to populate the filter controls.
+    """
+    records = []
+    years = []
+    sections, categories = set(), set()
+    for a in articles:
+        year = None
+        if a.get("datePublished"):
+            try:
+                year = int(a["datePublished"][:4])
+            except ValueError:
+                pass
+        if year:
+            years.append(year)
+        if a.get("section"):
+            sections.add(a["section"])
+        categories.update(a.get("categories") or [])
+        stats = a.get("stats") or {}
+        records.append({
+            "title": a["title"],
+            "subtitle": a.get("subtitle") or "",
+            "url": "articles/%s/" % a["urlPath"],
+            "section": a.get("section") or "",
+            "categories": a.get("categories") or [],
+            "authors": [au["name"] for au in a.get("authors") or []],
+            "year": year,
+            "date": a.get("datePublished") or "",
+            "views": stats.get("totalViews"),
+            "downloads": stats.get("pdfDownloads"),
+        })
+    records.sort(key=lambda r: r["date"], reverse=True)
+    this_year = datetime.date.today().year
+    return {
+        "records": records,
+        "sections": sorted(sections),
+        "categories": sorted(categories),
+        "yearMin": min(years) if years else this_year,
+        "yearMax": max(years) if years else this_year,
+    }
+
+
 def normalize_article_stats(stats):
     """Fill in missing keys with None so templates never render a blank
     number, and compute the combined view count shown in the compact
@@ -245,6 +291,12 @@ def main():
            recent_announcements=announcements[:3],
            further_projects=FURTHER_PROJECTS,
            under_review=under_review)
+
+    articles_index = build_articles_index(articles)
+    render("articles.html", os.path.join("articles", "index.html"),
+           articles_index=articles_index,
+           articles_json=json.dumps(articles_index, ensure_ascii=False)
+                             .replace("</", "<\\/"))
 
     render("issues.html", os.path.join("issues", "index.html"),
            articles_by_path=articles_by_path)
@@ -493,7 +545,7 @@ def build_nav(nav_items, pages):
     if about_children:
         nav.append({"label": "About", "url": about_children[0]["url"],
                     "children": about_children})
-    nav.append({"label": "Issues", "url": BASE + "issues/", "children": []})
+    nav.append({"label": "Articles", "url": BASE + "articles/", "children": []})
     nav.append({"label": "Announcements", "url": BASE + "announcements/",
                 "children": []})
     seen = {"issues", "issue/current", "issue/archive", "home", "index",

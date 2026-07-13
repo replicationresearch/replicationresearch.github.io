@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Articles · {{ journal.name }}{% endblock %}
+{% block description %}Browse, search, and filter every article published in {{ journal.name }}.{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <h1 class="page-heading">Articles</h1>
+
+  <div class="articles-filters">
+    <input type="search" id="articles-search" class="articles-search"
+           placeholder="Search by title or author…" aria-label="Search articles by title or author">
+
+    <div class="articles-filter-row">
+      <label class="articles-filter">
+        <span>Section</span>
+        <select id="articles-section">
+          <option value="">All sections</option>
+          {% for s in articles_index.sections %}
+          <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <details class="articles-categories">
+        <summary>Categories <span class="articles-categories-summary" id="articles-categories-summary"></span></summary>
+        <div class="category-panel">
+          <div class="category-actions">
+            <button type="button" data-select="all">Select all</button>
+            <button type="button" data-select="none">Select none</button>
+          </div>
+          <div class="category-list" id="articles-category-list">
+            {% for c in articles_index.categories %}
+            <label><input type="checkbox" value="{{ c }}" checked> {{ c }}</label>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+
+      <div class="articles-filter year-filter">
+        <span>Year <span id="articles-year-label">{{ articles_index.yearMin }}–{{ articles_index.yearMax }}</span></span>
+        <div class="year-slider">
+          <div class="year-track"><div class="year-track-fill" id="year-track-fill"></div></div>
+          <input type="range" id="year-range-min" class="year-range" min="{{ articles_index.yearMin }}" max="{{ articles_index.yearMax }}" value="{{ articles_index.yearMin }}" aria-label="From year">
+          <input type="range" id="year-range-max" class="year-range" min="{{ articles_index.yearMin }}" max="{{ articles_index.yearMax }}" value="{{ articles_index.yearMax }}" aria-label="To year">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="meta" id="articles-count"></p>
+  <ul class="article-list" id="articles-results"></ul>
+  <p class="meta" id="articles-empty" hidden>No articles match these filters.</p>
+</div>
+
+<script id="articles-data" type="application/json">{{ articles_json | safe }}</script>
+<script>
+(function () {
+  var base = {{ base | tojson }};
+  var data = JSON.parse(document.getElementById('articles-data').textContent);
+  var records = data.records;
+
+  var searchInput = document.getElementById('articles-search');
+  var sectionSelect = document.getElementById('articles-section');
+  var categoryList = document.getElementById('articles-category-list');
+  var categorySummary = document.getElementById('articles-categories-summary');
+  var yearMin = document.getElementById('year-range-min');
+  var yearMax = document.getElementById('year-range-max');
+  var yearLabel = document.getElementById('articles-year-label');
+  var yearFill = document.getElementById('year-track-fill');
+  var results = document.getElementById('articles-results');
+  var count = document.getElementById('articles-count');
+  var empty = document.getElementById('articles-empty');
+
+  function selectedCategories() {
+    return Array.from(categoryList.querySelectorAll('input:checked')).map(function (c) { return c.value; });
+  }
+
+  function updateCategorySummary() {
+    var total = categoryList.querySelectorAll('input').length;
+    var checked = selectedCategories().length;
+    categorySummary.textContent = checked === total ? '(all)' : '(' + checked + '/' + total + ')';
+  }
+
+  function updateYearUI() {
+    var lo = parseInt(yearMin.value, 10), hi = parseInt(yearMax.value, 10);
+    if (lo > hi) { var mid = lo; lo = hi; hi = mid; }
+    var span = parseInt(yearMin.max, 10) - parseInt(yearMin.min, 10) || 1;
+    var left = (lo - parseInt(yearMin.min, 10)) / span * 100;
+    var right = (hi - parseInt(yearMin.min, 10)) / span * 100;
+    yearFill.style.left = left + '%';
+    yearFill.style.width = (right - left) + '%';
+    yearLabel.textContent = lo === hi ? String(lo) : lo + '–' + hi;
+  }
+
+  function render() {
+    var q = searchInput.value.trim().toLowerCase();
+    var section = sectionSelect.value;
+    var cats = selectedCategories();
+    var allCatsSelected = cats.length === categoryList.querySelectorAll('input').length;
+    var lo = Math.min(parseInt(yearMin.value, 10), parseInt(yearMax.value, 10));
+    var hi = Math.max(parseInt(yearMin.value, 10), parseInt(yearMax.value, 10));
+
+    var filtered = records.filter(function (r) {
+      if (section && r.section !== section) return false;
+      if (r.year != null && (r.year < lo || r.year > hi)) return false;
+      if (!allCatsSelected) {
+        var hasMatch = r.categories.length === 0 ||
+          r.categories.some(function (c) { return cats.indexOf(c) !== -1; });
+        if (!hasMatch) return false;
+      }
+      if (q) {
+        var haystack = (r.title + ' ' + r.subtitle + ' ' + r.authors.join(' ')).toLowerCase();
+        if (haystack.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+
+    count.textContent = filtered.length + (filtered.length === 1 ? ' article' : ' articles');
+    empty.hidden = filtered.length !== 0;
+    results.innerHTML = filtered.map(rowHtml).join('');
+  }
+
+  function rowHtml(r) {
+    var title = escapeHtml(r.title) + (r.subtitle ? '<span class="subtitle">: ' + escapeHtml(r.subtitle) + '</span>' : '');
+    var authors = r.authors.map(escapeHtml).join(', ');
+    var stats = '';
+    if (r.views != null || r.downloads != null) {
+      stats = '<span class="article-stats">' +
+        (r.views != null ? '<span class="stat-item" title="Views">' + eyeIcon + ' ' + r.views + ' views</span>' : '') +
+        (r.downloads != null ? '<span class="stat-item" title="PDF downloads">' + downloadIcon + ' ' + r.downloads + ' downloads</span>' : '') +
+        '</span>';
+    }
+    return '<li class="article-card">' +
+      (r.section ? '<p class="article-section">' + escapeHtml(r.section) + '</p>' : '') +
+      '<h4><a href="' + base + r.url + '">' + title + '</a></h4>' +
+      (authors ? '<p class="article-authors">' + authors + '</p>' : '') +
+      '<p class="article-links">' +
+      (r.year ? '<span class="article-year">' + r.year + '</span>' : '') +
+      stats +
+      '</p></li>';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  var eyeIcon = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var downloadIcon = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>';
+
+  searchInput.addEventListener('input', render);
+  sectionSelect.addEventListener('change', render);
+  categoryList.addEventListener('change', function () { updateCategorySummary(); render(); });
+  categoryList.parentElement.querySelector('.category-actions').addEventListener('click', function (e) {
+    var action = e.target.getAttribute('data-select');
+    if (!action) return;
+    categoryList.querySelectorAll('input').forEach(function (c) { c.checked = action === 'all'; });
+    updateCategorySummary();
+    render();
+  });
+  [yearMin, yearMax].forEach(function (el) {
+    el.addEventListener('input', function () { updateYearUI(); render(); });
+  });
+
+  updateCategorySummary();
+  updateYearUI();
+  render();
+})();
+</script>
+{% endblock %}

@@ -219,7 +219,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 /* Issue feature (home) */
 .issue-feature {
-  display: grid; grid-template-columns: 220px 1fr; gap: 2rem; align-items: start;
+  display: grid; grid-template-columns: 180px 1fr; gap: 2rem; align-items: start;
   margin-bottom: 2.4rem; padding-bottom: 2.4rem; border-bottom: 1px solid var(--rule);
 }
 .issue-feature:last-child:not(.issue-feature-highlight) {
@@ -305,8 +305,8 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .issue-articles > summary::-webkit-details-marker { display: none; }
 .issue-articles > summary::before { content: "▾ "; }
 .issue-articles:not([open]) > summary::before { content: "▸ "; }
-.issue-header { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; align-items: start; margin-bottom: 2rem; }
-.issue-cover-lg { max-width: 200px; }
+.issue-header { display: grid; grid-template-columns: 165px 1fr; gap: 2rem; align-items: start; margin-bottom: 2rem; }
+.issue-cover-lg { max-width: 165px; }
 .toc-section-title {
   font-size: 1rem; text-transform: uppercase; letter-spacing: .12em;
   color: var(--accent); border-bottom: 2px solid var(--accent-soft);
@@ -337,18 +337,33 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .article-references { margin-top: 2rem; border-top: 1px solid var(--rule); padding-top: 1.2rem; }
 .article-references summary { cursor: pointer; list-style: none; }
 .article-references summary h2 { display: inline; font-size: 1.35rem; }
-.article-references summary::after { content: " ▸"; color: var(--accent); }
+.article-references summary::after { content: " ▸"; color: var(--accent); font-size: 1.3em; vertical-align: -.05em; }
 .article-references[open] summary::after { content: " ▾"; }
 .references-body { margin-top: 1rem; font-size: .92rem; }
 .references-body p { margin: 0 0 .7rem; padding-left: 1.6rem; text-indent: -1.6rem; }
 
-.aside-box {
-  background: var(--bg-alt); border: 1px solid var(--rule); border-radius: var(--radius);
-  padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
-}
-.aside-box h2 { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .6rem; }
-.aside-actions { margin-bottom: 1.1rem; }
+/* Merged sidebar: one column, separated from the article by a single
+   subtle rule rather than each block being its own boxed card. Individual
+   .aside-section blocks get a thin divider between them instead. */
+.article-aside { position: relative; border-left: 1px solid var(--rule); padding-left: 1.8rem; }
+.aside-section { padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--rule); }
+.aside-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.aside-section h2 { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .6rem; }
 .aside-actions .altmetric-embed { margin-top: .7rem; }
+
+.sidebar-toggle { display: none; }
+@media (min-width: 901px) {
+  .sidebar-toggle {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: -2px; left: -15px; width: 28px; height: 28px;
+    background: #fff; border: 1px solid var(--rule); border-radius: 50%;
+    font: 700 .68rem var(--sans); color: var(--muted); cursor: pointer;
+    transition: color .15s ease, border-color .15s ease; z-index: 2;
+  }
+  .sidebar-toggle:hover { color: var(--accent-dark); border-color: var(--accent); }
+  .article-layout.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+  .article-layout.sidebar-collapsed .article-aside { display: none; }
+}
 .detail-list { margin: 0; }
 .detail-list dt { font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: .6rem; }
 .detail-list dd { margin: 0; font-size: .93rem; overflow-wrap: anywhere; }
@@ -401,6 +416,65 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .status-legend { list-style: none; margin: .8rem 0 0; padding: 0; font-size: .85rem; color: var(--ink-soft); }
 .status-legend li { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem; }
 .status-legend .legend-dot { margin: 0; }
+
+/* Articles browsing page */
+.articles-filters { margin-bottom: 1.6rem; }
+.articles-search {
+  display: block; width: 100%; max-width: 420px; margin-bottom: 1rem;
+  padding: .6rem .9rem; font-size: .95rem; font-family: var(--sans);
+  border: 1.5px solid var(--rule); border-radius: 999px; color: var(--ink);
+}
+.articles-search:focus { outline: none; border-color: var(--accent); }
+.articles-filter-row { display: flex; flex-wrap: wrap; gap: 1.2rem 1.8rem; align-items: flex-start; }
+.articles-filter { display: flex; flex-direction: column; gap: .35rem; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.articles-filter select {
+  font: 600 .92rem var(--sans); color: var(--ink); text-transform: none; letter-spacing: normal;
+  padding: .45rem .7rem; border: 1.5px solid var(--rule); border-radius: 8px; background: #fff;
+}
+
+.articles-categories { position: relative; }
+.articles-categories summary {
+  cursor: pointer; list-style: none; display: flex; flex-direction: column; gap: .35rem;
+  font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+}
+.articles-categories summary::-webkit-details-marker { display: none; }
+.articles-categories-summary { font: 600 .92rem var(--sans); color: var(--ink); text-transform: none; letter-spacing: normal; }
+.articles-categories summary::after { content: " ▾"; color: var(--accent); }
+.articles-categories[open] summary::after { content: " ▴"; }
+.category-panel {
+  position: absolute; top: calc(100% + .4rem); left: 0; z-index: 5; width: 260px;
+  background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: .9rem 1rem;
+}
+.category-actions { display: flex; gap: .8rem; margin-bottom: .6rem; padding-bottom: .6rem; border-bottom: 1px solid var(--rule); }
+.category-actions button {
+  background: none; border: none; padding: 0; font: 600 .8rem var(--sans); color: var(--accent-dark);
+  cursor: pointer; text-decoration: underline;
+}
+.category-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: .4rem; }
+.category-list label { display: flex; align-items: center; gap: .5rem; font-size: .88rem; font-weight: 400; color: var(--ink); text-transform: none; letter-spacing: normal; }
+
+.year-filter { min-width: 220px; }
+.year-slider { position: relative; height: 24px; margin-top: .3rem; }
+.year-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; margin-top: -2px; background: var(--rule); border-radius: 2px; }
+.year-track-fill { position: absolute; top: 0; height: 4px; background: var(--accent); border-radius: 2px; }
+.year-range {
+  position: absolute; top: 0; left: 0; width: 100%; margin: 0; height: 24px;
+  background: transparent; -webkit-appearance: none; appearance: none; pointer-events: none;
+}
+.year-range::-webkit-slider-thumb {
+  -webkit-appearance: none; pointer-events: auto; width: 16px; height: 16px; margin-top: -6px;
+  border-radius: 50%; background: #fff; border: 2px solid var(--accent); cursor: pointer;
+}
+.year-range::-moz-range-thumb {
+  pointer-events: auto; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--accent); cursor: pointer;
+}
+.year-range::-webkit-slider-runnable-track { background: transparent; }
+.year-range::-moz-range-track { background: transparent; }
+
+.article-year { color: var(--muted); font-size: .85rem; margin-right: .7rem; }
+#articles-count { margin: 0 0 1rem; }
 
 /* Editorial team */
 .team-section { margin-bottom: 2.6rem; }
@@ -515,16 +589,22 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
      (details, usage, citation, license). display:contents lifts the boxes
      out of their two columns so flex order can arrange them. */
   .article-layout { display: flex; flex-direction: column; }
-  .article-main, .article-aside { display: contents; }
+  .article-main, .article-aside, .aside-inner { display: contents; }
+  .article-aside { border-left: none; padding-left: 0; }
   .article-abstract { order: 1; }
   .keyword-row { order: 2; }
   .article-lay-summary { order: 2; }
-  .article-aside .aside-box { order: 6; }
+  .article-aside .aside-section { order: 6; }
   .article-aside .aside-actions { order: 3; }
   .pdf-preview { order: 4; }
   .article-references { order: 5; }
   .issue-feature, .issue-header { grid-template-columns: 1fr; }
-  .issue-cover img, .issue-cover-lg { max-width: 190px; }
+  .issue-cover img, .issue-cover-lg { max-width: 160px; }
+  /* The category dropdown panel is absolutely positioned under its summary
+     on desktop; on a narrow screen the summary can sit anywhere in the
+     wrapped filter row, so a fixed-width absolute panel can overflow the
+     viewport - let it flow inline at full width instead. */
+  .category-panel { position: static; width: 100%; margin-top: .5rem; }
 }
 @media (max-width: 760px) {
   .header-inner { flex-wrap: wrap; padding-top: .6rem; padding-bottom: .6rem; }
