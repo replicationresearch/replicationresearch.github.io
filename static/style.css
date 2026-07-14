@@ -487,8 +487,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .articles-categories summary::-webkit-details-marker { display: none; }
 .articles-categories-summary { font: 600 .92rem var(--sans); color: var(--ink); text-transform: none; letter-spacing: normal; }
-.articles-categories summary::after { content: " ▾"; color: var(--accent); }
-.articles-categories[open] summary::after { content: " ▴"; }
+/* Arrow sits inline after the value ("(all)") rather than dropping onto its
+   own line below it — the summary is a flex column, so a summary::after
+   would become an orphaned third row. */
+.articles-categories-summary::after { content: " ▾"; color: var(--accent); }
+.articles-categories[open] .articles-categories-summary::after { content: " ▴"; }
 .category-panel {
   position: absolute; top: calc(100% + .4rem); left: 0; z-index: 5; width: 260px;
   background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
@@ -563,6 +566,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .team-intro { margin-bottom: 3rem; padding-bottom: 2.2rem; border-bottom: 1px solid var(--rule); }
 .team-intro .page-heading { margin-bottom: 1rem; }
 .team-intro .team-section-title { margin-top: 1.8rem; }
+/* Comfortable reading measure for the intro copy; the section-title rules
+   above stay full width so their underlines still span the column. */
+.team-intro .prose { max-width: 800px; }
 
 /* Media coverage */
 .team-media { margin-top: 3rem; padding-top: .5rem; }
@@ -604,6 +610,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .prose hr { border: none; border-top: 1px solid var(--rule); margin: 1.6rem 0; }
 .prose blockquote { border-left: 3px solid var(--accent-soft); margin: 1rem 0; padding: .2rem 0 .2rem 1rem; color: var(--ink-soft); }
 
+/* Keep body copy at a readable measure, matching the article/page columns,
+   rather than letting it run the full 1120px content width. */
+.home-about { max-width: 800px; }
 .home-about h2 { font-size: 1.35rem; }
 
 /* Footer */
@@ -622,8 +631,17 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .connect-list li { margin-bottom: .45rem; font-size: .92rem; }
 .connect-list a { display: inline-flex; align-items: center; gap: .5rem; }
 .social-icon { width: 16px; height: 16px; flex-shrink: 0; }
-.ojs-badge { display: flex; align-items: flex-start; justify-content: flex-end; }
-.ojs-badge img { background: #fff; border-radius: 6px; padding: 8px; }
+/* Group the two "who runs this" credits — hosted-by (hbz) and the OJS/PKP
+   platform badge — side by side in the footer's right column. */
+.footer-credits {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  gap: .8rem;
+}
+.footer-credits img {
+  background: #fff; border-radius: 6px; display: block;
+  height: 60px; width: auto; padding: 7px;
+}
+.hosted-by, .hosted-by p { margin: 0; }
 .footer-meta { border-top: 1px solid #35485c; padding-top: 1.4rem; font-size: .85rem; }
 .footer-links img { max-height: 70px; width: auto; background: #fff; border-radius: 6px; padding: 5px; }
 .footer-links p { margin: 0 0 .5rem; }

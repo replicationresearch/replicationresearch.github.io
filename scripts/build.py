@@ -212,7 +212,22 @@ def normalize_article_stats(stats):
 
 
 def main():
+    import re
     journal = load("journal.json")
+    # The scraped footer HTML ends with a "hosted by hbz" logo paragraph.
+    # Pull it out so the template can group it next to the OJS/PKP badge
+    # (both are "who runs this" credits) instead of leaving it stranded as
+    # a large logo on its own row. Falls back gracefully if the markup or
+    # the image ever changes: the logo just stays in footerHtml.
+    footer_html = journal.get("footerHtml") or ""
+    m = re.search(r"<p>\s*(<a\b[^>]*>)?\s*<img\b[^>]*>\s*(</a>)?\s*</p>",
+                  footer_html, re.I | re.S)
+    if m:
+        journal["hostedByHtml"] = m.group(0)
+        journal["footerHtml"] = (footer_html[:m.start()]
+                                 + footer_html[m.end():])
+    else:
+        journal["hostedByHtml"] = ""
     issues = load("issues.json")
     articles = load("articles.json")
     pages = load("pages.json")
@@ -238,6 +253,15 @@ def main():
     published_extras_path = os.path.join(DATA, "published_extras.json")
     if os.path.exists(published_extras_path):
         published_extras = load("published_extras.json")
+
+    # Normalize TeX-style quotes ( ``...'' ) that come through in some
+    # Crossref-sourced titles/subtitles before they reach any template.
+    for a in articles:
+        a["title"] = fix_typography(a.get("title"))
+        if a.get("subtitle"):
+            a["subtitle"] = fix_typography(a["subtitle"])
+    for r in under_review:
+        r["title"] = fix_typography(r.get("title"))
 
     articles_by_path = {a["urlPath"]: a for a in articles}
     issues = sort_issues_newest_first(issues, articles_by_path)
@@ -518,6 +542,17 @@ def team_with_photos(team):
             # Deterministic accent tone for the placeholder circle.
             member["hue"] = sum(ord(c) for c in slug) % 5
     return team
+
+
+def fix_typography(text):
+    """Turn TeX/BibTeX-style quotes that leak in from Crossref titles into
+    real typographic quotes: ``...'' -> “...”, `...' -> ‘...’, and lone `
+    -> ‘. Applied to plain-text fields (titles, subtitles) only. Leaves a
+    standalone apostrophe alone so possessives ("world's") aren't touched."""
+    if not text:
+        return text
+    return (text.replace("``", "“").replace("''", "”")
+                .replace("`", "‘"))
 
 
 def excerpt(html, length=220):

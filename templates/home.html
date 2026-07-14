@@ -2,6 +2,11 @@
 {% block content %}
 <section class="hero hero-compact">
   <div class="wrap">
+    <p class="hero-kicker">Diamond Open Access · ISSN {{ journal.issn }}</p>
+    <div class="hero-logo" role="img" aria-label="{{ journal.name }}">
+      <img src="{{ base }}static/img/logo-black.png" alt="" width="1841" height="355">
+      <span class="logo-color" aria-hidden="true"></span>
+    </div>
     <p class="hero-tagline">Replication Research is a diamond open-access and researcher-led journal.<br>We publish reproductions, replications, and conceptual articles concerned with repeatability.</p>
     <div class="hero-actions">
       <span class="btn-split">

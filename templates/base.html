@@ -36,7 +36,6 @@
         </li>
         {% endfor %}
         <li class="nav-cta"><a class="btn btn-primary" href="{{ journal.submitUrl }}">Submit manuscript</a></li>
-        <li class="nav-login"><a href="https://ejournals.uni-muenster.de/replicationresearch/submissions">Login</a></li>
       </ul>
     </nav>
   </div>
@@ -77,8 +76,9 @@
           <li><a href="https://www.linkedin.com/company/110100397"><svg class="social-icon" viewBox="0 0 448 512" aria-hidden="true"><path fill="currentColor" d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg> LinkedIn</a></li>
         </ul>
       </section>
-      <section class="connect-block ojs-badge">
-        <a href="https://ejournals.uni-muenster.de/replicationresearch/about/aboutThisPublishingSystem" title="More information about the publishing system, Platform and Workflow by OJS/PKP.">
+      <section class="connect-block footer-credits">
+        {% if journal.hostedByHtml %}<div class="hosted-by">{{ journal.hostedByHtml | safe }}</div>{% endif %}
+        <a class="ojs-badge" href="https://ejournals.uni-muenster.de/replicationresearch/about/aboutThisPublishingSystem" title="More information about the publishing system, Platform and Workflow by OJS/PKP.">
           <img src="{{ base }}static/img/ojs_brand.png" alt="Platform and workflow by OJS / PKP" width="150">
         </a>
       </section>
