@@ -200,19 +200,39 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   mask-image: url("img/logo-mask.png");
   mask-size: 100% 100%;
   mask-repeat: no-repeat;
-  animation: logo-cycle 60s linear infinite;
+  animation: logo-cycle 220s linear infinite;
+  /* Randomized per page load to a value below (see base.html's inline
+     r2RandomizeLogoColor script) so the logo starts already settled on a
+     checkpoint color instead of always opening on blue mid-cycle. */
+  animation-delay: 0s;
 }
-/* Blue -> green -> fluorescent orange -> light reddish purple ->
-   friendly red -> grey -> blue; one stop every 10 s, drifting so slowly
-   the change is imperceptible. A pure color fade (no motion), so it is
-   deliberately not gated behind prefers-reduced-motion. */
+/* 10 checkpoint colors, each held for 12s then faded to the next over 10s
+   (the same transition speed the original 6-color version used) - a full
+   cycle takes 220s. Every 10% of keyframe range is one color's hold+fade
+   segment, so the timings stay easy to re-derive: hold ends at
+   segment-start + 12/22 of the segment (~5.4545%). A pure color fade (no
+   motion), so it is deliberately not gated behind prefers-reduced-motion. */
 @keyframes logo-cycle {
-  0%      { background-color: #009fd4; }
-  16.67%  { background-color: #02c665; }
-  33.33%  { background-color: #ff6a00; }
-  50%     { background-color: #c46fd1; }
-  66.67%  { background-color: #e85d5d; }
-  83.33%  { background-color: #8f979f; }
+  0%      { background-color: #009fd4; } /* azure (brand blue) */
+  5.455%  { background-color: #009fd4; }
+  10%     { background-color: #14b8a6; } /* teal */
+  15.455% { background-color: #14b8a6; }
+  20%     { background-color: #4caf50; } /* leaf green */
+  25.455% { background-color: #4caf50; }
+  30%     { background-color: #f2a900; } /* amber */
+  35.455% { background-color: #f2a900; }
+  40%     { background-color: #ff6a00; } /* tangerine */
+  45.455% { background-color: #ff6a00; }
+  50%     { background-color: #e8505b; } /* coral red */
+  55.455% { background-color: #e8505b; }
+  60%     { background-color: #b3446c; } /* raspberry */
+  65.455% { background-color: #b3446c; }
+  70%     { background-color: #c46fd1; } /* orchid */
+  75.455% { background-color: #c46fd1; }
+  80%     { background-color: #7c6fd1; } /* indigo */
+  85.455% { background-color: #7c6fd1; }
+  90%     { background-color: #8f979f; } /* grey-blue */
+  95.455% { background-color: #8f979f; }
   100%    { background-color: #009fd4; }
 }
 
@@ -716,6 +736,28 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
    rather than letting it run the full 1120px content width. */
 .home-about { max-width: 800px; }
 .home-about h2 { font-size: 1.35rem; }
+
+/* Quarto "callout" box in the homepage blurb (the disciplines list) -
+   arrives from the scrape with none of Quarto's own callout CSS/icon font,
+   so by default it's a bare paragraph + bullet list with an invisible,
+   broken icon glyph. Give it a proper card treatment and turn the bullet
+   list into wrapped pill tags, echoing the .pill style used for article
+   sections/categories elsewhere on the site. */
+.home-about .callout {
+  background: var(--bg-alt); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 1.3rem 1.5rem; margin: 1.6rem 0;
+}
+.home-about .callout-icon-container { display: none; }
+.home-about .callout-title-container { font-weight: 700; color: var(--ink); }
+.home-about .callout-body-container ul {
+  list-style: none; margin: .9rem 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+.home-about .callout-body-container li {
+  background: var(--accent-soft); color: var(--accent-deep-dark);
+  font-size: .87rem; font-weight: 600; padding: .35rem .85rem;
+  border-radius: 999px;
+}
 
 /* Our Network page (organizers/funders/partners/preprint-review, moved
    here from the footer) */

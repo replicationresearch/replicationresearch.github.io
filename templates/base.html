@@ -7,6 +7,20 @@
 <meta name="description" content="{% block description %}{{ journal.description }}{% endblock %}">
 {% if journal.favicon %}<link rel="icon" href="{{ journal.favicon }}">{% endif %}
 <link rel="stylesheet" href="{{ base }}static/style.css">
+<script>
+// Randomizes which of the logo-cycle keyframes (style.css) the color layer
+// starts on, so a fresh page load doesn't always open on blue mid-cycle.
+// A negative animation-delay of one of the checkpoints' hold-start times
+// makes the animation begin already settled on that color rather than
+// mid-fade - CHECKPOINTS/SEGMENT must stay in sync with the @keyframes
+// logo-cycle rule. Called inline right after each .logo-color element (not
+// from a script at the end of the page) so the randomized color is set
+// before that element's first paint.
+function r2RandomizeLogoColor(el) {
+  var CHECKPOINTS = 10, SEGMENT = 22;
+  el.style.animationDelay = (-(Math.floor(Math.random() * CHECKPOINTS) * SEGMENT)) + 's';
+}
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>

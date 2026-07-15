@@ -6,6 +6,7 @@
     <div class="hero-logo" role="img" aria-label="{{ journal.name }}">
       <img src="{{ base }}static/img/logo-black.png" alt="" width="1841" height="355">
       <span class="logo-color" aria-hidden="true"></span>
+      <script>r2RandomizeLogoColor(document.currentScript.previousElementSibling)</script>
     </div>
     <p class="hero-tagline">Replication Research is a diamond open-access and researcher-led journal.<br>We publish reproductions, replications, and conceptual articles concerned with repeatability.</p>
     <div class="hero-actions">
@@ -157,14 +158,33 @@
 // overridden per breakpoint) is the single source of truth for how many
 // tiles are visible, so the JS pagination and the CSS tile width can never
 // drift out of sync.
+//
+// The track holds the real tiles followed by one full clone of them
+// (aria-hidden, untabbable), so "position" can just keep increasing
+// (always sliding left) instead of ever needing to jump backwards to
+// wrap: once position reaches n, what's on screen is a clone that looks
+// identical to real page 0, so resetting position back to 0 right then is
+// completely invisible.
 (function () {
   var track = document.getElementById('project-carousel-track');
   var dotsWrap = document.getElementById('project-carousel-dots');
   var carousel = document.getElementById('project-carousel');
   if (!track || !dotsWrap) return;
-  var n = track.children.length;
+  var originals = Array.from(track.children);
+  var n = originals.length;
+  if (!n) return;
+  originals.forEach(function (el) {
+    var clone = el.cloneNode(true);
+    clone.setAttribute('aria-hidden', 'true');
+    clone.tabIndex = -1;
+    clone.querySelectorAll('a, button').forEach(function (child) { child.tabIndex = -1; });
+    track.appendChild(clone);
+  });
+
+  var position = 0;
   var page = 0;
   var timer = null;
+  var resetTimer = null;
 
   function perPage() {
     var v = parseInt(getComputedStyle(document.documentElement)
@@ -172,16 +192,11 @@
     return Math.max(1, Math.min(v || 3, n));
   }
   function numPages() { return Math.max(1, Math.ceil(n / perPage())); }
-  // Clamp so the last page still shows a full set of tiles (overlapping
-  // the previous page) instead of trailing off with an empty slot.
-  function startIndex(p) {
-    var pp = perPage();
-    return Math.min(p * pp, Math.max(0, n - pp));
-  }
 
-  function apply() {
+  function apply(withTransition) {
     var pp = perPage();
-    track.style.transform = 'translateX(-' + (startIndex(page) * 100 / pp) + '%)';
+    track.style.transition = withTransition === false ? 'none' : '';
+    track.style.transform = 'translateX(-' + (position * 100 / pp) + '%)';
     Array.from(dotsWrap.children).forEach(function (d, i) {
       d.classList.toggle('is-active', i === page);
     });
@@ -202,22 +217,53 @@
     }
   }
 
-  function goTo(p, manual) {
+  // Manual navigation always lands on a real (non-clone) position, so it
+  // never needs the wrap-reset handling next() below does.
+  function goTo(i, manual) {
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
     var pages = numPages();
-    page = ((p % pages) + pages) % pages;
+    page = ((i % pages) + pages) % pages;
+    position = page * perPage();
     apply();
     if (manual) restart();
   }
 
+  // Always moves forward by one page's worth of tiles, sliding left every
+  // time - including the final step of a cycle, which lands on the cloned
+  // copy of page 0 (still a forward slide, never backward) and is then
+  // rewound to the real position 0 without a transition once it settles.
+  function next() {
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+    var pp = perPage();
+    var pages = numPages();
+    if (page < pages - 1) {
+      page += 1;
+      position = page * pp;
+      apply();
+    } else {
+      page = 0;
+      position = n;
+      apply();
+      resetTimer = setTimeout(function () {
+        position = 0;
+        apply(false);
+        track.getBoundingClientRect();
+        resetTimer = null;
+      }, 520);
+    }
+  }
+
   function restart() {
     if (timer) clearInterval(timer);
-    timer = setInterval(function () { goTo(page + 1); }, 5000);
+    timer = setInterval(next, 5000);
   }
 
   window.addEventListener('resize', function () {
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
     page = 0;
+    position = 0;
     renderDots();
-    apply();
+    apply(false);
   });
   if (carousel) {
     carousel.addEventListener('mouseenter', function () { if (timer) clearInterval(timer); });
@@ -225,7 +271,7 @@
   }
 
   renderDots();
-  apply();
+  apply(false);
   restart();
 })();
 </script>
