@@ -129,7 +129,7 @@
         (r.downloads != null ? '<span class="stat-item" title="PDF downloads">' + downloadIcon + ' ' + r.downloads + ' downloads</span>' : '') +
         '</span>';
     }
-    return '<li class="article-card">' +
+    return '<li class="article-card article-card-boxed">' +
       (r.section ? '<p class="article-section">' + escapeHtml(r.section) + '</p>' : '') +
       '<h4><a href="' + base + r.url + '">' + title + '</a></h4>' +
       (authors ? '<p class="article-authors">' + authors + '</p>' : '') +

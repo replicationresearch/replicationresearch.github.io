@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Our Network · {{ journal.name }}{% endblock %}
+{% block description %}The organizers, funders, and partner initiatives collaborating with {{ journal.name }}.{% endblock %}
+{% block content %}
+<div class="wrap page-body">
+  <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <span>Our Network</span></nav>
+  <h1 class="page-heading">Our Network</h1>
+
+  <p class="network-intro">Replication Research is collaborating with a large
+    network of international initiatives and organizations. Founded by the
+    Münster Center for Open Science and the Framework for Open and
+    Reproducible Research Training in 2025, it received funding from the
+    University of Münster and the Landesinitiative Open Access.NRW. Our
+    journal is hosted by the Hochschulbibliothekszentrum Cologne (HBZ) and we
+    receive service support from the Ejournals team at the University of
+    Münster.</p>
+
+  {% if network_blocks %}
+  <div class="network-grid">
+    {% for block in network_blocks %}
+    <section class="network-block">
+      <h2>{{ block.title }}</h2>
+      <div class="network-content">{{ block.html | safe }}</div>
+    </section>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

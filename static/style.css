@@ -4,6 +4,10 @@
   --accent: #009dd0;      /* sampled from the R2 logo's blue ink */
   --accent-dark: #00769c; /* hover/active state: same hue, darker */
   --accent-soft: #e6f5fa; /* same hue, light tint for backgrounds */
+  --accent-deep: #006080;      /* same hue, ~7:1 on white - default text/link color */
+  --accent-deep-dark: #004a63; /* hover/active state for accent-deep */
+  --highlight-soft: #e6edf5;   /* a cooler, grayer blue for the Under Review card,
+                                   kept visually distinct from --accent-soft */
   --ink: #1c2733;
   --ink-soft: #4a5866;
   --muted: #75828f;
@@ -28,8 +32,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 img { max-width: 100%; height: auto; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { color: var(--accent-dark); text-decoration: underline; }
+a { color: var(--accent-deep); text-decoration: none; }
+a:hover { color: var(--accent); text-decoration: underline; }
 h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink); }
 
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
@@ -92,7 +96,10 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   position: sticky; top: 0; z-index: 50; background: rgba(38, 45, 52, .97);
   backdrop-filter: blur(8px); border-bottom: 1px solid #1b2127;
 }
-.header-inner { display: flex; align-items: center; gap: 1.5rem; min-height: 72px; }
+/* Wider cap than the site's usual .wrap (1120px) - the header needs the
+   extra room so its nav items never wrap to a second row instead of
+   falling back to the hamburger menu below. */
+.header-inner { max-width: 1600px; display: flex; align-items: center; gap: 1.5rem; min-height: 72px; }
 .brand { flex-shrink: 0; font-family: var(--serif); font-size: 1.3rem; font-weight: 700; color: #fff; }
 .brand img { max-height: 46px; width: auto; display: block; }
 .site-nav { margin-left: auto; }
@@ -135,7 +142,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .dropdown a:not(.btn):hover { background: rgba(255, 255, 255, .12); }
 .dropdown a { white-space: nowrap; }
 .nav-toggle, .nav-toggle-label { display: none; }
-@media (min-width: 761px) {
+@media (min-width: 981px) {
   .dropdown { position: absolute; top: 100%; left: 0; }
 }
 
@@ -149,7 +156,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .hero-compact { padding: 3.4rem 0 3rem; }
 .hero-kicker {
   text-transform: uppercase; letter-spacing: .14em; font-size: .78rem;
-  font-weight: 700; color: var(--accent); margin: 0 0 .8rem;
+  font-weight: 700; color: var(--accent-deep); margin: 0 0 .8rem;
 }
 .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0 0 1rem; }
 
@@ -202,8 +209,13 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .split-item:not(:first-child) { border-left: 1.5px solid var(--accent); }
 .split-item:hover { background: var(--accent-soft); color: var(--accent-dark); }
-.split-primary { background: var(--accent); color: #fff; }
-.split-primary:hover { background: var(--accent-dark); color: #fff; }
+/* Submit manuscript: the primary action, in the darker high-contrast blue. */
+.split-primary { background: var(--accent-deep); color: #fff; }
+.split-primary:hover { background: var(--accent-deep-dark); color: #fff; }
+/* Pre-submission inquiry: a secondary action, filled with the brighter R2
+   blue so it's still visually a step down from Submit. */
+.split-secondary { background: var(--accent); color: #fff; }
+.split-secondary:hover { background: var(--accent-dark); color: #fff; }
 .hero-tagline {
   max-width: 46rem; margin: 0 auto 1.8rem; color: var(--ink-soft);
   font-size: 1.12rem;
@@ -219,7 +231,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 /* Issue feature (home) */
 .issue-feature {
-  display: grid; grid-template-columns: 180px 1fr; gap: 2rem; align-items: start;
+  display: grid; grid-template-columns: 110px 1fr; gap: 1.6rem; align-items: start;
   margin-bottom: 2.4rem; padding-bottom: 2.4rem; border-bottom: 1px solid var(--rule);
 }
 .issue-feature:last-child:not(.issue-feature-highlight) {
@@ -232,25 +244,35 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 /* Subtle callout treatment for the "Under Review" card - it's live,
    editable content rather than a fixed published issue, so it earns a
-   little visual distinction without being loud about it. */
+   little visual distinction without being loud about it. A cooler, grayer
+   blue than --accent-soft so it doesn't blend with the accent-soft tint
+   used elsewhere (hover states etc). */
 .issue-feature-highlight {
-  background: var(--accent-soft); border-radius: var(--radius);
+  background: var(--highlight-soft); border-radius: var(--radius);
   padding: 1.8rem 2rem; margin-bottom: 0; border-bottom: none;
 }
 .issue-feature-highlight .issue-cover img { box-shadow: none; border: 1px solid var(--rule); }
 
-/* Article cards */
+/* Article cards: plain, divider-only by default (home/issues/issue pages -
+   a boxed card per article read as too "boxes-within-boxes" alongside the
+   issue-feature sections they already sit inside). The dedicated Articles
+   browsing page opts back into a fully boxed card via .article-card-boxed,
+   where a bordered result row reads better. */
 .article-list { list-style: none; margin: 0; padding: 0; }
 .article-card {
+  padding: 0 0 1.1rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--rule);
+}
+.article-list li.article-card:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+.article-card-boxed {
   background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
   padding: 1.1rem 1.3rem; margin-bottom: .9rem; transition: box-shadow .15s ease;
 }
-.article-card:hover { box-shadow: var(--shadow); }
+.article-card-boxed:hover { box-shadow: var(--shadow); }
 .article-card h3, .article-card h4 { margin: .1rem 0 .35rem; font-size: 1.18rem; }
 .article-card .subtitle { font-weight: 400; color: var(--ink-soft); }
 .article-section {
   text-transform: uppercase; letter-spacing: .1em; font-size: .72rem;
-  font-weight: 700; color: var(--accent); margin: 0 0 .2rem;
+  font-weight: 700; color: var(--accent-deep); margin: 0 0 .2rem;
 }
 .article-authors { color: var(--ink-soft); font-size: .92rem; margin: 0 0 .5rem; }
 .article-excerpt { color: var(--ink-soft); font-size: .93rem; margin: 0 0 .6rem; }
@@ -309,7 +331,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .issue-cover-lg { max-width: 165px; }
 .toc-section-title {
   font-size: 1rem; text-transform: uppercase; letter-spacing: .12em;
-  color: var(--accent); border-bottom: 2px solid var(--accent-soft);
+  color: var(--accent-deep); border-bottom: 2px solid var(--accent-soft);
   padding-bottom: .4rem; margin: 2rem 0 1rem;
 }
 
@@ -349,6 +371,21 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .fulltext-equation { text-align: center; }
 .fulltext-equation img { max-width: 100%; height: auto; }
+
+/* In-text citations, hoverable to show the matching full reference (from
+   OJS's own reference list, not the PDF's copy of it). */
+.cite-ref { position: relative; border-bottom: 1px dotted var(--accent-deep); cursor: help; }
+.cite-tooltip {
+  position: absolute; left: 0; bottom: 100%; margin-bottom: 6px;
+  width: max-content; max-width: 320px; background: var(--ink); color: #fff;
+  font-size: .82rem; line-height: 1.45; padding: .6rem .8rem;
+  border-radius: 8px; box-shadow: var(--shadow); z-index: 20;
+  opacity: 0; visibility: hidden; transform: translateY(4px); pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.cite-ref:hover .cite-tooltip, .cite-ref:focus .cite-tooltip {
+  opacity: 1; visibility: visible; transform: translateY(0);
+}
 
 /* Article view tabs: PDF (default) + experimental HTML full text */
 .article-views { margin-top: 2.2rem; }
@@ -452,6 +489,34 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .resource-card:hover { box-shadow: var(--shadow); }
 .resource-card h3 { font-size: 1.02rem; margin: 0 0 .35rem; color: var(--accent-dark); }
 .resource-card p { font-size: .88rem; color: var(--ink-soft); margin: 0; }
+
+/* Long guide content (Submissions page only): a sticky table of contents
+   plus collapsible sections, so the page is scannable instead of one long
+   wall of text. */
+.guide-layout { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: start; margin-top: 2rem; }
+.guide-toc { position: sticky; top: 90px; }
+.guide-toc h2 { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .7rem; }
+.guide-toc ul { list-style: none; margin: 0; padding: 0; }
+.guide-toc li { margin-bottom: .55rem; }
+.guide-toc a { font-size: .88rem; color: var(--ink-soft); }
+.guide-toc a:hover { color: var(--accent-deep); }
+.guide-section { border-bottom: 1px solid var(--rule); padding: 1.3rem 0; }
+.guide-section:first-child { padding-top: 0; }
+.guide-section:last-child { border-bottom: none; }
+.guide-section summary { cursor: pointer; list-style: none; }
+.guide-section summary::-webkit-details-marker { display: none; }
+.guide-section summary h2 { display: inline; font-size: 1.25rem; }
+.guide-section summary::after { content: " ▸"; color: var(--accent); font-size: 1.2em; }
+.guide-section[open] summary::after { content: " ▾"; }
+.guide-section-body { margin-top: .9rem; }
+@media (max-width: 860px) {
+  .guide-layout { grid-template-columns: 1fr; }
+  .guide-toc {
+    position: static; border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 1rem 1.3rem; margin-bottom: 1.6rem;
+  }
+}
+
 .submission-charts {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2rem; margin-top: 1.2rem; padding-top: 2rem; border-top: 1px solid var(--rule);
@@ -528,7 +593,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .team-section { margin-bottom: 2.6rem; }
 .team-section-title {
   font-size: 1rem; text-transform: uppercase; letter-spacing: .12em;
-  color: var(--accent); border-bottom: 2px solid var(--accent-soft);
+  color: var(--accent-deep); border-bottom: 2px solid var(--accent-soft);
   padding-bottom: .4rem; margin: 2rem 0 1.2rem;
 }
 .team-grid {
@@ -606,13 +671,17 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 .home-about h2 { font-size: 1.35rem; }
 
+/* Our Network page (organizers/funders/partners/preprint-review, moved
+   here from the footer) */
+.network-intro { max-width: 860px; font-size: 1.05rem; color: var(--ink-soft); margin: 0 0 2.4rem; }
+.network-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2.2rem; }
+.network-block h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 1rem; }
+.network-content img { max-width: 220px; height: auto; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid var(--rule); margin: 0 .6rem .8rem 0; }
+.network-content p { margin: 0 0 .6rem; }
+
 /* Footer */
 .site-footer { background: #262d34; color: #c6d2dd; margin-top: 3rem; padding: 3rem 0 2rem; }
 .site-footer a { color: #9ec8e8; }
-.footer-partners { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.6rem; margin-bottom: 2.2rem; }
-.partner-block h2 { font-family: var(--sans); font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; color: #8ba2b5; margin: 0 0 .7rem; }
-.partner-content img { max-width: 150px; height: auto; background: #fff; border-radius: 6px; padding: 6px; margin: 0 .4rem .5rem 0; }
-.partner-content p { margin: 0 0 .5rem; font-size: .85rem; }
 .footer-connect {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.6rem; border-top: 1px solid #35485c; padding-top: 1.8rem; margin-bottom: 1.8rem;
@@ -649,14 +718,20 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   .article-views { order: 4; min-width: 0; }
   .article-references { order: 5; }
   .issue-feature, .issue-header { grid-template-columns: 1fr; }
-  .issue-cover img, .issue-cover-lg { max-width: 160px; }
+  .issue-cover img { max-width: 130px; }
+  .issue-cover-lg { max-width: 160px; }
   /* The category dropdown panel is absolutely positioned under its summary
      on desktop; on a narrow screen the summary can sit anywhere in the
      wrapped filter row, so a fixed-width absolute panel can overflow the
      viewport - let it flow inline at full width instead. */
   .category-panel { position: static; width: 100%; margin-top: .5rem; }
 }
-@media (max-width: 760px) {
+/* Nav collapses to the hamburger menu well before the header actually runs
+   out of room (980px, vs. the more typical ~760px "mobile" breakpoint used
+   below for hero/pdf sizing) - a partial wrap, e.g. just the Login link
+   dropping to its own row, reads far worse than switching to the menu a
+   bit earlier than strictly necessary. */
+@media (max-width: 980px) {
   .header-inner { flex-wrap: wrap; padding-top: .6rem; padding-bottom: .6rem; }
   .nav-toggle-label {
     display: block; margin-left: auto; cursor: pointer; padding: .6rem;
@@ -676,6 +751,8 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   .dropdown { border: none; box-shadow: none; padding-left: 1rem; }
   .nav-toggle-label { padding: .8rem; }
   .nav-cta { margin: .6rem 0 0; }
+}
+@media (max-width: 760px) {
   .hero { padding: 3rem 0 2.6rem; }
   .hero-compact { padding: 2.4rem 0 2.2rem; }
   .hero-logo-sm { max-width: 280px; }

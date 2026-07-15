@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ page.title }} · {{ journal.name }}{% endblock %}
 {% block content %}
-<div class="wrap page-body page-narrow">
+<div class="wrap page-body">
   <nav class="breadcrumbs"><a href="{{ base }}">Home</a> / <span>{{ page.title }}</span></nav>
   <h1 class="page-heading">{{ page.title }}</h1>
 
@@ -17,7 +17,19 @@
     </div>
   </section>
 
-  <div class="prose">{{ page.html | safe }}</div>
+  <div class="guide-layout">
+    {% if guide_toc %}
+    <nav class="guide-toc" aria-label="Table of contents">
+      <h2>On this page</h2>
+      <ul>
+        {% for anchor, text in guide_toc %}
+        <li><a href="#{{ anchor }}">{{ text }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    {% endif %}
+    <div class="prose guide-content">{{ guide_html | safe }}</div>
+  </div>
 
   {% if submissions %}
   <section class="submission-charts">
@@ -37,4 +49,22 @@
   </section>
   {% endif %}
 </div>
+<script>
+// Sections start collapsed; opening one via the TOC or a direct link to its
+// #anchor should still work, so expand the target <details> in both cases.
+(function () {
+  function openTarget() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    var el = document.getElementById(id);
+    var details = el && el.closest('details.guide-section');
+    if (details) details.open = true;
+  }
+  openTarget();
+  window.addEventListener('hashchange', openTarget);
+  document.querySelectorAll('.guide-toc a').forEach(function (a) {
+    a.addEventListener('click', function () { setTimeout(openTarget, 0); });
+  });
+})();
+</script>
 {% endblock %}

@@ -8,12 +8,15 @@ instead. The __BASE__ placeholder in harvested HTML is replaced with it.
 """
 
 import datetime
+import html
 import json
 import os
+import re
 import shutil
 import sys
 import urllib.parse
 
+from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -139,6 +142,83 @@ def sort_issues_newest_first(issues, articles_by_path):
             section["articles"] = sorted(section["articles"],
                                           key=article_date, reverse=True)
     return issues
+
+
+SURNAME_RE = re.compile(
+    r"([A-ZÀ-Þ][\w'’.\-]*(?:\s[A-ZÀ-Þ][\w'’\-]*)?)"
+    r"\s*,\s*[A-ZÀ-Þ]\.")
+
+
+def _reference_entries(references_html):
+    """[(plain_text, surnames[], "YYYY[x]"), ...] parsed from the OJS-scraped
+    reference list - one <p> per reference, APA-style "Surname, F., &
+    Surname2, G. (YYYY[x]). Title...". Entries whose leading author/year
+    can't be parsed are skipped (never shown as a tooltip is safer than a
+    wrong one).
+    """
+    soup = BeautifulSoup(references_html or "", "html.parser")
+    entries = []
+    for p in soup.find_all("p"):
+        text = re.sub(r"\s+", " ", p.get_text(" ", strip=True)).strip()
+        m = re.match(r"^(.*?)\((\d{4}[a-z]?)\)", text)
+        if not m:
+            continue
+        author_segment, year = m.group(1), m.group(2)
+        surnames = SURNAME_RE.findall(author_segment)
+        if not surnames:
+            m2 = re.match(r"^([A-ZÀ-Þ][\w'’\-]+)", author_segment.strip())
+            if m2:
+                surnames = [m2.group(1)]
+        if surnames:
+            entries.append((text, surnames, year))
+    return entries
+
+
+def link_citations(fulltext_html, references_html):
+    """Wrap in-text citations like "Dreber &amp; Johannesson (2025a)" with a
+    hoverable tooltip showing the matching full reference - from OJS's
+    reference list (the authoritative source both in the sidebar and here;
+    full-text extraction already skips the PDF's own copy of it), not the
+    PDF's own in-text formatting.
+    """
+    entries = _reference_entries(references_html)
+    if not entries:
+        return fulltext_html
+
+    lookup = {}
+    for full_text, surnames, year in entries:
+        if len(surnames) == 1:
+            who = surnames[0]
+        elif len(surnames) == 2:
+            who = "%s & %s" % (surnames[0], surnames[1])
+        else:
+            who = "%s et al." % surnames[0]
+        who_amp = who.replace("&", "&amp;")
+        full = html.escape(full_text)
+        # Every surface form the citation might take in-text: narrative
+        # "(YYYY)", and the two parenthetical spacings seen in practice -
+        # some journals put a comma before the year, some don't (the latter
+        # also covers multi-citation groups like "(A 2020; B et al. 2021)",
+        # since each piece is matched on its own without the shared parens).
+        for surface in ("%s (%s)" % (who_amp, year),
+                        "%s, %s" % (who_amp, year),
+                        "%s %s" % (who_amp, year)):
+            lookup.setdefault(surface, full)
+
+    if not lookup:
+        return fulltext_html
+    # Longest surface text first, so a 3-author "et al." form can't be
+    # pre-empted by a shorter, coincidentally-overlapping match.
+    surfaces = sorted(lookup, key=len, reverse=True)
+    pattern = re.compile("(" + "|".join(re.escape(s) for s in surfaces) + ")")
+
+    def repl(m):
+        surface = m.group(1)
+        return ('<span class="cite-ref" tabindex="0">%s'
+                '<span class="cite-tooltip">%s</span></span>'
+                % (surface, lookup[surface]))
+
+    return pattern.sub(repl, fulltext_html)
 
 
 def build_articles_index(articles):
@@ -270,7 +350,10 @@ def main():
             if os.path.exists(pdf_path):
                 prefix = BASE + "assets/fulltext/" + a["urlPath"] + "-"
                 result = extract_fulltext(pdf_path, prefix)
-                a["fullTextHtml"] = result["html"]
+                full_html = result["html"]
+                if full_html and a.get("referencesHtml"):
+                    full_html = link_citations(full_html, a["referencesHtml"])
+                a["fullTextHtml"] = full_html
                 for name, png in result["figures"]:
                     fulltext_figures.append(
                         (a["urlPath"] + "-" + name, png))
@@ -319,6 +402,11 @@ def main():
            articles_json=json.dumps(articles_index, ensure_ascii=False)
                              .replace("</", "<\\/"))
 
+    network_blocks = [b for b in journal.get("sidebarBlocks") or []
+                       if not b.get("titleHidden")]
+    render("network.html", os.path.join("network", "index.html"),
+           network_blocks=network_blocks)
+
     render("issues.html", os.path.join("issues", "index.html"),
            articles_by_path=articles_by_path)
     for issue in issues:
@@ -352,9 +440,11 @@ def main():
         if page["slug"] == "about/editorialTeam" and team.get("sections"):
             render("team.html", out, page=page, team=team)
         elif page["slug"] == "about/submissions":
+            guide_html, guide_toc = sectionize_guide(page["html"])
             render("submissions.html", out, page=page,
                    resources=SUBMISSION_RESOURCES,
-                   submissions=submissions_charts)
+                   submissions=submissions_charts,
+                   guide_html=guide_html, guide_toc=guide_toc)
         elif page["slug"] == "reviewer-guidelines":
             render("page.html", out, page=page,
                    resources=REVIEWER_RESOURCES,
@@ -522,10 +612,51 @@ def team_with_photos(team):
 
 def excerpt(html, length=220):
     """Plain-text preview of an HTML fragment."""
-    import re
     text = re.sub(r"<[^>]+>", " ", html or "")
     text = re.sub(r"\s+", " ", text).replace("&nbsp;", " ").strip()
     return text[:length].rsplit(" ", 1)[0] + "…" if len(text) > length else text
+
+
+def sectionize_guide(page_html):
+    """Wrap each top-level <h2> and the content up to the next one in a
+    collapsible <details>, and build a matching table of contents - used
+    for the long Submissions/guidelines page only, so its many sections can
+    be hidden/expanded individually instead of one long wall of text.
+    """
+    soup = BeautifulSoup(page_html, "html.parser")
+    headings = soup.find_all("h2")
+    if not headings:
+        return page_html, []
+
+    toc = []
+    seen_ids = set()
+    for i, h2 in enumerate(headings):
+        text = h2.get_text(" ", strip=True)
+        slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "section-%d" % i
+        unique, n = slug, 2
+        while unique in seen_ids:
+            unique = "%s-%d" % (slug, n)
+            n += 1
+        seen_ids.add(unique)
+        h2["id"] = unique
+        toc.append((unique, text))
+
+        details = soup.new_tag("details", **{"class": "guide-section"})
+        summary = soup.new_tag("summary")
+        body = soup.new_tag("div", **{"class": "guide-section-body"})
+        h2.insert_before(details)
+        summary.append(h2.extract())
+        details.append(summary)
+        details.append(body)
+
+        next_h2 = headings[i + 1] if i + 1 < len(headings) else None
+        node = details.next_sibling
+        while node is not None and node is not next_h2:
+            following = node.next_sibling
+            body.append(node.extract())
+            node = following
+
+    return str(soup), toc
 
 
 def build_nav(nav_items, pages):
@@ -542,6 +673,8 @@ def build_nav(nav_items, pages):
             return BASE
         if path in ("issues", "issue/archive", "issue/current"):
             return BASE + "issues/"
+        if path == "network":  # synthetic page, not scraped from OJS
+            return BASE + "network/"
         if path in page_slugs:
             return BASE + path + "/"
         return None
@@ -550,7 +683,7 @@ def build_nav(nav_items, pages):
     groups = {
         "about": {"label": "About", "children": [
             "about", "about/editorialTeam", "mentorshipprogram",
-            "constitution",
+            "constitution", "network",
         ]},
     }
     used = set()
@@ -559,7 +692,7 @@ def build_nav(nav_items, pages):
 
     # OJS's own nav labels, overridden for the mirror only - the URL/slug
     # stays whatever OJS uses (editorialTeam/) so links keep working.
-    label_overrides = {"about/editorialTeam": "Who we are"}
+    label_overrides = {"about/editorialTeam": "Who we are", "network": "Our Network"}
 
     nav = []
     about_children = []

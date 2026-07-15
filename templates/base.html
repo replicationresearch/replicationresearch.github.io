@@ -48,17 +48,6 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    {% set visible_blocks = journal.sidebarBlocks | selectattr("titleHidden", "equalto", false) | list %}
-    {% if visible_blocks %}
-    <div class="footer-partners">
-      {% for block in visible_blocks %}
-      <section class="partner-block">
-        <h2>{{ block.title }}</h2>
-        <div class="partner-content">{{ block.html | safe }}</div>
-      </section>
-      {% endfor %}
-    </div>
-    {% endif %}
     <div class="footer-connect">
       <section class="connect-block">
         <h2>Get involved</h2>
