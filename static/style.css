@@ -1,5 +1,26 @@
 /* Replication Research (R2) mirror — clean modern academic theme */
 
+/* Self-hosted so headings/body render identically for every visitor,
+   instead of falling back to whatever serif/sans a visitor's OS happens to
+   ship (previously Sitka Text on Windows, Georgia on macOS, Liberation
+   Serif on Linux - three different typefaces for the same heading). Both
+   are variable-weight files (Adobe, SIL OFL) covering the full 200-900
+   range from one download each. */
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("fonts/SourceSans3-variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("fonts/SourceSerif4-variable.woff2") format("woff2");
+}
+
 :root {
   --accent: #009dd0;      /* sampled from the R2 logo's blue ink */
   --accent-dark: #00769c; /* hover/active state: same hue, darker */
@@ -14,8 +35,8 @@
   --rule: #e3e8ed;
   --bg: #ffffff;
   --bg-alt: #f6f8fa;
-  --serif: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: "Source Serif 4", "Charter", Cambria, Georgia, serif;
+  --sans: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --shadow: 0 1px 2px rgba(28, 39, 51, .06), 0 4px 16px rgba(28, 39, 51, .07);
   --radius: 10px;
 }
@@ -287,9 +308,19 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .news-card h3 { font-size: 1.1rem; margin: .2rem 0 .5rem; }
 .news-card p { font-size: .92rem; color: var(--ink-soft); margin: 0; }
 
-/* Further-projects tiles */
-.project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.3rem; }
+/* Further-projects tiles: an auto-advancing carousel that always shows
+   --carousel-per-page tiles at once (3 on desktop, fewer as the viewport
+   narrows), plus manual page dots below. See the inline script in
+   home.html for the pagination logic this variable drives. */
+:root { --carousel-per-page: 3; }
+@media (max-width: 900px) { :root { --carousel-per-page: 2; } }
+@media (max-width: 600px) { :root { --carousel-per-page: 1; } }
+
+.project-carousel { overflow: hidden; }
+.project-carousel-track { display: flex; gap: 1.3rem; transition: transform .5s ease; }
 .project-tile {
+  flex: 0 0 calc((100% - (var(--carousel-per-page) - 1) * 1.3rem) / var(--carousel-per-page));
+  min-width: 0;
   display: flex; flex-direction: column; background: #fff; border: 1px solid var(--rule);
   border-radius: var(--radius); overflow: hidden; color: var(--ink); text-decoration: none !important;
   transition: box-shadow .15s ease, transform .15s ease;
@@ -303,6 +334,14 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .project-tile-body { padding: 1rem 1.2rem 1.3rem; }
 .project-tile-title { display: block; font-family: var(--serif); font-size: 1.05rem; font-weight: 700; margin-bottom: .35rem; }
 .project-tile-blurb { display: block; font-size: .87rem; color: var(--ink-soft); }
+
+.carousel-dots { display: flex; justify-content: center; gap: .55rem; margin-top: 1.4rem; }
+.carousel-dot {
+  width: 9px; height: 9px; padding: 0; border: none; border-radius: 50%;
+  background: var(--rule); cursor: pointer; transition: background .15s ease;
+}
+.carousel-dot:hover { background: var(--accent-soft); }
+.carousel-dot.is-active { background: var(--accent); }
 
 /* Generic page */
 /* padding-top/-bottom only (not the shorthand): this class always sits on
@@ -374,7 +413,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 
 /* In-text citations, hoverable to show the matching full reference (from
    OJS's own reference list, not the PDF's copy of it). */
-.cite-ref { position: relative; border-bottom: 1px dotted var(--accent-deep); cursor: help; }
+.cite-ref { position: relative; color: var(--accent-deep); border-bottom: 1px solid var(--accent-soft); cursor: help; }
 .cite-tooltip {
   position: absolute; left: 0; bottom: 100%; margin-bottom: 6px;
   width: max-content; max-width: 320px; background: var(--ink); color: #fff;
@@ -384,8 +423,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   transition: opacity .15s ease, transform .15s ease;
 }
 .cite-ref:hover .cite-tooltip, .cite-ref:focus .cite-tooltip {
-  opacity: 1; visibility: visible; transform: translateY(0);
+  opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto;
 }
+.cite-tooltip a { color: #9ec8e8; text-decoration: underline; }
 
 /* Article view tabs: PDF (default) + experimental HTML full text */
 .article-views { margin-top: 2.2rem; }
@@ -453,9 +493,10 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .detail-list dt { font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: .6rem; }
 .detail-list dd { margin: 0; font-size: .93rem; overflow-wrap: anywhere; }
 .citation-text { font-size: .88rem; color: var(--ink-soft); }
-.cite-box { position: relative; }
+.cite-box-head { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; margin-bottom: .6rem; }
+.cite-box-head h2 { margin: 0; }
 .copy-btn {
-  position: absolute; top: .95rem; right: 1.1rem;
+  flex-shrink: 0;
   font: 600 .7rem var(--sans); color: var(--muted);
   background: #fff; border: 1px solid var(--rule); border-radius: 6px;
   padding: .15rem .5rem; cursor: pointer; transition: all .15s ease;
@@ -540,10 +581,6 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .articles-search:focus { outline: none; border-color: var(--accent); }
 .articles-filter-row { display: flex; flex-wrap: wrap; gap: 1.2rem 1.8rem; align-items: flex-start; }
 .articles-filter { display: flex; flex-direction: column; gap: .35rem; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.articles-filter select {
-  font: 600 .92rem var(--sans); color: var(--ink); text-transform: none; letter-spacing: normal;
-  padding: .45rem .7rem; border: 1.5px solid var(--rule); border-radius: 8px; background: #fff;
-}
 
 .articles-categories { position: relative; }
 .articles-categories summary {
@@ -552,8 +589,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .articles-categories summary::-webkit-details-marker { display: none; }
 .articles-categories-summary { font: 600 .92rem var(--sans); color: var(--ink); text-transform: none; letter-spacing: normal; }
-.articles-categories summary::after { content: " ▾"; color: var(--accent); }
-.articles-categories[open] summary::after { content: " ▴"; }
+/* Arrow sits inline after the value ("(all)") rather than dropping onto its
+   own line below it — the summary is a flex column, so a summary::after
+   would become an orphaned third row. */
+.articles-categories-summary::after { content: " ▾"; color: var(--accent); }
+.articles-categories[open] .articles-categories-summary::after { content: " ▴"; }
 .category-panel {
   position: absolute; top: calc(100% + .4rem); left: 0; z-index: 5; width: 260px;
   background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
@@ -628,6 +668,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .team-intro { margin-bottom: 3rem; padding-bottom: 2.2rem; border-bottom: 1px solid var(--rule); }
 .team-intro .page-heading { margin-bottom: 1rem; }
 .team-intro .team-section-title { margin-top: 1.8rem; }
+/* Comfortable reading measure for the intro copy; the section-title rules
+   above stay full width so their underlines still span the column. */
+.team-intro .prose { max-width: 800px; }
 
 /* Media coverage */
 .team-media { margin-top: 3rem; padding-top: .5rem; }
@@ -669,6 +712,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .prose hr { border: none; border-top: 1px solid var(--rule); margin: 1.6rem 0; }
 .prose blockquote { border-left: 3px solid var(--accent-soft); margin: 1rem 0; padding: .2rem 0 .2rem 1rem; color: var(--ink-soft); }
 
+/* Keep body copy at a readable measure, matching the article/page columns,
+   rather than letting it run the full 1120px content width. */
+.home-about { max-width: 800px; }
 .home-about h2 { font-size: 1.35rem; }
 
 /* Our Network page (organizers/funders/partners/preprint-review, moved
@@ -691,7 +737,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .connect-list li { margin-bottom: .45rem; font-size: .92rem; }
 .connect-list a { display: inline-flex; align-items: center; gap: .5rem; }
 .social-icon { width: 16px; height: 16px; flex-shrink: 0; }
-.ojs-badge { display: flex; align-items: flex-start; justify-content: flex-end; }
+.footer-credits { display: flex; flex-direction: column; align-items: flex-end; gap: .7rem; }
+.hosted-by img { max-height: 70px; width: auto; background: #fff; border-radius: 6px; padding: 6px; }
+.ojs-badge { display: block; }
 .ojs-badge img { background: #fff; border-radius: 6px; padding: 8px; }
 .footer-meta { border-top: 1px solid #35485c; padding-top: 1.4rem; font-size: .85rem; }
 .footer-links img { max-height: 70px; width: auto; background: #fff; border-radius: 6px; padding: 5px; }

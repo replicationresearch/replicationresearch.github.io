@@ -10,15 +10,20 @@
            placeholder="Search by title or author…" aria-label="Search articles by title or author">
 
     <div class="articles-filter-row">
-      <label class="articles-filter">
-        <span>Section</span>
-        <select id="articles-section">
-          <option value="">All sections</option>
-          {% for s in articles_index.sections %}
-          <option value="{{ s }}">{{ s }}</option>
-          {% endfor %}
-        </select>
-      </label>
+      <details class="articles-categories">
+        <summary>Section <span class="articles-categories-summary" id="articles-section-summary"></span></summary>
+        <div class="category-panel">
+          <div class="category-actions">
+            <button type="button" data-select="all">Select all</button>
+            <button type="button" data-select="none">Select none</button>
+          </div>
+          <div class="category-list" id="articles-section-list">
+            {% for s in articles_index.sections %}
+            <label><input type="checkbox" value="{{ s }}" checked> {{ s }}</label>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
 
       <details class="articles-categories">
         <summary>Categories <span class="articles-categories-summary" id="articles-categories-summary"></span></summary>
@@ -59,9 +64,6 @@
   var records = data.records;
 
   var searchInput = document.getElementById('articles-search');
-  var sectionSelect = document.getElementById('articles-section');
-  var categoryList = document.getElementById('articles-category-list');
-  var categorySummary = document.getElementById('articles-categories-summary');
   var yearMin = document.getElementById('year-range-min');
   var yearMax = document.getElementById('year-range-max');
   var yearLabel = document.getElementById('articles-year-label');
@@ -70,15 +72,34 @@
   var count = document.getElementById('articles-count');
   var empty = document.getElementById('articles-empty');
 
-  function selectedCategories() {
-    return Array.from(categoryList.querySelectorAll('input:checked')).map(function (c) { return c.value; });
+  // Both the Section and Categories filters are "check all that apply"
+  // checkbox panels with identical markup/behavior - one small helper
+  // instead of duplicating the selected()/summary()/select-all logic twice.
+  function checkboxFilter(listId, summaryId) {
+    var list = document.getElementById(listId);
+    var summary = document.getElementById(summaryId);
+    function selected() {
+      return Array.from(list.querySelectorAll('input:checked')).map(function (c) { return c.value; });
+    }
+    function updateSummary() {
+      var total = list.querySelectorAll('input').length;
+      var checked = selected().length;
+      summary.textContent = checked === total ? '(all)' : '(' + checked + '/' + total + ')';
+    }
+    list.addEventListener('change', function () { updateSummary(); render(); });
+    list.parentElement.querySelector('.category-actions').addEventListener('click', function (e) {
+      var action = e.target.getAttribute('data-select');
+      if (!action) return;
+      list.querySelectorAll('input').forEach(function (c) { c.checked = action === 'all'; });
+      updateSummary();
+      render();
+    });
+    updateSummary();
+    return { selected: selected, all: function () { return list.querySelectorAll('input').length; } };
   }
 
-  function updateCategorySummary() {
-    var total = categoryList.querySelectorAll('input').length;
-    var checked = selectedCategories().length;
-    categorySummary.textContent = checked === total ? '(all)' : '(' + checked + '/' + total + ')';
-  }
+  var sectionFilter = checkboxFilter('articles-section-list', 'articles-section-summary');
+  var categoryFilter = checkboxFilter('articles-category-list', 'articles-categories-summary');
 
   function updateYearUI() {
     var lo = parseInt(yearMin.value, 10), hi = parseInt(yearMax.value, 10);
@@ -93,14 +114,15 @@
 
   function render() {
     var q = searchInput.value.trim().toLowerCase();
-    var section = sectionSelect.value;
-    var cats = selectedCategories();
-    var allCatsSelected = cats.length === categoryList.querySelectorAll('input').length;
+    var sections = sectionFilter.selected();
+    var allSectionsSelected = sections.length === sectionFilter.all();
+    var cats = categoryFilter.selected();
+    var allCatsSelected = cats.length === categoryFilter.all();
     var lo = Math.min(parseInt(yearMin.value, 10), parseInt(yearMax.value, 10));
     var hi = Math.max(parseInt(yearMin.value, 10), parseInt(yearMax.value, 10));
 
     var filtered = records.filter(function (r) {
-      if (section && r.section !== section) return false;
+      if (!allSectionsSelected && sections.indexOf(r.section) === -1) return false;
       if (r.year != null && (r.year < lo || r.year > hi)) return false;
       if (!allCatsSelected) {
         var hasMatch = r.categories.length === 0 ||
@@ -149,20 +171,10 @@
   var downloadIcon = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>';
 
   searchInput.addEventListener('input', render);
-  sectionSelect.addEventListener('change', render);
-  categoryList.addEventListener('change', function () { updateCategorySummary(); render(); });
-  categoryList.parentElement.querySelector('.category-actions').addEventListener('click', function (e) {
-    var action = e.target.getAttribute('data-select');
-    if (!action) return;
-    categoryList.querySelectorAll('input').forEach(function (c) { c.checked = action === 'all'; });
-    updateCategorySummary();
-    render();
-  });
   [yearMin, yearMax].forEach(function (el) {
     el.addEventListener('input', function () { updateYearUI(); render(); });
   });
 
-  updateCategorySummary();
   updateYearUI();
   render();
 })();

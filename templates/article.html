@@ -131,9 +131,11 @@
 
           {% if article.citation %}
           <div class="aside-section cite-box">
-            <h2>How to cite</h2>
-            <button class="copy-btn" type="button" aria-label="Copy citation to clipboard">Copy</button>
-            <p class="citation-text">{{ article.citation }}</p>
+            <div class="cite-box-head">
+              <h2>How to cite</h2>
+              <button class="copy-btn" type="button" aria-label="Copy citation to clipboard">Copy</button>
+            </div>
+            <p class="citation-text">{{ article.citationHtml | safe if article.citationHtml else article.citation }}</p>
             <p class="citation-links">
               {% if article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
               {% if article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
@@ -212,7 +214,7 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
-    var text = btn.parentElement.querySelector('.citation-text').textContent.trim();
+    var text = btn.closest('.cite-box').querySelector('.citation-text').textContent.trim();
     function done() {
       btn.textContent = 'Copied ✓';
       setTimeout(function () { btn.textContent = 'Copy'; }, 1500);

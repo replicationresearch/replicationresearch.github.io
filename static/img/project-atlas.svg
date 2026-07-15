@@ -1,0 +1,10 @@
+<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FLoRA Replication Atlas">
+  <rect width="400" height="260" fill="#f3f4f4"/>
+  <text x="200" y="52" text-anchor="middle" font-family="Georgia, 'Domine', serif" font-size="15" font-weight="700" fill="#853957" letter-spacing="1">FLoRA · REPLICATION ATLAS</text>
+  <text x="200" y="110" text-anchor="middle" font-family="Georgia, 'Domine', serif" font-size="26" font-weight="700" fill="#853957">Has this study</text>
+  <text x="200" y="142" text-anchor="middle" font-family="Georgia, 'Domine', serif" font-size="26" font-weight="700" fill="#853957">been replicated?</text>
+  <rect x="70" y="176" width="260" height="40" rx="20" fill="#ffffff" stroke="#d8d3d5" stroke-width="1.5"/>
+  <circle cx="94" cy="196" r="7" fill="none" stroke="#853957" stroke-width="2"/>
+  <line x1="99" y1="201" x2="105" y2="207" stroke="#853957" stroke-width="2" stroke-linecap="round"/>
+  <text x="118" y="201" font-family="'Source Sans 3', Arial, sans-serif" font-size="13" fill="#8a8a8a">Search by title, author, or DOI…</text>
+</svg>

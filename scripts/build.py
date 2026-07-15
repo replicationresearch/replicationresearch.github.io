@@ -16,7 +16,7 @@ import shutil
 import sys
 import urllib.parse
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -81,6 +81,34 @@ FURTHER_PROJECTS = [
         "url": "https://forrt.org/replication-hub/",
         "blurb": "Track, explore, disseminate, and conduct replications "
                  "in one place.",
+    },
+    {
+        "title": "Zotero Replication Checker",
+        "img": "project-zotero.png",
+        "url": "https://forrt.org/flora-zotero/",
+        "blurb": "A Zotero plugin that flags whether a reference in your "
+                 "library has been replicated.",
+    },
+    {
+        "title": "Love Replications Week",
+        "img": "project-love-week.png",
+        "url": "https://forrt.org/love-replications-week/",
+        "blurb": "An annual celebration of replication research, with "
+                 "events and showcases across the community.",
+    },
+    {
+        "title": "Guess the Replication",
+        "img": "project-guess.png",
+        "url": "https://lukasroeseler.github.io/GuessTheReplication/",
+        "blurb": "A quiz game that tests your intuitions about which "
+                 "studies replicate.",
+    },
+    {
+        "title": "Replication Atlas",
+        "img": "project-atlas.svg",
+        "url": "https://forrt.org/flora-replication-atlas/",
+        "blurb": "Search any study to see whether it has been replicated, "
+                 "powered by FORRT's FLoRA database.",
     },
 ]
 
@@ -149,12 +177,30 @@ SURNAME_RE = re.compile(
     r"\s*,\s*[A-ZÀ-Þ]\.")
 
 
+def _reference_html(p):
+    """Inner HTML of a reference <p>, whitespace-collapsed but with any
+    <a href="https://doi.org/..."> link OJS wraps the DOI in kept intact -
+    so the citation tooltip's DOI renders as a clickable link, not just
+    plain text. Text nodes are escaped by hand since NavigableString yields
+    already-decoded text (a literal "&" would otherwise corrupt the HTML
+    fragment this gets spliced into); tag nodes serialize pre-escaped.
+    """
+    parts = []
+    for node in p.contents:
+        if isinstance(node, NavigableString):
+            parts.append(html.escape(re.sub(r"\s+", " ", str(node))))
+        else:
+            parts.append(str(node))
+    fragment = "".join(parts).strip()
+    return re.sub(r"\s+([,.;:])", r"\1", fragment)
+
+
 def _reference_entries(references_html):
-    """[(plain_text, surnames[], "YYYY[x]"), ...] parsed from the OJS-scraped
-    reference list - one <p> per reference, APA-style "Surname, F., &
-    Surname2, G. (YYYY[x]). Title...". Entries whose leading author/year
-    can't be parsed are skipped (never shown as a tooltip is safer than a
-    wrong one).
+    """[(html_fragment, surnames[], "YYYY[x]"), ...] parsed from the
+    OJS-scraped reference list - one <p> per reference, APA-style "Surname,
+    F., & Surname2, G. (YYYY[x]). Title...". Entries whose leading
+    author/year can't be parsed are skipped (never shown as a tooltip is
+    safer than a wrong one).
     """
     soup = BeautifulSoup(references_html or "", "html.parser")
     entries = []
@@ -170,8 +216,24 @@ def _reference_entries(references_html):
             if m2:
                 surnames = [m2.group(1)]
         if surnames:
-            entries.append((text, surnames, year))
+            entries.append((_reference_html(p), surnames, year))
     return entries
+
+
+def linkify_citation(citation, doi_url):
+    """HTML version of the plain-text CSL citation with its DOI URL (which
+    OJS's csl-entry always spells out verbatim at the end) turned into a
+    clickable link, so "How to cite" doesn't show it as inert text.
+    """
+    if not citation:
+        return ""
+    escaped = html.escape(citation)
+    if doi_url:
+        needle = html.escape(doi_url)
+        if needle in escaped:
+            escaped = escaped.replace(
+                needle, '<a href="%s">%s</a>' % (needle, needle), 1)
+    return escaped
 
 
 def link_citations(fulltext_html, references_html):
@@ -186,7 +248,7 @@ def link_citations(fulltext_html, references_html):
         return fulltext_html
 
     lookup = {}
-    for full_text, surnames, year in entries:
+    for full_html, surnames, year in entries:
         if len(surnames) == 1:
             who = surnames[0]
         elif len(surnames) == 2:
@@ -194,7 +256,7 @@ def link_citations(fulltext_html, references_html):
         else:
             who = "%s et al." % surnames[0]
         who_amp = who.replace("&", "&amp;")
-        full = html.escape(full_text)
+        full = full_html
         # Every surface form the citation might take in-text: narrative
         # "(YYYY)", and the two parenthetical spacings seen in practice -
         # some journals put a comma before the year, some don't (the latter
@@ -293,6 +355,19 @@ def normalize_article_stats(stats):
 
 def main():
     journal = load("journal.json")
+    # The scraped footer HTML ends with a "hosted by hbz" logo paragraph.
+    # Pull it out so the template can group it next to the OJS/PKP badge
+    # (both are "who runs this" credits) instead of leaving it stranded as
+    # a large logo on its own row. Falls back gracefully if the markup or
+    # the image ever changes: the logo just stays in footerHtml.
+    footer_html = journal.get("footerHtml") or ""
+    m = re.search(r"<p>\s*(<a\b[^>]*>)?\s*<img\b[^>]*>\s*(</a>)?\s*</p>",
+                  footer_html, re.I | re.S)
+    if m:
+        journal["hostedByHtml"] = m.group(0)
+        journal["footerHtml"] = footer_html[:m.start()] + footer_html[m.end():]
+    else:
+        journal["hostedByHtml"] = ""
     issues = load("issues.json")
     articles = load("articles.json")
     pages = load("pages.json")
@@ -338,6 +413,7 @@ def main():
             if extras.get(key)
         ]
         a["laySummary"] = extras.get("laySummary") or ""
+        a["citationHtml"] = linkify_citation(a.get("citation"), a.get("doiUrl"))
         pdf = next((g for g in a["galleys"] if g["localPdf"]), None)
         a["pdf"] = pdf
         a["fullTextHtml"] = ""
@@ -641,7 +717,7 @@ def sectionize_guide(page_html):
         h2["id"] = unique
         toc.append((unique, text))
 
-        details = soup.new_tag("details", **{"class": "guide-section"})
+        details = soup.new_tag("details", **{"class": "guide-section", "open": ""})
         summary = soup.new_tag("summary")
         body = soup.new_tag("div", **{"class": "guide-section-body"})
         h2.insert_before(details)

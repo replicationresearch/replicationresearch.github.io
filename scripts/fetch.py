@@ -861,6 +861,13 @@ def fetch_goatcounter_views(articles):
 STATUS_PUBLISHED = 3
 STATUS_DECLINED = 4
 
+# Submissions manually confirmed (in the OJS backend) to not be real
+# manuscripts under consideration - a test submission, or an incomplete
+# draft an author never finished the wizard for - so they're excluded from
+# the funnel entirely rather than counted as "under review". Add more IDs
+# here if further ones turn up.
+EXCLUDED_SUBMISSION_IDS = {9023, 9136, 9691}
+
 
 def fetch_submission_stats():
     if not API_KEY:
@@ -885,7 +892,11 @@ def fetch_submission_stats():
 
     monthly = {}
     counts = {"published": 0, "underReview": 0, "declined": 0}
+    excluded = 0
     for item in items:
+        if item.get("id") in EXCLUDED_SUBMISSION_IDS:
+            excluded += 1
+            continue
         date = str(item.get("dateSubmitted") or "")[:7]
         m = re.match(r"\d{4}-\d{2}$", date)
         if m:
@@ -897,10 +908,12 @@ def fetch_submission_stats():
             counts["declined"] += 1
         else:
             counts["underReview"] += 1
-    print("  %d submissions: %d published, %d under review, %d declined"
-          % (len(items), counts["published"], counts["underReview"],
-             counts["declined"]))
-    return {"monthly": monthly, "statusCounts": counts, "total": len(items)}
+    total = len(items) - excluded
+    print("  %d submissions: %d published, %d under review, %d declined "
+          "(%d excluded as test/incomplete)"
+          % (total, counts["published"], counts["underReview"],
+             counts["declined"], excluded))
+    return {"monthly": monthly, "statusCounts": counts, "total": total}
 
 
 # ---------------------------------------------------------------------------

@@ -50,8 +50,9 @@
   {% endif %}
 </div>
 <script>
-// Sections start collapsed; opening one via the TOC or a direct link to its
-// #anchor should still work, so expand the target <details> in both cases.
+// Sections are expanded by default, but a reader may have manually
+// collapsed one - a TOC click or a direct link to its #anchor should still
+// land on an expanded section, so force it open in both cases.
 (function () {
   function openTarget() {
     var id = decodeURIComponent(location.hash.slice(1));
