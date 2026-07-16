@@ -480,15 +480,19 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .setting-options-aa button { font-family: var(--serif); line-height: 1; padding: .4rem 1rem; }
 
 /* Reading-option effects, applied to the extracted full text itself via
-   data attributes set by the inline script in article.html. */
-.fulltext-body[data-font="serif"] { font-family: var(--serif); }
-.fulltext-body[data-font="sans"] { font-family: var(--sans); }
-.fulltext-body[data-size="sm"] { font-size: .85rem; }
-.fulltext-body[data-size="md"] { font-size: .97rem; }
-.fulltext-body[data-size="lg"] { font-size: 1.15rem; }
-.fulltext-body[data-spacing="tight"] { line-height: 1.4; }
-.fulltext-body[data-spacing="normal"] { line-height: 1.65; }
-.fulltext-body[data-spacing="loose"] { line-height: 2; }
+   data attributes set by the inline script in article.html. Targeted at
+   .fulltext-body-content directly (not just inherited from the outer
+   .fulltext-body) because .prose.fulltext-body-content's own font-size
+   rule below would otherwise block inheritance of font-size/line-height
+   from ever reaching the actual text. */
+.fulltext-body[data-font="serif"] .fulltext-body-content { font-family: var(--serif); }
+.fulltext-body[data-font="sans"] .fulltext-body-content { font-family: var(--sans); }
+.fulltext-body[data-size="sm"] .fulltext-body-content { font-size: .85rem; }
+.fulltext-body[data-size="md"] .fulltext-body-content { font-size: .97rem; }
+.fulltext-body[data-size="lg"] .fulltext-body-content { font-size: 1.15rem; }
+.fulltext-body[data-spacing="tight"] .fulltext-body-content { line-height: 1.4; }
+.fulltext-body[data-spacing="normal"] .fulltext-body-content { line-height: 1.65; }
+.fulltext-body[data-spacing="loose"] .fulltext-body-content { line-height: 2; }
 /* Column width constrains the reading measure of the text itself, not the
    background box below - that box (data-bg) always spans the full width
    of its container so a colored background reaches both edges regardless
@@ -667,11 +671,41 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .submission-chart-box h3 { font-size: 1rem; margin: 0 0 .8rem; }
 .bar-submissions { fill: var(--accent); }
-/* Segment fill colors for status_stacked_bar() - the counts themselves
-   are shown only via each segment's native hover tooltip, not a legend. */
-.status-published { fill: #2a8a5f; }
-.status-underreview { fill: #d9a441; }
-.status-declined { fill: #c1594f; }
+
+/* status_stacked_bar(): plain HTML/CSS, not SVG - a native SVG <title>
+   tooltip is unreliable across browsers (and absent on touch), so each
+   segment gets a custom hover/focus tooltip instead, matching the
+   in-text citation tooltip's look. The counts are shown only in that
+   tooltip, not a separate legend. */
+.status-bar { display: flex; height: 26px; border-radius: 4px; overflow: visible; }
+.status-segment {
+  position: relative; height: 100%; cursor: default;
+  outline-offset: 2px;
+}
+.status-segment:first-child { border-radius: 4px 0 0 4px; }
+.status-segment:last-child { border-radius: 0 4px 4px 0; }
+.status-published { background: #2a8a5f; }
+.status-underreview { background: #d9a441; }
+.status-declined { background: #c1594f; }
+.status-tooltip {
+  position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px;
+  transform: translateX(-50%) translateY(4px);
+  width: max-content; max-width: 220px; background: var(--ink); color: #fff;
+  font-size: .82rem; line-height: 1.4; padding: .5rem .75rem;
+  border-radius: 8px; box-shadow: var(--shadow); z-index: 5; white-space: nowrap;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.status-segment:hover .status-tooltip, .status-segment:focus .status-tooltip {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0);
+}
+/* First/last segments are near the bar's edges, so their tooltip anchors
+   to that same edge (like the citation tooltip's left:0) instead of
+   centering, which would push half of it past the bar. */
+.status-segment:first-child .status-tooltip { left: 0; transform: translateY(4px); }
+.status-segment:first-child:hover .status-tooltip, .status-segment:first-child:focus .status-tooltip { transform: translateY(0); }
+.status-segment:last-child .status-tooltip { left: auto; right: 0; transform: translateY(4px); }
+.status-segment:last-child:hover .status-tooltip, .status-segment:last-child:focus .status-tooltip { transform: translateY(0); }
 
 /* Homepage "Under Review" card: same status-breakdown chart as the
    Submissions page. */

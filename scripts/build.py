@@ -660,33 +660,33 @@ def simple_bar_chart(values, css_class, aria_label, width=280, height=90):
             % (width, height, aria_label, "".join(bars), labels))
 
 
-def status_stacked_bar(counts, width=280, height=26):
+def status_stacked_bar(counts):
     """A single horizontal bar split into published/under-review/declined
-    segments, proportional to their share of all submissions."""
+    segments, proportional to their share of all submissions. Plain HTML
+    (not SVG) with a hover/focus-revealed tooltip per segment, mirroring
+    the in-text citation tooltip - a native SVG <title> looked right in
+    testing (the text content is correct) but is unreliable in practice:
+    support for hovering an SVG shape to trigger its title varies by
+    browser, with no touch equivalent at all, so it silently never showed
+    for some visitors.
+    """
     order = [("published", "status-published", "Published"),
              ("underReview", "status-underreview", "Under review"),
              ("declined", "status-declined", "Declined")]
     total = sum(counts.get(k, 0) for k, _, _ in order) or 1
-    x = 0.0
     segs = []
     for key, css, label in order:
         value = counts.get(key, 0)
-        w = width * value / total
-        if value:
-            segs.append(
-                '<rect class="%s" x="%.1f" y="0" width="%.1f" height="%d">'
-                '<title>%s: %d (%.0f%%)</title></rect>'
-                % (css, x, w, height, label, value, 100 * value / total))
-        x += w
-    # preserveAspectRatio="none": without it, a fixed height alongside
-    # width="100%" makes the browser letterbox instead of stretch whenever
-    # the container's actual width differs from the viewBox's - the bar
-    # should always span its container at a constant height, not shrink to
-    # fit within the aspect ratio.
-    return ('<svg viewBox="0 0 %d %d" width="100%%" height="%d" '
-            'preserveAspectRatio="none" role="img" '
-            'aria-label="Submission status breakdown">%s</svg>'
-            % (width, height, height, "".join(segs)))
+        if not value:
+            continue
+        pct = 100 * value / total
+        segs.append(
+            '<span class="status-segment %s" style="width:%.3f%%" tabindex="0">'
+            '<span class="status-tooltip">%s: %d (%.0f%%)</span></span>'
+            % (css, pct, label, value, pct))
+    return ('<span class="status-bar" role="img" '
+            'aria-label="Submission status breakdown">%s</span>'
+            % "".join(segs))
 
 
 TEAM_IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp")

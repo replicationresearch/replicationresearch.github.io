@@ -225,7 +225,11 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   });
 }
 
-// Desktop-only sidebar collapse, remembered across article pages.
+// Desktop-only sidebar collapse, remembered across article pages. Exposes
+// a setter so the reading-options panel below can also collapse it when
+// "wide" column width is selected - otherwise wide makes no visible
+// difference on desktop, since the sidebar is what's constraining the
+// width in the first place.
 (function () {
   var toggle = document.querySelector('.sidebar-toggle');
   var layout = document.querySelector('.article-layout');
@@ -236,12 +240,14 @@ if (window.matchMedia('(max-width: 900px)').matches) {
     toggle.setAttribute('aria-expanded', String(!collapsed));
     toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
   }
-  apply();
-  toggle.addEventListener('click', function () {
-    collapsed = !collapsed;
+  function setCollapsed(value) {
+    collapsed = value;
     localStorage.setItem('r2-sidebar-collapsed', collapsed ? '1' : '0');
     apply();
-  });
+  }
+  apply();
+  toggle.addEventListener('click', function () { setCollapsed(!collapsed); });
+  window.r2SetSidebarCollapsed = setCollapsed;
 })();
 
 // Article view tabs: switch between the PDF (default) and the experimental
@@ -301,6 +307,15 @@ if (window.matchMedia('(max-width: 900px)').matches) {
     toggle.setAttribute('aria-expanded', String(opening));
   });
 
+  // Wide only makes a visible difference on desktop if the sidebar isn't
+  // also taking up space, so tie the two together rather than leaving
+  // "wide" a no-op until the reader notices and collapses it themselves.
+  function syncSidebarToWidth() {
+    if (window.r2SetSidebarCollapsed) {
+      window.r2SetSidebarCollapsed(prefs.width === 'wide');
+    }
+  }
+
   panel.querySelectorAll('.setting-options').forEach(function (group) {
     var setting = group.getAttribute('data-setting');
     group.addEventListener('click', function (e) {
@@ -309,10 +324,12 @@ if (window.matchMedia('(max-width: 900px)').matches) {
       prefs[setting] = btn.getAttribute('data-value');
       localStorage.setItem('r2-fulltext-prefs', JSON.stringify(prefs));
       apply();
+      if (setting === 'width') syncSidebarToWidth();
     });
   });
 
   apply();
+  syncSidebarToWidth();
 })();
 
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
