@@ -114,6 +114,11 @@ FURTHER_PROJECTS = [
 
 SUBMISSION_RESOURCES = [
     {
+        "title": "Manuscripts Under Review",
+        "blurb": "See what submissions are currently under review.",
+        "url": BASE + "#under-review",
+    },
+    {
         "title": "Pre-Submission Inquiry",
         "blurb": "Not sure your project is a fit? Check with the editors "
                  "before you write the full manuscript.",
@@ -379,6 +384,19 @@ def main():
     if os.path.exists(submissions_path):
         submissions = load("submissions.json")
 
+    # Shown on both the Submissions page and the homepage's Under Review
+    # card - computed once here so both render() calls can share it.
+    submissions_charts = None
+    if submissions and submissions.get("monthly"):
+        submissions_charts = {
+            "monthlyChart": simple_bar_chart(
+                submissions["monthly"], "bar-submissions",
+                "New submissions per month"),
+            "statusBar": status_stacked_bar(submissions["statusCounts"]),
+            "statusCounts": submissions["statusCounts"],
+            "total": submissions["total"],
+        }
+
     team = {}
     team_path = os.path.join(DATA, "team.json")
     if os.path.exists(team_path):
@@ -470,7 +488,8 @@ def main():
            articles_by_path=articles_by_path,
            recent_announcements=announcements[:3],
            further_projects=FURTHER_PROJECTS,
-           under_review=under_review)
+           under_review=under_review,
+           submissions=submissions_charts)
 
     articles_index = build_articles_index(articles)
     render("articles.html", os.path.join("articles", "index.html"),
@@ -499,17 +518,6 @@ def main():
         render("announcement.html",
                os.path.join("announcements", ann["id"], "index.html"),
                announcement=ann)
-
-    submissions_charts = None
-    if submissions and submissions.get("monthly"):
-        submissions_charts = {
-            "monthlyChart": simple_bar_chart(
-                submissions["monthly"], "bar-submissions",
-                "New submissions per month"),
-            "statusBar": status_stacked_bar(submissions["statusCounts"]),
-            "statusCounts": submissions["statusCounts"],
-            "total": submissions["total"],
-        }
 
     for page in pages:
         out = os.path.join(*page["slug"].split("/"), "index.html")
@@ -612,30 +620,41 @@ def stats_chart(stats, min_month=None, width=256, height=96):
 
 
 def simple_bar_chart(values, css_class, aria_label, width=280, height=90):
-    """Minimalist single-series monthly bar chart: bars only, no Y-axis
-    numbers or gridlines - just the first and last month as x-axis labels.
+    """Minimalist single-series monthly bar chart: a y-axis with the peak
+    value and 0, and the first/last month as x-axis labels - the same
+    minimal axis treatment as stats_chart(), just for a single series.
     """
     months = sorted(values)
     if len(months) < 2:
         return ""
     peak = max([*values.values(), 1])
     label_h = 14
+    axis_w = 30       # room left of the y-axis for its tick labels
     plot_h = height - label_h
-    group_w = width / len(months)
+    group_w = (width - axis_w) / len(months)
     bar_w = max(3.0, min(16.0, group_w - 3.0))
-    bars = []
+    bars = [
+        '<line class="chart-axis" x1="%d" y1="2" x2="%d" y2="%d"/>'
+        % (axis_w, axis_w, plot_h),
+        '<line class="chart-axis" x1="%d" y1="%d" x2="%d" y2="%d"/>'
+        % (axis_w, plot_h, width, plot_h),
+        '<text class="chart-label" x="%d" y="10" text-anchor="end">%d</text>'
+        % (axis_w - 4, peak),
+        '<text class="chart-label" x="%d" y="%d" text-anchor="end">0</text>'
+        % (axis_w - 4, plot_h),
+    ]
     for i, month in enumerate(months):
         value = values.get(month, 0)
         h = plot_h * value / peak
-        x0 = i * group_w + (group_w - bar_w) / 2
+        x0 = axis_w + i * group_w + (group_w - bar_w) / 2
         bars.append(
             '<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.1f">'
             '<title>%s: %d</title></rect>'
             % (css_class, x0, plot_h - h, bar_w, max(h, 0.5), month, value))
     labels = (
-        '<text class="chart-label" x="0" y="%d">%s</text>'
+        '<text class="chart-label" x="%d" y="%d">%s</text>'
         '<text class="chart-label" x="%d" y="%d" text-anchor="end">%s</text>'
-        % (height - 2, months[0], width, height - 2, months[-1]))
+        % (axis_w, height - 2, months[0], width, height - 2, months[-1]))
     return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" '
             'aria-label="%s">%s%s</svg>'
             % (width, height, aria_label, "".join(bars), labels))
@@ -659,7 +678,13 @@ def status_stacked_bar(counts, width=280, height=26):
                 '<title>%s: %d (%.0f%%)</title></rect>'
                 % (css, x, w, height, label, value, 100 * value / total))
         x += w
-    return ('<svg viewBox="0 0 %d %d" width="100%%" height="%d" role="img" '
+    # preserveAspectRatio="none": without it, a fixed height alongside
+    # width="100%" makes the browser letterbox instead of stretch whenever
+    # the container's actual width differs from the viewBox's - the bar
+    # should always span its container at a constant height, not shrink to
+    # fit within the aspect ratio.
+    return ('<svg viewBox="0 0 %d %d" width="100%%" height="%d" '
+            'preserveAspectRatio="none" role="img" '
             'aria-label="Submission status breakdown">%s</svg>'
             % (width, height, height, "".join(segs)))
 

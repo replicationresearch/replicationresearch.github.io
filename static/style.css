@@ -42,9 +42,18 @@
 }
 
 * { box-sizing: border-box; }
+/* Safety net against page-level horizontal scroll from any descendant
+   with real (even if invisible/off-screen) geometry - e.g. .cite-tooltip
+   is absolutely positioned relative to wherever its citation happens to
+   fall in flowing text, so on narrow viewports it can extend past the
+   viewport edge even while hidden via opacity/visibility (which, unlike
+   display:none, still counts toward scrollable overflow). Applied to the
+   root html/body rather than a nested element so position:sticky
+   descendants (the header) keep behaving relative to the real viewport. */
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
+  overflow-x: clip;
   font-family: var(--sans);
   font-size: 16.5px;
   line-height: 1.65;
@@ -163,7 +172,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .dropdown a:not(.btn):hover { background: rgba(255, 255, 255, .12); }
 .dropdown a { white-space: nowrap; }
 .nav-toggle, .nav-toggle-label { display: none; }
-@media (min-width: 981px) {
+@media (min-width: 1121px) {
   .dropdown { position: absolute; top: 100%; left: 0; }
 }
 
@@ -431,6 +440,62 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .fulltext-equation { text-align: center; }
 .fulltext-equation img { max-width: 100%; height: auto; }
 
+/* Reading-options toolbar (gear toggle) above the extracted full text. */
+.fulltext-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.fulltext-note { margin: 0; font-style: italic; }
+.fulltext-settings-toggle {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0; background: #fff; border: 1.5px solid var(--rule);
+  border-radius: 50%; color: var(--muted); cursor: pointer; transition: color .15s ease, border-color .15s ease;
+}
+.fulltext-settings-toggle:hover, .fulltext-settings-toggle[aria-expanded="true"] {
+  color: var(--accent-dark); border-color: var(--accent);
+}
+
+/* The reading-options box itself - a row of labeled button groups, shown
+   between the toolbar and the full text when the gear is toggled open. */
+.fulltext-settings {
+  display: flex; flex-wrap: wrap; gap: 1.2rem 2rem; margin-bottom: 1.4rem;
+  padding: 1rem 1.2rem; background: var(--bg-alt); border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.setting-row { display: flex; flex-direction: column; gap: .4rem; }
+.setting-label {
+  font-size: .75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted);
+}
+.setting-options { display: flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.setting-options button {
+  background: #fff; border: none; border-right: 1px solid var(--rule);
+  padding: .4rem .8rem; font: 600 .82rem var(--sans); color: var(--ink-soft);
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.setting-options button:last-child { border-right: none; }
+.setting-options button:hover { background: var(--accent-soft); }
+.setting-options button.is-active { background: var(--accent); color: #fff; }
+.setting-options-aa button { font-family: var(--serif); line-height: 1; padding: .4rem 1rem; }
+
+/* Reading-option effects, applied to the extracted full text itself via
+   data attributes set by the inline script in article.html. */
+.fulltext-body[data-font="serif"] { font-family: var(--serif); }
+.fulltext-body[data-font="sans"] { font-family: var(--sans); }
+.fulltext-body[data-size="sm"] { font-size: .85rem; }
+.fulltext-body[data-size="md"] { font-size: .97rem; }
+.fulltext-body[data-size="lg"] { font-size: 1.15rem; }
+.fulltext-body[data-spacing="tight"] { line-height: 1.4; }
+.fulltext-body[data-spacing="normal"] { line-height: 1.65; }
+.fulltext-body[data-spacing="loose"] { line-height: 2; }
+.fulltext-body[data-width="narrow"] { max-width: 540px; margin: 0 auto; }
+.fulltext-body[data-width="normal"] { max-width: 760px; margin: 0 auto; }
+.fulltext-body[data-width="wide"] { max-width: none; }
+.fulltext-body[data-bg="dark"] {
+  background: #1c2733; color: #dbe4ee; padding: 1.6rem 1.8rem; border-radius: var(--radius);
+}
+.fulltext-body[data-bg="dark"] a,
+.fulltext-body[data-bg="dark"] .cite-ref { color: #8fd0ff; }
+.fulltext-body[data-bg="dark"] .cite-ref { border-bottom-color: rgba(143, 208, 255, .35); }
+.fulltext-body[data-bg="dark"] .fulltext-figure figcaption { color: #b8c4d0; }
+.fulltext-body[data-bg="dark"] .fulltext-figure .figure-zoom { background: #26313d; border-color: #34404c; }
+
 /* In-text citations, hoverable to show the matching full reference (from
    OJS's own reference list, not the PDF's copy of it). */
 .cite-ref { position: relative; color: var(--accent-deep); border-bottom: 1px solid var(--accent-soft); cursor: help; }
@@ -590,6 +655,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .status-legend { list-style: none; margin: .8rem 0 0; padding: 0; font-size: .85rem; color: var(--ink-soft); }
 .status-legend li { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem; }
 .status-legend .legend-dot { margin: 0; }
+
+/* Homepage "Under Review" card: same status-breakdown chart as the
+   Submissions page, reusing .status-legend/.status-* colors as-is. */
+.under-review-status { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+.under-review-status h4 { font-size: .95rem; margin: 0 0 .7rem; }
 
 /* Articles browsing page */
 .articles-filters { margin-bottom: 1.6rem; }
@@ -817,11 +887,15 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   .category-panel { position: static; width: 100%; margin-top: .5rem; }
 }
 /* Nav collapses to the hamburger menu well before the header actually runs
-   out of room (980px, vs. the more typical ~760px "mobile" breakpoint used
+   out of room (1120px, vs. the more typical ~760px "mobile" breakpoint used
    below for hero/pdf sizing) - a partial wrap, e.g. just the Login link
    dropping to its own row, reads far worse than switching to the menu a
-   bit earlier than strictly necessary. */
-@media (max-width: 980px) {
+   bit earlier than strictly necessary. The full nav row (brand + gap +
+   About/Articles/Announcements/Submissions/Reviewer Guidelines/Submit/
+   Login) needs ~1075px before it stops fitting on one line - 1120px
+   leaves a safety margin for font-rendering differences across
+   browsers/OSes instead of cutting it exactly at that measured width. */
+@media (max-width: 1120px) {
   .header-inner { flex-wrap: wrap; padding-top: .6rem; padding-bottom: .6rem; }
   .nav-toggle-label {
     display: block; margin-left: auto; cursor: pointer; padding: .6rem;

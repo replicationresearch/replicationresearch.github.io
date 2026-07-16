@@ -71,9 +71,60 @@
           {% if article.fullTextHtml %}
           <div class="view-panel{% if not article.pdf %} is-active{% endif %}" role="tabpanel"
                id="panel-html" aria-labelledby="tab-html"{% if article.pdf %} hidden{% endif %}>
-            <div class="prose fulltext-body">{{ article.fullTextHtml | safe }}</div>
-            <p class="meta">Experimental view — text extracted automatically from
-              the typeset PDF. The PDF is the version of record.</p>
+            <div class="fulltext-toolbar">
+              <p class="meta fulltext-note">Experimental view — text extracted automatically from
+                the typeset PDF. The PDF is the version of record.</p>
+              <button class="fulltext-settings-toggle" type="button" aria-expanded="false"
+                      aria-controls="fulltext-settings" aria-label="Reading options">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="fulltext-settings" id="fulltext-settings" hidden>
+              <div class="setting-row">
+                <span class="setting-label">Font</span>
+                <div class="setting-options" data-setting="font">
+                  <button type="button" data-value="sans">Sans-serif</button>
+                  <button type="button" data-value="serif">Serif</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Font size</span>
+                <div class="setting-options setting-options-aa" data-setting="size">
+                  <button type="button" data-value="sm" aria-label="Smaller"><span style="font-size:.7rem">A</span></button>
+                  <button type="button" data-value="md" aria-label="Medium"><span style="font-size:1rem">A</span></button>
+                  <button type="button" data-value="lg" aria-label="Larger"><span style="font-size:1.35rem">A</span></button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Line spacing</span>
+                <div class="setting-options" data-setting="spacing">
+                  <button type="button" data-value="tight">Tight</button>
+                  <button type="button" data-value="normal">Normal</button>
+                  <button type="button" data-value="loose">Loose</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Column width</span>
+                <div class="setting-options" data-setting="width">
+                  <button type="button" data-value="narrow">Narrow</button>
+                  <button type="button" data-value="normal">Normal</button>
+                  <button type="button" data-value="wide">Wide</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Background</span>
+                <div class="setting-options" data-setting="bg">
+                  <button type="button" data-value="light">Light</button>
+                  <button type="button" data-value="dark">Dark</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="prose fulltext-body" id="fulltext-body">{{ article.fullTextHtml | safe }}</div>
           </div>
           {% endif %}
         </section>
@@ -210,6 +261,55 @@ if (window.matchMedia('(max-width: 900px)').matches) {
       });
     });
   });
+})();
+
+// Reading-options panel for the experimental HTML full-text view: font,
+// size, line spacing, column width, and background, remembered across
+// article pages the same way the sidebar-collapse state is.
+(function () {
+  var toggle = document.querySelector('.fulltext-settings-toggle');
+  var panel = document.getElementById('fulltext-settings');
+  var body = document.getElementById('fulltext-body');
+  if (!toggle || !panel || !body) return;
+
+  var DEFAULTS = { font: 'sans', size: 'md', spacing: 'normal', width: 'normal', bg: 'light' };
+  var prefs;
+  try {
+    prefs = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('r2-fulltext-prefs') || '{}'));
+  } catch (e) {
+    prefs = Object.assign({}, DEFAULTS);
+  }
+
+  function apply() {
+    Object.keys(prefs).forEach(function (key) {
+      body.setAttribute('data-' + key, prefs[key]);
+    });
+    panel.querySelectorAll('.setting-options').forEach(function (group) {
+      var setting = group.getAttribute('data-setting');
+      group.querySelectorAll('button').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-value') === prefs[setting]);
+      });
+    });
+  }
+
+  toggle.addEventListener('click', function () {
+    var opening = panel.hidden;
+    panel.hidden = !opening;
+    toggle.setAttribute('aria-expanded', String(opening));
+  });
+
+  panel.querySelectorAll('.setting-options').forEach(function (group) {
+    var setting = group.getAttribute('data-setting');
+    group.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      prefs[setting] = btn.getAttribute('data-value');
+      localStorage.setItem('r2-fulltext-prefs', JSON.stringify(prefs));
+      apply();
+    });
+  });
+
+  apply();
 })();
 
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
