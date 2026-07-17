@@ -461,7 +461,9 @@ def scrape_article(url_path, issue):
         "datePublished": "",
         "citation": "",
         "bibtexUrl": "",
+        "bibtexText": "",
         "risUrl": "",
+        "risText": "",
         "issueId": issue["id"],
         "issueTitle": issue["title"],
         "section": "",
@@ -509,6 +511,14 @@ def scrape_article(url_path, issue):
             m = re.search(r"submissionId=(\d+)", a["href"])
             if m:
                 art["submissionId"] = m.group(1)
+            # Fetched so the article page can copy the citation text to the
+            # clipboard directly instead of linking to a file download -
+            # best-effort: a transient failure here just falls back to the
+            # download link, it doesn't need to abort the whole scrape.
+            try:
+                art[fmt + "Text"] = get(art[fmt + "Url"]).text
+            except Exception:
+                art[fmt + "Text"] = ""
 
     for sub in det.select(".item.issue .sub_item"):
         label = text_of(sub.find("h2")).lower()

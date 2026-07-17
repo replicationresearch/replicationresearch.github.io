@@ -440,6 +440,24 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .fulltext-equation { text-align: center; }
 .fulltext-equation img { max-width: 100%; height: auto; }
 
+/* Footnotes: detected in scripts/pdf_fulltext.py's _extract() via a
+   leading small-font marker + page-bottom position, pulled out of
+   reading order into one list at the end of the extracted text, linked
+   both ways to their in-text marker. scroll-margin-top matches .guide-toc's
+   existing offset so a jump lands clear of the sticky header. */
+.fulltext-footref { font-size: .72em; }
+.fulltext-footref a { color: var(--accent-deep); text-decoration: none; padding: 0 1px; }
+.fulltext-footref a:hover, .fulltext-footref a:focus { text-decoration: underline; }
+.fulltext-footnotes {
+  margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+  font-size: .88rem; color: var(--ink-soft);
+}
+.fulltext-footnotes ol { margin: 0; padding-left: 1.4rem; }
+.fulltext-footnotes li { margin-bottom: .6rem; }
+.fulltext-footnotes li, .fulltext-footref a { scroll-margin-top: 90px; }
+.footnote-backref { margin-left: .3rem; color: var(--muted); text-decoration: none; font-size: .85em; }
+.footnote-backref:hover, .footnote-backref:focus { color: var(--accent-dark); }
+
 /* Reading-options toolbar (gear toggle) above the extracted full text. */
 .fulltext-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .fulltext-note { margin: 0; font-style: italic; }
@@ -517,6 +535,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .fulltext-body[data-bg="dark"] .cite-ref { border-bottom-color: rgba(143, 208, 255, .35); }
 .fulltext-body[data-bg="dark"] .fulltext-figure figcaption { color: #b8c4d0; }
 .fulltext-body[data-bg="dark"] .fulltext-figure .figure-zoom { background: #26313d; border-color: #34404c; }
+.fulltext-body[data-bg="dark"] .fulltext-footref a { color: #8fd0ff; }
+.fulltext-body[data-bg="dark"] .fulltext-footnotes { border-top-color: #34404c; color: #b8c4d0; }
+.fulltext-body[data-bg="dark"] .footnote-backref { color: #8697a8; }
 
 /* In-text citations, hoverable to show the matching full reference (from
    OJS's own reference list, not the PDF's copy of it). */
@@ -610,6 +631,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 }
 .copy-btn:hover { color: var(--accent-dark); border-color: var(--accent); }
 .citation-links a { margin-right: .9rem; font-size: .88rem; font-weight: 600; }
+.citation-links .copy-btn-link {
+  background: none; border: none; padding: 0; margin-right: .9rem;
+  font: 600 .88rem var(--sans); color: var(--accent-deep); cursor: pointer;
+}
+.citation-links .copy-btn-link:hover { color: var(--accent); text-decoration: underline; }
 .license-box img { margin-top: .4rem; }
 
 /* Usage chart */

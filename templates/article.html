@@ -123,6 +123,13 @@
                   <button type="button" data-value="dark">Dark</button>
                 </div>
               </div>
+              <div class="setting-row">
+                <span class="setting-label">Bionic reading</span>
+                <div class="setting-options" data-setting="bionic">
+                  <button type="button" data-value="off">Off</button>
+                  <button type="button" data-value="on">On</button>
+                </div>
+              </div>
             </div>
 
             <div class="fulltext-body" id="fulltext-body">
@@ -191,8 +198,10 @@
             </div>
             <p class="citation-text">{{ article.citationHtml | safe if article.citationHtml else article.citation }}</p>
             <p class="citation-links">
-              {% if article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
-              {% if article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
+              {% if article.bibtexText %}<button class="copy-btn copy-btn-link" type="button" data-copy-text="{{ article.bibtexText }}">BibTeX</button>
+              {% elif article.bibtexUrl %}<a href="{{ article.bibtexUrl }}">BibTeX</a>{% endif %}
+              {% if article.risText %}<button class="copy-btn copy-btn-link" type="button" data-copy-text="{{ article.risText }}">RIS / EndNote / Zotero</button>
+              {% elif article.risUrl %}<a href="{{ article.risUrl }}">RIS / EndNote / Zotero</a>{% endif %}
             </p>
           </div>
           {% endif %}
@@ -279,14 +288,46 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   var toggle = document.querySelector('.fulltext-settings-toggle');
   var panel = document.getElementById('fulltext-settings');
   var body = document.getElementById('fulltext-body');
-  if (!toggle || !panel || !body) return;
+  var content = body && body.querySelector('.fulltext-body-content');
+  if (!toggle || !panel || !body || !content) return;
 
-  var DEFAULTS = { font: 'sans', size: 'md', spacing: 'normal', width: 'normal', bg: 'light' };
+  var DEFAULTS = { font: 'sans', size: 'md', spacing: 'normal', width: 'normal', bg: 'light', bionic: 'off' };
   var prefs;
   try {
     prefs = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('r2-fulltext-prefs') || '{}'));
   } catch (e) {
     prefs = Object.assign({}, DEFAULTS);
+  }
+
+  // Bionic reading: bold the first ~half of each word so the eye can
+  // "hop" across text. The pristine markup is cached once so toggling
+  // off can cleanly restore it, rather than trying to un-bold in place.
+  var pristineHtml = content.innerHTML;
+  var bionicApplied = false;
+  function bionicWord(word) {
+    var boldLen = Math.max(1, Math.ceil(word.length * 0.5));
+    return '<b>' + word.slice(0, boldLen) + '</b>' + word.slice(boldLen);
+  }
+  function walkBionic(node) {
+    if (node.nodeType === 3) {
+      if (!node.nodeValue.trim()) return;
+      var span = document.createElement('span');
+      span.innerHTML = node.nodeValue.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/\S+/g, bionicWord);
+      node.replaceWith.apply(node, Array.prototype.slice.call(span.childNodes));
+    } else if (node.nodeType === 1 && !node.classList.contains('cite-tooltip')) {
+      Array.prototype.slice.call(node.childNodes).forEach(walkBionic);
+    }
+  }
+  function applyBionic() {
+    var wantOn = prefs.bionic === 'on';
+    if (wantOn === bionicApplied) return;
+    if (wantOn) {
+      walkBionic(content);
+    } else {
+      content.innerHTML = pristineHtml;
+    }
+    bionicApplied = wantOn;
   }
 
   function apply() {
@@ -299,6 +340,7 @@ if (window.matchMedia('(max-width: 900px)').matches) {
         btn.classList.toggle('is-active', btn.getAttribute('data-value') === prefs[setting]);
       });
     });
+    applyBionic();
   }
 
   toggle.addEventListener('click', function () {
@@ -333,11 +375,14 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 })();
 
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
+  var originalLabel = btn.textContent;
   btn.addEventListener('click', function () {
-    var text = btn.closest('.cite-box').querySelector('.citation-text').textContent.trim();
+    var text = btn.hasAttribute('data-copy-text')
+      ? btn.getAttribute('data-copy-text')
+      : btn.closest('.cite-box').querySelector('.citation-text').textContent.trim();
     function done() {
       btn.textContent = 'Copied ✓';
-      setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      setTimeout(function () { btn.textContent = originalLabel; }, 1500);
     }
     function fallback() {
       // execCommand path for contexts without the async clipboard API.

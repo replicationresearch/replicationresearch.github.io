@@ -26,6 +26,23 @@ PAGE_NUM_RE = re.compile(r"^\d{1,3}$")
 MATH_FONT_RE = re.compile(r"CM[A-Z]|Math|Symbol|MSAM|MSBM|MJX")
 BOLD_FLAG = 16
 
+# Footnotes: a footnote's own leading number (e.g. "1" at the start of a
+# footnote block at the bottom of the page) is typically NOT
+# superscript-flagged in practice (confirmed against this corpus - only
+# the in-text reference mark tends to be), so detection relies on font
+# size relative to body_size plus page position, not PyMuPDF's
+# superscript span flag.
+FOOTNOTE_MARKER_RE = re.compile(r"^(\d{1,3})[.\)]?$")
+FOOTNOTE_MARKER_SIZE_DELTA = 2.5    # a leading/reference marker span must be
+                                    # at least this much smaller than body_size
+FOOTNOTE_BODY_DELTA_MIN = 0.5       # a footnote block's own body text is
+FOOTNOTE_BODY_DELTA_MAX = 4.0       # this much smaller than body_size
+FOOTNOTE_Y_FRAC = 0.55              # ...and starts in the bottom ~45% of the
+                                    # page (excludes author/affiliation
+                                    # superscripts near the top of page 1,
+                                    # which can otherwise look identical)
+FOOTNOTE_PLACEHOLDER_BASE = 0xE000  # Private Use Area; html.escape() leaves these alone
+
 # The reference list is scraped from OJS and shown in its own section on the
 # article page, so the PDF's copy is skipped rather than duplicated.
 REFERENCE_HEADINGS = {"references", "bibliography", "literature", "literatur"}
@@ -46,11 +63,12 @@ def _furniture_key(text):
     return t
 
 
-def _block_text(block):
-    """Join a text block's lines into one de-hyphenated paragraph string."""
+def _assemble_block(block, span_join):
+    """Join a text block's lines into one de-hyphenated paragraph string,
+    using span_join(spans) to turn each line's own spans into text."""
     text = ""
     for line in block["lines"]:
-        piece = "".join(span["text"] for span in line["spans"]).strip()
+        piece = span_join(line["spans"]).strip()
         if not piece:
             continue
         if text.endswith("-") and text[-2:-1].isalpha() and piece[:1].islower():
@@ -60,6 +78,44 @@ def _block_text(block):
         else:
             text = piece
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _plain_join(spans):
+    """Join one line's spans verbatim - today's behavior, used wherever
+    footnote-aware markup isn't needed (furniture/caption matching etc,
+    where exact inter-span spacing doesn't affect the comparison)."""
+    return "".join(span["text"] for span in spans)
+
+
+def _spaced_join(spans):
+    """Like _plain_join, but inserts a space at a style boundary (size or
+    bold changes) when neither side already has whitespace there and both
+    boundary characters are alphanumeric. PyMuPDF doesn't reliably carry a
+    separating space at such boundaries - e.g. a footnote's small marker
+    span immediately followed by its body-text span with no leading
+    space, which otherwise glues the marker onto the next word
+    ("1The incentive to..."). Punctuation-adjacent and same-style splits
+    are left untouched, so real words broken across spans by kerning
+    alone aren't affected."""
+    out = ""
+    prev_style = None
+    for span in spans:
+        s = span["text"]
+        if not s:
+            continue
+        style = (round(span["size"], 1), bool(span["flags"] & BOLD_FLAG))
+        if (out and prev_style is not None and style != prev_style
+                and not out[-1].isspace() and not s[:1].isspace()
+                and out[-1].isalnum() and s[:1].isalnum()):
+            out += " "
+        out += s
+        prev_style = style
+    return out
+
+
+def _block_text(block):
+    """Join a text block's lines into one de-hyphenated paragraph string."""
+    return _assemble_block(block, _plain_join)
 
 
 def _span_stats(block):
@@ -109,6 +165,105 @@ def _furniture_texts(doc):
                 seen.add(t)
                 counts[t] = counts.get(t, 0) + 1
     return {t for t, n in counts.items() if n >= 3}
+
+
+def _leading_marker(block, body_size):
+    """If a text block's very first span is a short digit run clearly
+    smaller than body text, return the digit string (the footnote's own
+    marker) - else None."""
+    lines = block.get("lines") or []
+    if not lines or not lines[0]["spans"]:
+        return None
+    first = lines[0]["spans"][0]
+    if not first["text"] or first["size"] > body_size - FOOTNOTE_MARKER_SIZE_DELTA:
+        return None
+    m = FOOTNOTE_MARKER_RE.match(first["text"].strip())
+    return m.group(1) if m else None
+
+
+def _footnote_markers(doc, body_size):
+    """{page_index: {marker_digit_str, ...}} for blocks that look like
+    footnotes: a small leading marker, non-bold body text sized notably
+    below body_size, sitting in the bottom ~45% of the page. Mirrors the
+    _body_font_size/_furniture_texts whole-document prepass idiom.
+    Footnote identity is page-scoped (not global) since that's how
+    footnotes actually work, and it keeps IDs collision-free even if two
+    different pages both happen to have a footnote "1"."""
+    per_page = {}
+    for pno, page in enumerate(doc):
+        y_min = page.rect.height * FOOTNOTE_Y_FRAC
+        found = set()
+        for block in page.get_text("dict")["blocks"]:
+            if block["type"] != 0 or block["bbox"][1] < y_min:
+                continue
+            marker = _leading_marker(block, body_size)
+            if marker is None:
+                continue
+            size, bold, _ = _span_stats(block)
+            if bold or not (body_size - FOOTNOTE_BODY_DELTA_MAX
+                             <= size <= body_size - FOOTNOTE_BODY_DELTA_MIN):
+                continue
+            found.add(marker)
+        if found:
+            per_page[pno] = found
+    return per_page
+
+
+def _paragraph_html(block, footnote_ids, page_index, body_size,
+                     skip_leading_marker=False):
+    """HTML for a paragraph/footnote-body block: the same line/de-hyphenation
+    assembly as _block_text(), corrected via _spaced_join, plus two
+    footnote-aware behaviors: (1) a small digit span whose value is a
+    CONFIRMED footnote number for this page becomes a linked <sup>
+    cross-reference; any other small digit (ordinals, unrelated
+    superscripts) is left as plain text, unchanged from before footnote
+    support existed. (2) if skip_leading_marker, the block's own leading
+    marker span is dropped from the output (used when rendering a
+    footnote's own body - its number is shown separately via the
+    footnote list's <li value=>).
+    """
+    placeholders = {}
+    counter = [0]
+    first_line_spans = block["lines"][0]["spans"] if block["lines"] else None
+
+    def join(spans):
+        if skip_leading_marker and spans is first_line_spans:
+            nonempty = [s for s in spans if s["text"]]
+            if (nonempty and nonempty[0]["size"] <= body_size - FOOTNOTE_MARKER_SIZE_DELTA
+                    and FOOTNOTE_MARKER_RE.match(nonempty[0]["text"].strip())):
+                spans = spans[spans.index(nonempty[0]) + 1:]
+        out = ""
+        prev_style = None
+        for span in spans:
+            s = span["text"]
+            if not s:
+                continue
+            style = (round(span["size"], 1), bool(span["flags"] & BOLD_FLAG))
+            stripped = s.strip()
+            is_ref = (span["size"] <= body_size - FOOTNOTE_MARKER_SIZE_DELTA
+                      and re.match(r"^\d{1,3}$", stripped)
+                      and stripped in footnote_ids)
+            if (out and prev_style is not None and style != prev_style
+                    and not out[-1].isspace() and not s[:1].isspace()
+                    and out[-1].isalnum() and s[:1].isalnum()):
+                out += " "
+            if is_ref:
+                ph = chr(FOOTNOTE_PLACEHOLDER_BASE + counter[0])
+                counter[0] += 1
+                placeholders[ph] = stripped
+                out += ph
+            else:
+                out += s
+            prev_style = style
+        return out
+
+    raw = _assemble_block(block, join)
+    escaped = html.escape(raw)
+    for ph, num in placeholders.items():
+        escaped = escaped.replace(ph,
+            '<sup class="fulltext-footref"><a href="#fn-%d-%s" id="fnref-%d-%s">%s</a></sup>'
+            % (page_index, num, page_index, num, html.escape(num)))
+    return escaped
 
 
 def _render_clip(page, rect, zoom=2.0):
@@ -190,17 +345,19 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     doc = fitz.open(pdf_path)
     body_size = _body_font_size(doc)
     furniture = _furniture_texts(doc)
+    footnote_numbers = _footnote_markers(doc, body_size)
     toc = [] if ignore_toc else doc.get_toc()
     toc_titles = {_norm(t[1]): t[0] for t in toc}
     first_heading = _norm(toc[0][1]) if toc else None
 
     parts = []
     figures = []
+    footnotes = []
     started = first_heading is None    # no bookmarks -> include everything
     in_references = False
     fig_n = 0
 
-    for page in doc:
+    for page_index, page in enumerate(doc):
         d = page.get_text("dict")
         text_blocks = [b for b in d["blocks"] if b["type"] == 0]
 
@@ -236,6 +393,7 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                 continue
 
             size, bold, math_share = _span_stats(block)
+            rect = fitz.Rect(block["bbox"])
             is_heading = ((bold and size >= body_size + 1)
                           or norm in toc_titles) and len(text) < 120 \
                 and text[:1] not in "•‣▪✦◦·*–—-" \
@@ -252,7 +410,19 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             if in_references:
                 continue               # the page shows OJS's reference list
 
-            rect = fitz.Rect(block["bbox"])
+            page_footnote_ids = footnote_numbers.get(page_index, ())
+            marker = _leading_marker(block, body_size)
+            if (not is_heading and marker is not None and marker in page_footnote_ids
+                    and not bold
+                    and body_size - FOOTNOTE_BODY_DELTA_MAX <= size <= body_size - FOOTNOTE_BODY_DELTA_MIN
+                    and rect.y0 >= page.rect.height * FOOTNOTE_Y_FRAC):
+                body_html = _paragraph_html(block, page_footnote_ids, page_index,
+                                             body_size, skip_leading_marker=True)
+                fid = "fn-%d-%s" % (page_index, marker)
+                refid = "fnref-%d-%s" % (page_index, marker)
+                footnotes.append((fid, refid, marker, body_html))
+                continue
+
             if i in fig_rects:
                 png = _render_clip(page, fig_rects[i])
                 if png:
@@ -283,7 +453,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                 tag = "h3" if level <= 1 else "h4"
                 parts.append("<%s>%s</%s>" % (tag, html.escape(text), tag))
             else:
-                parts.append("<p>%s</p>" % html.escape(text))
+                parts.append("<p>%s</p>" % _paragraph_html(
+                    block, page_footnote_ids, page_index, body_size))
 
         if started and not in_references:
             for rect in standalone:
@@ -293,5 +464,14 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     name = "fig-%d.png" % fig_n
                     figures.append((name, png))
                     parts.append(_figure_html(fig_url_prefix + name, ""))
+
+    if footnotes:
+        items = "".join(
+            '<li id="%s" value="%s">%s '
+            '<a class="footnote-backref" href="#%s" aria-label="Back to text">↩</a></li>'
+            % (fid, marker, body_html, refid)
+            for fid, refid, marker, body_html in footnotes)
+        parts.append('<section class="fulltext-footnotes" aria-label="Footnotes">'
+                     '<ol>%s</ol></section>' % items)
 
     return {"html": "".join(parts), "figures": figures}
