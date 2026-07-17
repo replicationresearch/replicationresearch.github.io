@@ -198,19 +198,6 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   position: relative; max-width: 620px; margin: 0 auto 1.2rem;
 }
 .hero-logo img { display: block; width: 100%; height: auto; }
-/* logo-black.png's "REPLICATION" word is flat solid black with no
-   dark-mode awareness of its own (it's a raster image, not real text) -
-   fine normally against the hero's light background, but invisible if a
-   browser's forced/auto dark mode darkens that background around it.
-   invert(87%) turns pure black into #dedede, matching the light grey
-   "REPLICATION" already used in the header's own logo (which was
-   designed for a dark background) - safe to apply to the whole image
-   since the R-icon/"RESEARCH" areas this black layer also contains are
-   always covered by the opaque animated .logo-color layer on top,
-   regardless of this filter. */
-@media (prefers-color-scheme: dark) {
-  .hero-logo img { filter: invert(87%); }
-}
 /* Smaller variant used on the About page, above the page's own h1. */
 .about-brand { text-align: center; margin-bottom: 2.2rem; }
 .hero-logo-sm { max-width: 380px; }
