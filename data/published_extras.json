@@ -12,19 +12,5 @@
   "materialsUrl": "",
   "peerReviewUrl": "",
   "reproCertUrl": ""
- },
- "hussey act copy-edited manuscript | replication research": {
-  "dataUrl": "https://osf.io/ztd8n/",
-  "laySummary": "This paper examines whether a well-known therapy, Acceptance and Commitment Therapy (ACT), is truly supported by a theory about how people think and use language. An earlier study is often cited as strong evidence for this link, but a later study that tried to repeat the findings and didn’t get the same results is often overlooked. The author took a look at both studies and found that the main conclusion of the original study doesn’t seem to match what the data actually show. Then, the author used a “multiverse analysis” to explore all the different choices researchers could make when analyzing results. Across all of these choices, the same result appeared every time: there was no clear evidence supporting the original claim.",
-  "materialsUrl": "https://github.com/ianhussey/verification_foody_et_al_2013/",
-  "peerReviewUrl": "",
-  "reproCertUrl": ""
- },
- "wang stylometry copy-edited manuscript | replication research": {
-  "dataUrl": "https://doi.org/10.5281/zenodo.18729526",
-  "laySummary": "In some situations, one may not want the reader of a text to know who the author is. This study repeated and extended a previous experiment on disguising a person's writing style to avoid author identification. It confirmed that changing writing style can make texts harder to attribute to their authors but found that the original study likely overstated the effect. The researchers also identified machine translation as a surprisingly promising method for disguising a person's writing style.",
-  "materialsUrl": "",
-  "peerReviewUrl": "",
-  "reproCertUrl": ""
  }
 }
