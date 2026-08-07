@@ -2,11 +2,23 @@
 {% block title %}Page not found · {{ journal.name }}{% endblock %}
 {% block content %}
 <script>
-// IONOS's retired forwarding endpoint can append its internal fallback path
-// more than once for resolvers that still cache the old www address.
+// IONOS's forwarding endpoint exposes an internal /defaultsite fallback path,
+// and browsers that cached the old forward keep rewriting "/" to it. Send those
+// visitors to the homepage's explicit "index.html" URL: redirecting to "/"
+// bounces straight back into the cached forward and loops forever. Slashes are
+// collapsed because the forward can repeat them. Recoveries are only skipped
+// when one just happened, so a bounce we did not anticipate settles here
+// instead of spinning, while a later visit is still rescued.
 (function () {
-  var normalized = window.location.pathname.replace(/\/+/g, "/").replace(/\/$/, "");
-  if (normalized === "/defaultsite") window.location.replace("/");
+  var path = window.location.pathname.replace(/\/+/g, "/").replace(/\/$/, "");
+  if (!/^(\/defaultsite)+(\.html)?$/.test(path)) return;
+  var key = "defaultsiteRecoveredAt";
+  try {
+    var last = parseInt(sessionStorage.getItem(key), 10);
+    if (last && Date.now() - last < 5000) return;
+    sessionStorage.setItem(key, String(Date.now()));
+  } catch (e) {}
+  window.location.replace("{{ base }}index.html");
 }());
 </script>
 <div class="wrap page-body page-narrow">
