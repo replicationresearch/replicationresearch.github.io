@@ -1,8 +1,9 @@
 name: Build Zenodo snapshot export
 
 # Manual only - the site owner runs this whenever they want a new, citable
-# snapshot to upload to Zenodo (or link via Zenodo's GitHub integration,
-# which turns each GitHub Release into a new Zenodo version automatically).
+# snapshot. Each run creates a GitHub Release and publishes the snapshot as a
+# new version of the Zenodo record 10.5281/zenodo.21920085, which requires the
+# ZENODO_TOKEN repository secret.
 on:
   workflow_dispatch: {}
 
@@ -41,7 +42,67 @@ jobs:
         run: |
           DATE=$(date -u +%Y-%m-%d)
           mv _site/r2-mirror-snapshot.html "r2-mirror-snapshot-$DATE.html"
-          gh release create "zenodo-export-${DATE}" \
-            "r2-mirror-snapshot-${DATE}.html" \
-            --title "Snapshot ${DATE}" \
-            --notes "Single self-contained HTML file with the full text of the R2 mirror as of ${DATE} - open it directly (double-click, no server needed) for archiving on Zenodo. Every issue/article/announcement/page is a section labelled with its original site path (e.g. /articles/9577); link or cite a specific one via that path as a fragment, e.g. this file's name + #articles/9577."
+
+          NOTES="Single self-contained HTML file with the full text of the R2 mirror as of ${DATE} - open it directly (double-click, no server needed) for archiving on Zenodo.
+
+          This snapshot includes all articles published by R2. Individual articles should be cited in accordance with their respective recommended citation, not by citing this snapshot.
+
+          Every issue/article/announcement/page is a section labelled with its original site path (e.g. /articles/9577); link or cite a specific one via that path as a fragment, e.g. this file's name + #articles/9577."
+
+          # Re-running on the same day would otherwise fail on the existing tag.
+          if gh release view "zenodo-export-${DATE}" >/dev/null 2>&1; then
+            gh release upload "zenodo-export-${DATE}" "r2-mirror-snapshot-${DATE}.html" --clobber
+            gh release edit "zenodo-export-${DATE}" --title "Snapshot ${DATE}" --notes "$NOTES"
+          else
+            gh release create "zenodo-export-${DATE}" \
+              "r2-mirror-snapshot-${DATE}.html" \
+              --title "Snapshot ${DATE}" \
+              --notes "$NOTES"
+          fi
+
+      - name: Publish snapshot as a new Zenodo version
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          # Anchor record: https://zenodo.org/records/21920085 - each run adds a
+          # new version under its concept DOI (10.5281/zenodo.21920085).
+          DEPOSITION_ID: "21920085"
+        run: |
+          if [ -z "$ZENODO_TOKEN" ]; then
+            echo "::error::Set the ZENODO_TOKEN secret in repo settings (scopes: deposit:write, deposit:actions)."
+            exit 1
+          fi
+
+          DATE=$(date -u +%Y-%m-%d)
+          FILE="r2-mirror-snapshot-${DATE}.html"
+          API="https://zenodo.org/api/deposit/depositions"
+          AUTH="Authorization: Bearer $ZENODO_TOKEN"
+
+          DRAFT_ID=$(curl -sf -X POST -H "$AUTH" \
+            "$API/$DEPOSITION_ID/actions/newversion" | jq -r '.links.latest_draft | split("/") | last')
+
+          # The draft inherits the previous version's file; drop it so this
+          # version contains only the current snapshot.
+          for FID in $(curl -sf -H "$AUTH" "$API/$DRAFT_ID/files" | jq -r '.[].id'); do
+            curl -sf -X DELETE -H "$AUTH" "$API/$DRAFT_ID/files/$FID"
+          done
+
+          BUCKET=$(curl -sf -H "$AUTH" "$API/$DRAFT_ID" | jq -r '.links.bucket')
+          curl -sf -X PUT --data-binary "@${FILE}" -H "$AUTH" "$BUCKET/$FILE"
+
+          # Carry over inherited metadata (title, creators, license, community,
+          # related identifiers) and refresh only the date-dependent fields, so
+          # curation done by hand on the Zenodo record is preserved.
+          # The inherited doi fields must not be sent back on a new version.
+          META=$(curl -sf -H "$AUTH" "$API/$DRAFT_ID" | jq --arg date "$DATE" '
+            .metadata
+            | del(.doi, .prereserve_doi)
+            | .publication_date = $date
+            | .version = $date
+            | .description = "<p>A single self-contained HTML file with the full text of the Replication Research (R2) mirror as of " + $date + ". Open it directly in a browser; no server needed.</p><p>This snapshot includes all articles published by R2. Individual articles should be cited in accordance with their respective recommended citation, not by citing this snapshot.</p><p>Each page is a section labelled with its original site path (e.g. /articles/9577), so specific content can be cited via that path as a fragment identifier.</p>"
+          ')
+          curl -sf -X PUT -H "$AUTH" -H "Content-Type: application/json" \
+            -d "$(jq -n --argjson m "$META" '{metadata: $m}')" "$API/$DRAFT_ID"
+
+          DOI=$(curl -sf -X POST -H "$AUTH" "$API/$DRAFT_ID/actions/publish" | jq -r '.doi')
+          echo "Published Zenodo version DOI: $DOI"
+          echo "### Zenodo: [$DOI](https://doi.org/$DOI)" >> "$GITHUB_STEP_SUMMARY"
