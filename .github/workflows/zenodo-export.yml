@@ -1,10 +1,14 @@
 name: Build Zenodo snapshot export
 
-# Manual only - the site owner runs this whenever they want a new, citable
-# snapshot. Each run creates a GitHub Release and publishes the snapshot as a
-# new version of the Zenodo record 10.5281/zenodo.21920085, which requires the
-# ZENODO_TOKEN repository secret.
+# Monthly, plus on demand. Each run creates a GitHub Release and publishes the
+# snapshot as a new version of the Zenodo record 10.5281/zenodo.21920085,
+# which requires the ZENODO_TOKEN repository secret.
 on:
+  schedule:
+    # 1st of the month, 05:47 UTC. Off the hour because GitHub delays or drops
+    # on-the-hour cron jobs, and well after the 04:23 daily content refresh in
+    # build.yml has committed, so the snapshot archives current data.
+    - cron: "47 5 1 * *"
   workflow_dispatch: {}
 
 permissions:
