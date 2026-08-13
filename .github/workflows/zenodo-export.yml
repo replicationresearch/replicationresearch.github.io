@@ -72,37 +72,90 @@ jobs:
             exit 1
           fi
 
+          set -o pipefail
+
           DATE=$(date -u +%Y-%m-%d)
           FILE="r2-mirror-snapshot-${DATE}.html"
           API="https://zenodo.org/api/deposit/depositions"
           AUTH="Authorization: Bearer $ZENODO_TOKEN"
 
-          DRAFT_ID=$(curl -sf -X POST -H "$AUTH" \
-            "$API/$DEPOSITION_ID/actions/newversion" | jq -r '.links.latest_draft | split("/") | last')
+          if [ ! -f "$FILE" ]; then
+            echo "::error::Expected snapshot $FILE in the workspace, but it is not there."
+            exit 1
+          fi
+
+          # curl -f hides the response body, which makes failures undebuggable.
+          # req prints the body on success and, on HTTP >= 400, reports the
+          # status and whatever Zenodo said before failing the step.
+          req() {
+            local method="$1" url="$2"; shift 2
+            local out status
+            out=$(mktemp)
+            status=$(curl -sS -o "$out" -w '%{http_code}' -X "$method" -H "$AUTH" "$@" "$url")
+            if [ "$status" -ge 400 ]; then
+              {
+                echo "::error::$method ${url#https://zenodo.org} failed with HTTP $status"
+                echo "--- Zenodo response ---"
+                cat "$out"
+                echo
+                echo "-----------------------"
+              } >&2
+              rm -f "$out"
+              return 1
+            fi
+            cat "$out"
+            rm -f "$out"
+          }
+
+          # Preflight: separates "token is bad" from "this record is not
+          # reachable through the legacy deposit API".
+          echo "Checking token can list depositions..."
+          req GET "$API?size=1" >/dev/null
+          echo "  token OK"
+
+          echo "Checking record $DEPOSITION_ID is reachable..."
+          req GET "$API/$DEPOSITION_ID" \
+            | jq -r '"  found: \(.title // "?")  state=\(.state // "?") submitted=\(.submitted // "?")"'
+
+          echo "Creating new version..."
+          DRAFT_ID=$(req POST "$API/$DEPOSITION_ID/actions/newversion" \
+            | jq -r '.links.latest_draft // empty | split("/") | last')
+          if [ -z "$DRAFT_ID" ]; then
+            echo "::error::newversion returned no links.latest_draft."
+            exit 1
+          fi
+          echo "  draft: $DRAFT_ID"
 
           # The draft inherits the previous version's file; drop it so this
           # version contains only the current snapshot.
-          for FID in $(curl -sf -H "$AUTH" "$API/$DRAFT_ID/files" | jq -r '.[].id'); do
-            curl -sf -X DELETE -H "$AUTH" "$API/$DRAFT_ID/files/$FID"
+          echo "Clearing inherited files..."
+          for FID in $(req GET "$API/$DRAFT_ID/files" | jq -r '.[].id'); do
+            req DELETE "$API/$DRAFT_ID/files/$FID" >/dev/null
+            echo "  removed $FID"
           done
 
-          BUCKET=$(curl -sf -H "$AUTH" "$API/$DRAFT_ID" | jq -r '.links.bucket')
-          curl -sf -X PUT --data-binary "@${FILE}" -H "$AUTH" "$BUCKET/$FILE"
+          echo "Uploading $FILE ($(stat -c%s "$FILE") bytes)..."
+          BUCKET=$(req GET "$API/$DRAFT_ID" | jq -r '.links.bucket')
+          req PUT "$BUCKET/$FILE" --data-binary "@${FILE}" >/dev/null
+          echo "  uploaded"
 
           # Carry over inherited metadata (title, creators, license, community,
           # related identifiers) and refresh only the date-dependent fields, so
           # curation done by hand on the Zenodo record is preserved.
           # The inherited doi fields must not be sent back on a new version.
-          META=$(curl -sf -H "$AUTH" "$API/$DRAFT_ID" | jq --arg date "$DATE" '
+          echo "Updating metadata..."
+          META=$(req GET "$API/$DRAFT_ID" | jq --arg date "$DATE" '
             .metadata
             | del(.doi, .prereserve_doi)
             | .publication_date = $date
             | .version = $date
             | .description = "<p>A single self-contained HTML file with the full text of the Replication Research (R2) mirror as of " + $date + ". Open it directly in a browser; no server needed.</p><p>This snapshot includes all articles published by R2. Individual articles should be cited in accordance with their respective recommended citation, not by citing this snapshot.</p><p>Each page is a section labelled with its original site path (e.g. /articles/9577), so specific content can be cited via that path as a fragment identifier.</p>"
           ')
-          curl -sf -X PUT -H "$AUTH" -H "Content-Type: application/json" \
-            -d "$(jq -n --argjson m "$META" '{metadata: $m}')" "$API/$DRAFT_ID"
+          jq -n --argjson m "$META" '{metadata: $m}' > payload.json
+          req PUT "$API/$DRAFT_ID" -H "Content-Type: application/json" -d @payload.json >/dev/null
+          echo "  metadata updated"
 
-          DOI=$(curl -sf -X POST -H "$AUTH" "$API/$DRAFT_ID/actions/publish" | jq -r '.doi')
+          echo "Publishing..."
+          DOI=$(req POST "$API/$DRAFT_ID/actions/publish" | jq -r '.doi')
           echo "Published Zenodo version DOI: $DOI"
           echo "### Zenodo: [$DOI](https://doi.org/$DOI)" >> "$GITHUB_STEP_SUMMARY"
