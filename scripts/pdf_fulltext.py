@@ -21,7 +21,14 @@ except ImportError:
 # license badges), not figures.
 MIN_FIG_W, MIN_FIG_H = 100, 60
 
-CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s*\d+", re.IGNORECASE)
+# Tables can be short (few rows), so their minimum height is lower than a
+# figure's.
+MIN_TABLE_W, MIN_TABLE_H = 100, 40
+
+# A period/colon right after the number is required so a body sentence that
+# happens to start with "Table 3 reports..." doesn't get mistaken for the
+# caption "Table 3.".
+CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s*\d+[a-zA-Z]?\s*[.:]", re.IGNORECASE)
 PAGE_NUM_RE = re.compile(r"^\d{1,3}$")
 MATH_FONT_RE = re.compile(r"CM[A-Z]|Math|Symbol|MSAM|MSBM|MJX")
 BOLD_FLAG = 16
@@ -212,7 +219,7 @@ FOOTREF_MARKER_RE = re.compile(r"\x00FNREF:(\d+):(\d+)\x00")
 
 
 def _paragraph_html(block, footnote_ids, page_index, body_size,
-                     skip_leading_marker=False):
+                     skip_leading_marker=False, unambiguous_marker_page=None):
     """HTML for a paragraph/footnote-body block: the same line/de-hyphenation
     assembly as _block_text(), corrected via _spaced_join, plus two
     footnote-aware behaviors: (1) a small digit span whose value is a
@@ -220,15 +227,20 @@ def _paragraph_html(block, footnote_ids, page_index, body_size,
     marker - a footnote's own body text (needed for its in-text reference's
     hover tooltip) isn't known yet at this point in the single forward pass,
     so the final <sup> markup is resolved later, once every footnote on
-    every page has been collected (see _resolve_footrefs). NUL/digits/colons
-    are untouched by html.escape(), so the marker survives being embedded
-    here and escaped normally. Any other small digit (ordinals, unrelated
-    superscripts) is left as plain text, unchanged from before footnote
-    support existed. (2) if skip_leading_marker, the block's own leading
-    marker span is dropped from the output (used when rendering a
-    footnote's own body - its number is shown separately via the
-    footnote list's <li value=>).
+    every page has been collected (see _resolve_footrefs). If the marker
+    isn't a footnote on ITS OWN page but IS an unambiguous (single-page)
+    footnote on an adjacent page, the reference is still recognized and the
+    marker embeds that page instead - covers a footnote whose body spilled
+    onto the next page, so its reference mark and its definition end up on
+    different pages. NUL/digits/colons are untouched by html.escape(), so
+    the marker survives being embedded here and escaped normally. Any
+    other small digit (ordinals, unrelated superscripts) is left as plain
+    text, unchanged from before footnote support existed. (2) if
+    skip_leading_marker, the block's own leading marker span is dropped
+    from the output (used when rendering a footnote's own body - its
+    number is shown separately via the footnote list's <li value=>).
     """
+    unambiguous_marker_page = unambiguous_marker_page or {}
     first_line_spans = block["lines"][0]["spans"] if block["lines"] else None
 
     def join(spans):
@@ -245,15 +257,22 @@ def _paragraph_html(block, footnote_ids, page_index, body_size,
                 continue
             style = (round(span["size"], 1), bool(span["flags"] & BOLD_FLAG))
             stripped = s.strip()
-            is_ref = (span["size"] <= body_size - FOOTNOTE_MARKER_SIZE_DELTA
-                      and re.match(r"^\d{1,3}$", stripped)
-                      and stripped in footnote_ids)
+            target_page = None
+            if (span["size"] <= body_size - FOOTNOTE_MARKER_SIZE_DELTA
+                    and re.match(r"^\d{1,3}$", stripped)):
+                if stripped in footnote_ids:
+                    target_page = page_index
+                else:
+                    candidate = unambiguous_marker_page.get(stripped)
+                    if candidate is not None and abs(candidate - page_index) <= 1:
+                        target_page = candidate
+            is_ref = target_page is not None
             if (out and prev_style is not None and style != prev_style
                     and not out[-1].isspace() and not s[:1].isspace()
                     and out[-1].isalnum() and s[:1].isalnum()):
                 out += " "
             if is_ref:
-                out += "\x00FNREF:%d:%s\x00" % (page_index, stripped)
+                out += "\x00FNREF:%d:%s\x00" % (target_page, stripped)
             else:
                 out += s
             prev_style = style
@@ -278,6 +297,61 @@ def _resolve_footrefs(html_text, footnote_bodies):
         return ('<sup class="fulltext-footref"><a href="#%s" id="%s">%s</a>%s</sup>'
                 % (fid, refid, html.escape(marker), tooltip))
     return FOOTREF_MARKER_RE.sub(repl, html_text)
+
+
+# No capturing group, deliberately: re.split() on a pattern with no group
+# discards the matched delimiters, leaving parts as pure text segments
+# (length N+1) that line up 1:1 with findall()'s N tag matches - the same
+# idiom build.py's link_citations() uses for the same reason. A capturing
+# group would make split() interleave the tags back INTO parts, breaking
+# the zip-based reconstruction below.
+_TAG_SPLIT_RE = re.compile(r"<[^>]+>")
+_URL_RE = re.compile(r"https?://[^\s<>\"']+")
+
+
+def _autolink_urls(html_text):
+    """Wrap bare http(s) URLs in the extracted text with <a href> - PDFs
+    routinely contain plain-text URLs (data-availability statements,
+    footnote citations) with no markup of their own. Only ever runs on
+    text between tags, never inside an existing tag's attributes, via the
+    same split-on-tags trick build.py's link_citations() uses. No
+    target/rel needed - base.html's decorateExternalLinks() already adds
+    those to every external link on the page once it loads, this fulltext
+    subtree included. Called once at the very end of extraction, after
+    footnote markers are fully resolved, so it can't touch them."""
+    def linkify(text):
+        def repl(m):
+            url = m.group(0)
+            trail = ""
+            while url and url[-1] in ".,;:!?)]}'\"":
+                trail = url[-1] + trail
+                url = url[:-1]
+            return '<a href="%s">%s</a>%s' % (url, url, trail)
+        return _URL_RE.sub(repl, text)
+    tags = _TAG_SPLIT_RE.findall(html_text)
+    parts = _TAG_SPLIT_RE.split(html_text)
+    out = [linkify(parts[0])]
+    for tag, part in zip(tags, parts[1:]):
+        out.append(tag)
+        out.append(linkify(part))
+    return "".join(out)
+
+
+def _mostly_inside(rect, region, frac=0.5):
+    """True if most of rect's own area falls inside region - used instead
+    of a bare .intersects() check for "is this text living inside a
+    rendered figure/table" decisions, since a normal paragraph can simply
+    END right where a figure/table begins: its block's bounding box then
+    grazes the region by a few points at one edge, which .intersects()
+    alone would count as a match and wrongly drop the ENTIRE paragraph
+    (confirmed against a real PDF: a sentence ending just before Figure 1
+    was silently dropped this way, including the footnote reference it
+    carried)."""
+    area = rect.width * rect.height
+    if area <= 0:
+        return False
+    overlap = rect & region
+    return (overlap.width * overlap.height) > frac * area
 
 
 def _render_clip(page, rect, zoom=2.0):
@@ -324,13 +398,69 @@ def _figure_rect_above(page, caption_rect, text_blocks, furniture):
     return rect + (-4, -4, 4, 4)       # a little breathing room
 
 
-def _figure_html(url, caption):
+def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
+                       body_size, caption_tops):
+    """The table region belonging to a caption: unlike Figures (image above,
+    caption below), this journal's Tables have their caption ABOVE the
+    table content, so the region to capture is BELOW the caption - down to
+    the next caption/heading/furniture block, defaulting to the bottom of
+    the page itself if none of those is found first (a long table can
+    legitimately run most of the way down a page - the running footer,
+    reliably caught by the furniture check below since it repeats on
+    every page, is what actually stops the band in practice, not an
+    arbitrary height cap). Unions ALL block types (text, image, drawing)
+    in that band, not just images/large drawings as _figure_rect_above
+    does - a plain-text table with no drawn gridlines (seen in practice in
+    this corpus) must be captured via its own text blocks' bounding
+    boxes."""
+    bottom_limit = page.rect.y1
+    for y in caption_tops:
+        if caption_rect.y1 + 4 < y < bottom_limit:
+            bottom_limit = y
+    for tb in text_blocks:
+        top = tb["bbox"][1]
+        if top <= caption_rect.y1 + 4 or top >= bottom_limit:
+            continue
+        text = _block_text(tb)
+        t = _furniture_key(text)
+        is_furniture = bool(t) and t in furniture
+        size, bold, _ = _span_stats(tb)
+        is_heading_like = (bold and size >= body_size + 1 and len(text) < 120
+                           and not text.rstrip().endswith("."))
+        if is_furniture or is_heading_like:
+            bottom_limit = top
+
+    band = fitz.Rect(page.rect.x0, caption_rect.y1 + 2, page.rect.x1, bottom_limit)
+    if band.height < 4:
+        return None
+
+    pieces = [fitz.Rect(b["bbox"]) & band for b in all_blocks
+              if fitz.Rect(b["bbox"]).intersects(band)]
+    for drawing in page.get_drawings():
+        r = drawing["rect"]
+        if r.intersects(band):
+            pieces.append(r & band)
+    if not pieces:
+        return None
+    rect = pieces[0]
+    for r in pieces[1:]:
+        rect |= r
+    if rect.width < MIN_TABLE_W or rect.height < MIN_TABLE_H:
+        return None
+    return rect + (-4, -4, 4, 4)       # a little breathing room
+
+
+def _figure_html(url, caption, caption_first=False):
+    """caption_first=True renders the caption BEFORE the image (this
+    journal's Table convention); the default (False) renders it after
+    (this journal's Figure convention)."""
     cap = ('<figcaption>%s</figcaption>' % html.escape(caption)) if caption else ""
     alt = html.escape(caption[:80]) if caption else "Figure"
-    return ('<figure class="fulltext-figure">'
-            '<button class="figure-zoom" type="button" aria-label="Enlarge figure">'
-            '<img src="%s" loading="lazy" alt="%s"></button>%s</figure>'
-            % (url, alt, cap))
+    img = ('<button class="figure-zoom" type="button" aria-label="Enlarge figure">'
+           '<img src="%s" loading="lazy" alt="%s"></button>' % (url, alt))
+    css_class = "fulltext-figure fulltext-table" if caption_first else "fulltext-figure"
+    body = (cap + img) if caption_first else (img + cap)
+    return '<figure class="%s">%s</figure>' % (css_class, body)
 
 
 def extract_fulltext(pdf_path, fig_url_prefix):
@@ -360,6 +490,18 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     body_size = _body_font_size(doc)
     furniture = _furniture_texts(doc)
     footnote_numbers = _footnote_markers(doc, body_size)
+    # A footnote number that's only ever a candidate on ONE page can be
+    # safely matched from an adjacent page too - covers a footnote whose
+    # reference mark and body text land on different pages because the
+    # body spilled onto the next page. A number that's a candidate on
+    # multiple pages stays page-scoped (the whole point of the original
+    # design), since a global match would be genuinely ambiguous there.
+    marker_pages = {}
+    for pno, markers in footnote_numbers.items():
+        for m in markers:
+            marker_pages.setdefault(m, []).append(pno)
+    unambiguous_marker_page = {m: pages[0] for m, pages in marker_pages.items()
+                               if len(pages) == 1}
     toc = [] if ignore_toc else doc.get_toc()
     toc_titles = {_norm(t[1]): t[0] for t in toc}
     first_heading = _norm(toc[0][1]) if toc else None
@@ -370,18 +512,34 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     started = first_heading is None    # no bookmarks -> include everything
     in_references = False
     fig_n = 0
+    table_n = 0
 
     for page_index, page in enumerate(doc):
         d = page.get_text("dict")
         text_blocks = [b for b in d["blocks"] if b["type"] == 0]
 
-        # Pass 1: find captions and their figure regions, and standalone
-        # large images, so pass 2 can skip any text living inside a figure
-        # (axis labels, legends) - those are already part of the rendering.
+        # Pass 1: find captions and their figure/table regions, and
+        # standalone large images, so pass 2 can skip any text living
+        # inside one (axis labels, legends, table cells) - those are
+        # already part of the rendering. Figure captions sit ABOVE their
+        # image in this journal; Table captions sit BELOW theirs - above
+        # and below searches are genuinely different, not interchangeable.
         fig_rects = {}                 # caption block index -> clip rect
+        table_rects = {}                # caption block index -> clip rect
+        caption_tops = sorted(fitz.Rect(b["bbox"]).y0 for b in text_blocks
+                               if CAPTION_RE.match(_block_text(b)))
         for i, block in enumerate(text_blocks):
             text = _block_text(block)
-            if CAPTION_RE.match(text):
+            m = CAPTION_RE.match(text)
+            if not m:
+                continue
+            if m.group(1).lower().startswith("table"):
+                rect = _table_rect_below(page, fitz.Rect(block["bbox"]),
+                                         text_blocks, d["blocks"], furniture,
+                                         body_size, caption_tops)
+                if rect is not None:
+                    table_rects[i] = rect
+            else:
                 rect = _figure_rect_above(page, fitz.Rect(block["bbox"]),
                                           text_blocks, furniture)
                 if rect is not None:
@@ -394,7 +552,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             rect = fitz.Rect(block["bbox"])
             if rect.width < MIN_FIG_W or rect.height < MIN_FIG_H:
                 continue
-            if any(rect.intersects(r) for r in fig_rects.values()):
+            if any(rect.intersects(r) for r in fig_rects.values()) or \
+                    any(rect.intersects(r) for r in table_rects.values()):
                 continue
             standalone.append(rect + (-4, -4, 4, 4))
 
@@ -424,6 +583,25 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             if in_references:
                 continue               # the page shows OJS's reference list
 
+            # Text living inside a rendered figure/table (axis labels,
+            # legends, table cells) - moved ahead of the footnote check
+            # below so a table's own row-number column (small font, low on
+            # the page - otherwise indistinguishable from a real footnote
+            # marker) never reaches it in the first place. A caption block
+            # itself (i is a key in fig_rects/table_rects) is exempted -
+            # the small breathing-room padding on those rects can make a
+            # caption's own bbox graze its own region, which must NOT skip
+            # it before it reaches its own render branch below. Uses
+            # _mostly_inside rather than a bare intersects() check - a
+            # normal paragraph that simply ends right where a figure/table
+            # begins only grazes the region by a few points, which
+            # intersects() alone would wrongly treat as "inside" and drop
+            # the whole paragraph.
+            if i not in fig_rects and i not in table_rects and (
+                    any(_mostly_inside(rect, r) for r in fig_rects.values())
+                    or any(_mostly_inside(rect, r) for r in table_rects.values())):
+                continue
+
             page_footnote_ids = footnote_numbers.get(page_index, ())
             marker = _leading_marker(block, body_size)
             if (not is_heading and marker is not None and marker in page_footnote_ids
@@ -431,7 +609,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     and body_size - FOOTNOTE_BODY_DELTA_MAX <= size <= body_size - FOOTNOTE_BODY_DELTA_MIN
                     and rect.y0 >= page.rect.height * FOOTNOTE_Y_FRAC):
                 body_html = _paragraph_html(block, page_footnote_ids, page_index,
-                                             body_size, skip_leading_marker=True)
+                                             body_size, skip_leading_marker=True,
+                                             unambiguous_marker_page=unambiguous_marker_page)
                 fid = "fn-%d-%s" % (page_index, marker)
                 refid = "fnref-%d-%s" % (page_index, marker)
                 footnotes.append((page_index, marker, fid, refid, body_html))
@@ -447,8 +626,19 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     continue
                 # fall through: keep the caption as plain text
 
-            if any(rect.intersects(r) for r in fig_rects.values()):
-                continue               # text inside a rendered figure
+            if i in table_rects:
+                png = _render_clip(page, table_rects[i])
+                if png:
+                    table_n += 1
+                    name = "table-%d.png" % table_n
+                    figures.append((name, png))
+                    parts.append(_figure_html(fig_url_prefix + name, text,
+                                              caption_first=True))
+                    continue
+                # fall through: keep the caption as plain text (e.g. a
+                # table with no drawings and no text below it detected -
+                # extremely unlikely, but keep the existing best-effort
+                # fallback rather than dropping the caption)
 
             if math_share > 0.5 and not is_heading:
                 png = _render_clip(page, rect + (-2, -2, 2, 2))
@@ -468,7 +658,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                 parts.append("<%s>%s</%s>" % (tag, html.escape(text), tag))
             else:
                 parts.append("<p>%s</p>" % _paragraph_html(
-                    block, page_footnote_ids, page_index, body_size))
+                    block, page_footnote_ids, page_index, body_size,
+                    unambiguous_marker_page=unambiguous_marker_page))
 
         if started and not in_references:
             for rect in standalone:
@@ -484,12 +675,19 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     html_out = _resolve_footrefs("".join(parts), footnote_bodies)
 
     if footnotes:
+        # Block-encounter order isn't reliably top-to-bottom for footnotes
+        # stacked at a page's bottom, so the <li value="n"> attribute alone
+        # (which only sets the displayed number, not DOM order) isn't
+        # enough - sort so the list actually reads 1, 2, 3, ... too.
+        ordered_footnotes = sorted(footnotes, key=lambda f: (f[0], int(f[1])))
         items = "".join(
             '<li id="%s" value="%s">%s '
             '<a class="footnote-backref" href="#%s" aria-label="Back to text">↩</a></li>'
             % (fid, marker, body_html, refid)
-            for page_index, marker, fid, refid, body_html in footnotes)
+            for page_index, marker, fid, refid, body_html in ordered_footnotes)
         html_out += ('<section class="fulltext-footnotes" aria-label="Footnotes">'
                      '<ol>%s</ol></section>' % items)
+
+    html_out = _autolink_urls(html_out)
 
     return {"html": html_out, "figures": figures}

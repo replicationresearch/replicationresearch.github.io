@@ -347,6 +347,13 @@ def scrape_journal():
         content = block.select_one(".content")
         if not content:
             continue
+        # The editors added a "Switch to new website" announcement (pointing
+        # OJS visitors at this very mirror) to the "Links" custom block -
+        # mirroring it back onto the mirror itself would be a pointless (and
+        # confusing) self-referential loop, so it's excluded at scrape time
+        # rather than relying on it happening to not be rendered anywhere.
+        if "switch to new website" in content.get_text(" ", strip=True).lower():
+            continue
         journal["sidebarBlocks"].append({
             "id": block.get("id", ""),
             "title": text_of(title),
@@ -1217,10 +1224,11 @@ def _doi_or_url(value):
 
 def fetch_published_extras():
     """Per-article extras the editors track in the sheet rather than in OJS
-    - peer review report, reproducibility certificate, deposited data, and
-    a lay summary - keyed by the article's own (published) DOI via the
-    "Published DOI" column. Rows without these columns filled in simply
-    don't get the extra rows/summary on the article page.
+    - peer review report, reproducibility certificate, preregistration,
+    deposited data/materials/code, and a lay summary - keyed by the
+    article's own (published) DOI via the "Published DOI" column. Rows
+    without these columns filled in simply don't get the extra rows/summary
+    on the article page.
     """
     import csv
     import io
@@ -1235,8 +1243,10 @@ def fetch_published_extras():
 
     columns = {"peerReviewUrl": "Peer Review Report",
                "reproCertUrl": "Reproducibility Certificate",
+               "preregisteredUrl": "Preregistration",
                "dataUrl": "Data",
-               "materialsUrl": "Materials"}
+               "materialsUrl": "Materials",
+               "codeUrl": "Code"}
     extras = {}
     for row in rows:
         doi = _bare_doi(row.get("Published DOI"))

@@ -434,12 +434,41 @@ def main():
         pub_month = a["datePublished"][:7] if a.get("datePublished") else None
         a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
         extras = published_extras.get((a.get("doi") or "").strip().lower()) or {}
+        # Data/Materials/Code often point at the same deposit (e.g. one
+        # GitHub repo that doubles as both the materials and the code) -
+        # merge those specific rows instead of repeating an identical link
+        # two or three times in the sidebar text list.
+        merge_fields = (("dataUrl", "Data"), ("materialsUrl", "Materials"),
+                         ("codeUrl", "Code"))
+        merged_by_url = {}
+        merged_order = []
+        for key, label in merge_fields:
+            url = extras.get(key)
+            if not url:
+                continue
+            if url not in merged_by_url:
+                merged_by_url[url] = []
+                merged_order.append(url)
+            merged_by_url[url].append(label)
         a["materials"] = [
             {"label": label, "url": extras[key]}
             for key, label in (("peerReviewUrl", "Peer Review Report"),
                                ("reproCertUrl", "Repro. Certificate"),
-                               ("dataUrl", "Data"),
-                               ("materialsUrl", "Materials"))
+                               ("preregisteredUrl", "Preregistration"))
+            if extras.get(key)
+        ] + [
+            {"label": ", ".join(merged_by_url[url]), "url": url}
+            for url in merged_order
+        ]
+        a["badges"] = [
+            {"label": label, "url": extras[key], "icon": icon}
+            for key, label, icon in (
+                ("peerReviewUrl", "Open Review", "static/img/badges/openreview.svg"),
+                ("reproCertUrl", "Reproducibility Certificate", "static/img/badges/reprocert.svg"),
+                ("preregisteredUrl", "Preregistered", "static/img/badges/preregestered.png"),
+                ("dataUrl", "Open Data", "static/img/badges/opendata.png"),
+                ("materialsUrl", "Open Materials", "static/img/badges/openmaterial.png"),
+                ("codeUrl", "Open Code", "static/img/badges/opencode.png"))
             if extras.get(key)
         ]
         a["laySummary"] = extras.get("laySummary") or ""

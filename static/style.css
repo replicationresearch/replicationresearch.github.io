@@ -461,16 +461,35 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .fulltext-body h3 { font-size: 1.2rem; margin-top: 1.8rem; }
 .fulltext-body h4 { font-size: 1.05rem; margin-top: 1.4rem; }
 .fulltext-figure { margin: 1.6rem 0; text-align: center; }
-/* Zoom/lightbox removed – figures are now static images. */
+/* Click a figure/table image to enlarge - see the "Lightbox" IIFE in
+   article.html for the click handler that builds/shows this overlay. */
 .fulltext-figure .figure-zoom {
   display: inline-block; padding: 0; border: 1px solid var(--rule);
   border-radius: var(--radius); background: #fff;
-  max-width: 100%; overflow: hidden;
+  max-width: 100%; overflow: hidden; cursor: zoom-in;
 }
 .fulltext-figure img { display: block; max-width: 100%; height: auto; }
 .fulltext-figure figcaption {
   font-size: .85rem; color: var(--ink-soft); margin-top: .6rem; text-align: left;
 }
+.fulltext-table figcaption { margin-top: 0; margin-bottom: .6rem; }
+.figure-lightbox {
+  position: fixed; inset: 0; z-index: 200; display: none;
+  align-items: center; justify-content: center; padding: 2rem;
+  background: rgba(10, 15, 20, .85);
+}
+.figure-lightbox.is-open { display: flex; }
+.figure-lightbox img {
+  max-width: 90vw; max-height: 90vh; display: block;
+  border-radius: 6px; background: #fff;
+}
+.figure-lightbox-close {
+  position: absolute; top: 1rem; right: 1.2rem;
+  width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  border: none; background: rgba(255, 255, 255, .12); color: #fff;
+  font-size: 1.5rem; line-height: 1; cursor: pointer;
+}
+.figure-lightbox-close:hover, .figure-lightbox-close:focus { background: rgba(255, 255, 255, .25); }
 .fulltext-equation { text-align: center; }
 .fulltext-equation img { max-width: 100%; height: auto; }
 
@@ -680,6 +699,9 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .detail-list { margin: 0; }
 .detail-list dt { font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: .6rem; }
 .detail-list dd { margin: 0; font-size: .93rem; overflow-wrap: anywhere; }
+.badge-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .3rem; }
+.badge-row a { display: block; }
+.badge-icon { height: 44px; width: auto; display: block; border-radius: 4px; background: #fff; }
 .citation-text { font-size: .88rem; color: var(--ink-soft); }
 .cite-box-head { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; margin-bottom: .6rem; }
 .cite-box-head h2 { margin: 0; }
