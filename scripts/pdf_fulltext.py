@@ -32,6 +32,29 @@ CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s*\d+[a-zA-Z]?\s*[.:]", re.IGNOR
 PAGE_NUM_RE = re.compile(r"^\d{1,3}$")
 MATH_FONT_RE = re.compile(r"CM[A-Z]|Math|Symbol|MSAM|MSBM|MJX")
 BOLD_FLAG = 16
+ZWSP = "​"    # a zero-width space PyMuPDF sometimes emits
+                    # as its own span right after a bullet glyph
+
+# Broad set used only to keep a bulleted line from being misread as a
+# heading - false negatives here are cheap, so dashes/asterisks/middle-dot
+# stay included even though they're unreliable as a "this line STARTS a new
+# bullet item" signal (see BULLET_ITEM_CHARS below, used for that instead).
+BULLET_CHARS = "•‣▪✦◦●·*–—-"
+
+# Strict subset of BULLET_CHARS used only to decide "does this line start a
+# NEW bullet item" - deliberately excludes '-', '–', '—', '·', '*'. Those
+# land at the start of an ordinary line-wrapped continuation purely by
+# coincidence of reflow (confirmed in practice: "Writing – Original Draft"
+# wraps so the continuation line starts with the en dash) - treating them as
+# list markers would fragment ordinary prose into fake list items.
+BULLET_ITEM_CHARS = "•‣▪✦◦●"
+
+# A bold run at a line's very start, immediately naming a label ("Haining
+# Wang:", "Manipulations and measures:") - the signal for a forced paragraph
+# break mid-block. No period before the colon (so it doesn't fire past a
+# sentence boundary); colon within roughly the first 80 chars (a label
+# phrase, not an arbitrary later colon in body prose).
+_LABEL_COLON_RE = re.compile(r"^[^.:]{1,80}:")
 
 # Footnotes: a footnote's own leading number (e.g. "1" at the start of a
 # footnote block at the bottom of the page) is typically NOT
@@ -49,9 +72,14 @@ FOOTNOTE_Y_FRAC = 0.55              # ...and starts in the bottom ~45% of the
                                     # superscripts near the top of page 1,
                                     # which can otherwise look identical)
 
-# The reference list is scraped from OJS and shown in its own section on the
-# article page, so the PDF's copy is skipped rather than duplicated.
-REFERENCE_HEADINGS = {"references", "bibliography", "literature", "literatur"}
+# Once one of these headings is reached, everything from there to the end of
+# the document is skipped: the reference list is scraped from OJS and shown
+# in its own section on the article page (so the PDF's copy would just
+# duplicate it), and an "Open Science Badges" section - along with whatever
+# running-footer boilerplate (license line, DOI, journal tagline) trails
+# after it on the PDF's last page - duplicates the sidebar's own badges.
+EXCLUDED_SECTION_HEADINGS = {"references", "bibliography", "literature", "literatur",
+                             "open science badges"}
 
 
 def _norm(text):
@@ -142,6 +170,126 @@ def _span_stats(block):
         return 0.0, False, 0.0
     (size, bold), _ = max(by_style.items(), key=lambda kv: kv[1])
     return size, bold, math_chars / total_chars
+
+
+def _line_raw_text(line):
+    """Whitespace-normalized text of one line - the per-LINE analogue of
+    _block_text(), needed because _split_block_segments() inspects lines
+    individually rather than a whole block's assembled text."""
+    return re.sub(r"\s+", " ", _plain_join(line["spans"])).strip()
+
+
+def _is_heading_line(line, body_size, toc_titles):
+    """Line-level analogue of pass 2's block-level heading formula - lets a
+    heading-styled LINE be recognized even when it's trapped inside a
+    larger block whose block-wide DOMINANT style (by character count) is
+    something else entirely (confirmed case: a heading glued onto the end
+    of a preceding bullet list, whose block-wide dominant style is the
+    bullets' own plain body text)."""
+    text = _line_raw_text(line)
+    if not text:
+        return False
+    size, bold, _ = _span_stats({"lines": [line]})
+    norm = _norm(text)
+    return ((bold and size >= body_size + 1) or norm in toc_titles) \
+        and len(text) < 120 \
+        and text.lstrip(ZWSP)[:1] not in BULLET_CHARS \
+        and not text.rstrip().endswith(".")
+
+
+def _bullet_marker_len(line):
+    """Number of leading spans in `line` that make up a bullet-list marker
+    (the glyph span, plus any purely-whitespace span before the body-text
+    span starts) - 0 if the line doesn't open with one. Restricted to
+    BULLET_ITEM_CHARS, not the broader BULLET_CHARS - see that constant's
+    comment for why."""
+    spans = line["spans"]
+    idx, saw_marker = 0, False
+    while idx < len(spans):
+        t = spans[idx]["text"].strip(ZWSP).strip()
+        if t == "":
+            idx += 1
+            continue
+        if not saw_marker and len(t) == 1 and t in BULLET_ITEM_CHARS:
+            saw_marker = True
+            idx += 1
+            continue
+        break
+    return idx if saw_marker else 0
+
+
+def _strip_bullet_marker(seg_lines):
+    """Block-shaped {"lines": [...]} for a bullet_item segment's lines,
+    with the FIRST line's leading marker span(s) dropped before rendering
+    its <li> - the bullet glyph sits in its own span (e.g. '●' followed by
+    a zero-width-space span), ahead of the body-text span, so this is just
+    skipping leading spans rather than text-splicing. Any continuation
+    lines (a multi-line bullet item wrapping without their own marker)
+    pass through unchanged."""
+    first, rest = seg_lines[0], seg_lines[1:]
+    n = _bullet_marker_len(first)
+    if n:
+        first = {"spans": first["spans"][n:]}
+    return {"lines": [first] + rest}
+
+
+def _is_label_start(line):
+    """True if `line` opens with a bold run immediately naming a label -
+    the signal for a forced paragraph break even mid-block, so back-to-back
+    "Label: ..." runs (CRediT author-contribution entries, Transparency
+    Statement sub-sections) aren't glued into one paragraph. Requires the
+    line's OWN first span to be bold, not just bold text anywhere in the
+    line."""
+    spans = line["spans"]
+    if not spans or not spans[0]["text"].strip():
+        return False
+    if not (spans[0]["flags"] & BOLD_FLAG):
+        return False
+    return bool(_LABEL_COLON_RE.match(_line_raw_text(line)))
+
+
+def _split_block_segments(block, body_size, toc_titles):
+    """Split a text block's lines into ordered ('heading'|'bullet_item'|
+    'paragraph', [line, ...]) segments, so pass 2 can emit one HTML element
+    per segment instead of assuming the whole block is one element. A
+    blank line is a hard break (dropped, forces the next line into a new
+    segment); a line matching the heading formula becomes its own heading
+    segment even mid-block; a bullet-marker-led line always starts a NEW
+    bullet_item (consecutive markers are separate items; continuation
+    lines with no marker extend the current item); a bold "Label:" line
+    forces a new paragraph; anything else continues the open segment."""
+    segments = []
+    cur_kind, cur_lines = None, []
+
+    def flush():
+        nonlocal cur_kind, cur_lines
+        if cur_lines:
+            segments.append((cur_kind, cur_lines))
+        cur_kind, cur_lines = None, []
+
+    for line in block["lines"]:
+        raw = _line_raw_text(line)
+        if not raw:
+            flush()
+            continue
+        if _is_heading_line(line, body_size, toc_titles):
+            flush()
+            segments.append(("heading", [line]))
+            continue
+        if _bullet_marker_len(line):
+            flush()
+            cur_kind, cur_lines = "bullet_item", [line]
+            continue
+        if _is_label_start(line):
+            flush()
+            cur_kind, cur_lines = "paragraph", [line]
+            continue
+        if cur_kind is None:
+            cur_kind = "paragraph"
+        cur_lines.append(line)
+
+    flush()
+    return segments
 
 
 def _body_font_size(doc):
@@ -450,16 +598,78 @@ def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
     return rect + (-4, -4, 4, 4)       # a little breathing room
 
 
-def _figure_html(url, caption, caption_first=False):
+def _table_plain_text(page, rect):
+    """A readable plain-text approximation of a table region's content,
+    for a "copy table text" convenience button on the image a table
+    otherwise renders as - NOT true table reconstruction (see this
+    module's docstring/_table_rect_below for why that stays out of scope),
+    just enough structure to be useful pasted into a spreadsheet or plain
+    text: text blocks in the region clustered into rows by y-proximity,
+    ordered left-to-right within a row, joined with " | "."""
+    blocks = []
+    for block in page.get_text("dict")["blocks"]:
+        if block["type"] != 0:
+            continue
+        r = fitz.Rect(block["bbox"])
+        if not r.intersects(rect):
+            continue
+        text = _block_text(block)
+        if text:
+            blocks.append((r.y0, r.x0, text))
+    if not blocks:
+        return ""
+    blocks.sort(key=lambda b: (b[0], b[1]))
+    rows, row_y, row_texts = [], None, []
+    for y0, x0, text in blocks:
+        if row_y is None or y0 - row_y > 4:
+            if row_texts:
+                rows.append(row_texts)
+            row_y, row_texts = y0, [text]
+        else:
+            row_texts.append(text)
+    if row_texts:
+        rows.append(row_texts)
+    return "\n".join(" | ".join(r) for r in rows)
+
+
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _heading_id(text, seen):
+    """Stable slug for a heading's id attribute, so the full-text table of
+    contents can link/jump to it - deduplicated against `seen` (shared
+    across the whole document, populated by both places a heading gets
+    emitted) by appending -2, -3, ... on repeats (e.g. two sections both
+    titled "Method")."""
+    slug = _SLUG_RE.sub("-", text.lower()).strip("-") or "section"
+    base, n = slug, 2
+    while slug in seen:
+        slug = "%s-%d" % (base, n)
+        n += 1
+    seen.add(slug)
+    return slug
+
+
+def _figure_html(url, caption, caption_first=False, copy_text=None):
     """caption_first=True renders the caption BEFORE the image (this
     journal's Table convention); the default (False) renders it after
-    (this journal's Figure convention)."""
+    (this journal's Figure convention). copy_text, when given (tables
+    only - a table image has no selectable text of its own, unlike a
+    genuine chart image where a caption is enough), adds a small "Copy
+    table text" button next to the caption - a row-clustered plain-text
+    approximation of the table's cells (see _table_plain_text), not true
+    table reconstruction, just enough to be useful pasted elsewhere."""
     cap = ('<figcaption>%s</figcaption>' % html.escape(caption)) if caption else ""
     alt = html.escape(caption[:80]) if caption else "Figure"
     img = ('<button class="figure-zoom" type="button" aria-label="Enlarge figure">'
            '<img src="%s" loading="lazy" alt="%s"></button>' % (url, alt))
+    copy_btn = ""
+    if copy_text:
+        copy_btn = ('<button class="copy-btn table-copy-btn" type="button" '
+                    'data-copy-text="%s">Copy table text</button>'
+                    % html.escape(copy_text))
     css_class = "fulltext-figure fulltext-table" if caption_first else "fulltext-figure"
-    body = (cap + img) if caption_first else (img + cap)
+    body = (cap + copy_btn + img) if caption_first else (img + cap + copy_btn)
     return '<figure class="%s">%s</figure>' % (css_class, body)
 
 
@@ -510,9 +720,10 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     figures = []
     footnotes = []
     started = first_heading is None    # no bookmarks -> include everything
-    in_references = False
+    in_excluded_section = False
     fig_n = 0
     table_n = 0
+    seen_heading_ids = set()
 
     for page_index, page in enumerate(doc):
         d = page.get_text("dict")
@@ -569,7 +780,7 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             rect = fitz.Rect(block["bbox"])
             is_heading = ((bold and size >= body_size + 1)
                           or norm in toc_titles) and len(text) < 120 \
-                and text[:1] not in "•‣▪✦◦·*–—-" \
+                and text[:1] not in BULLET_CHARS \
                 and not text.rstrip().endswith(".")   # sentences aren't headings
 
             if not started:
@@ -579,9 +790,10 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     continue
 
             if is_heading:
-                in_references = norm in REFERENCE_HEADINGS
-            if in_references:
-                continue               # the page shows OJS's reference list
+                in_excluded_section = norm in EXCLUDED_SECTION_HEADINGS
+            if in_excluded_section:
+                continue               # references/Open Science Badges - see
+                                        # EXCLUDED_SECTION_HEADINGS's comment
 
             # Text living inside a rendered figure/table (axis labels,
             # legends, table cells) - moved ahead of the footnote check
@@ -632,8 +844,15 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     table_n += 1
                     name = "table-%d.png" % table_n
                     figures.append((name, png))
+                    # table_rects[i] has the same +/-4pt breathing-room
+                    # padding _render_clip's image wants but the plain-text
+                    # extraction doesn't - undo it so the caption itself
+                    # (just above) or a following heading (just below)
+                    # can't be pulled in as a stray extra "row".
+                    copy_text = _table_plain_text(page, table_rects[i] + (4, 4, -4, -4))
                     parts.append(_figure_html(fig_url_prefix + name, text,
-                                              caption_first=True))
+                                              caption_first=True,
+                                              copy_text=copy_text))
                     continue
                 # fall through: keep the caption as plain text (e.g. a
                 # table with no drawings and no text below it detected -
@@ -655,13 +874,51 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             if is_heading:
                 level = toc_titles.get(norm, 1)
                 tag = "h3" if level <= 1 else "h4"
-                parts.append("<%s>%s</%s>" % (tag, html.escape(text), tag))
-            else:
-                parts.append("<p>%s</p>" % _paragraph_html(
-                    block, page_footnote_ids, page_index, body_size,
-                    unambiguous_marker_page=unambiguous_marker_page))
+                hid = _heading_id(text, seen_heading_ids)
+                parts.append('<%s id="%s">%s</%s>' % (tag, hid, html.escape(text), tag))
+                continue
 
-        if started and not in_references:
+            # A block isn't necessarily ONE paragraph: a bulleted list or a
+            # run of bold "Label: ..." sub-sections can share one PyMuPDF
+            # block with no structural markup of their own - split it into
+            # heading/bullet_item/paragraph segments instead of assembling
+            # the whole block as a single flat paragraph (see
+            # _split_block_segments's docstring for the confirmed real
+            # cases this recovers).
+            in_list = False
+            for kind, seg_lines in _split_block_segments(block, body_size, toc_titles):
+                if kind == "bullet_item":
+                    if not in_list:
+                        parts.append("<ul>")
+                        in_list = True
+                    parts.append("<li>%s</li>" % _paragraph_html(
+                        _strip_bullet_marker(seg_lines), page_footnote_ids,
+                        page_index, body_size,
+                        unambiguous_marker_page=unambiguous_marker_page))
+                    continue
+                if in_list:
+                    parts.append("</ul>")
+                    in_list = False
+                if kind == "heading":
+                    seg_text = _line_raw_text(seg_lines[0])
+                    seg_norm = _norm(seg_text)
+                    if seg_norm in EXCLUDED_SECTION_HEADINGS:
+                        in_excluded_section = True
+                    if in_excluded_section:
+                        break
+                    seg_level = toc_titles.get(seg_norm, 1)
+                    seg_tag = "h3" if seg_level <= 1 else "h4"
+                    seg_hid = _heading_id(seg_text, seen_heading_ids)
+                    parts.append('<%s id="%s">%s</%s>'
+                                 % (seg_tag, seg_hid, html.escape(seg_text), seg_tag))
+                else:
+                    parts.append("<p>%s</p>" % _paragraph_html(
+                        {"lines": seg_lines}, page_footnote_ids, page_index,
+                        body_size, unambiguous_marker_page=unambiguous_marker_page))
+            if in_list:
+                parts.append("</ul>")
+
+        if started and not in_excluded_section:
             for rect in standalone:
                 png = _render_clip(page, rect)
                 if png:

@@ -71,6 +71,15 @@
           {% if article.fullTextHtml %}
           <div class="view-panel{% if not article.pdf %} is-active{% endif %}" role="tabpanel"
                id="panel-html" aria-labelledby="tab-html"{% if article.pdf %} hidden{% endif %}>
+            <button class="fulltext-toc-toggle" type="button" aria-expanded="false"
+                    aria-controls="fulltext-toc" aria-label="Table of contents">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <line x1="4" y1="7" x2="20" y2="7"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="17" x2="20" y2="17"/>
+              </svg>
+            </button>
+            <nav class="fulltext-toc" id="fulltext-toc" aria-label="Full text sections" hidden></nav>
             <div class="fulltext-toolbar">
               <p class="meta fulltext-note">Experimental view. The PDF is the version of record.</p>
               <button class="fulltext-settings-toggle" type="button" aria-expanded="false"
@@ -411,6 +420,41 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   // only fire in reaction to the user actively picking "wide" (below).
 })();
 
+// Floating table-of-contents toggle for the full-text view: click the
+// hamburger icon to expand a jump-to-heading list, click it again (or
+// click a link, or press Escape) to collapse it. The list is built fresh
+// from whatever h3/h4 elements actually exist in #fulltext-body each time
+// it opens, rather than once at load, so it always matches the current
+// content (pdf_fulltext.py already gives every heading a stable id).
+(function () {
+  var toggle = document.querySelector('.fulltext-toc-toggle');
+  var nav = document.getElementById('fulltext-toc');
+  var body = document.getElementById('fulltext-body');
+  if (!toggle || !nav || !body) return;
+
+  function setOpen(open) {
+    if (open) {
+      var headings = body.querySelectorAll('h3, h4');
+      nav.innerHTML = Array.prototype.map.call(headings, function (h) {
+        return '<a href="#' + h.id + '" class="fulltext-toc-' + h.tagName.toLowerCase() + '">'
+          + h.textContent + '</a>';
+      }).join('');
+    }
+    nav.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  }
+
+  toggle.addEventListener('click', function () {
+    setOpen(nav.hidden);
+  });
+  nav.addEventListener('click', function (e) {
+    if (e.target.closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !nav.hidden) setOpen(false);
+  });
+})();
+
 // Lightbox for full-text figures/tables: click a .figure-zoom button to
 // see its image at full size. One delegated listener on the fulltext
 // body (rather than one per figure) so it works for every figure/table
@@ -452,33 +496,57 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   });
 })();
 
+// Shared by every copy-to-clipboard button on this page (citation/BibTeX/
+// RIS in the sidebar, and the full-text view's per-table "Copy table
+// text" buttons) - async Clipboard API with an execCommand fallback for
+// contexts without it.
+function r2CopyToClipboard(text, onDone) {
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { if (document.execCommand('copy')) onDone(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onDone, fallback);
+  } else {
+    fallback();
+  }
+}
+
 document.querySelectorAll('.cite-box .copy-btn').forEach(function (btn) {
   var originalLabel = btn.textContent;
   btn.addEventListener('click', function () {
     var text = btn.hasAttribute('data-copy-text')
       ? btn.getAttribute('data-copy-text')
       : btn.closest('.cite-box').querySelector('.citation-text').textContent.trim();
-    function done() {
+    r2CopyToClipboard(text, function () {
       btn.textContent = 'Copied ✓';
       setTimeout(function () { btn.textContent = originalLabel; }, 1500);
-    }
-    function fallback() {
-      // execCommand path for contexts without the async clipboard API.
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { if (document.execCommand('copy')) done(); } catch (e) {}
-      document.body.removeChild(ta);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, fallback);
-    } else {
-      fallback();
-    }
+    });
   });
 });
+
+// "Copy table text" buttons in the full-text view: delegated on
+// #fulltext-body (like the lightbox above) rather than bound per-button,
+// since the bionic-reading toggle can replace this subtree's DOM wholesale
+// - a directly-bound listener wouldn't survive that.
+(function () {
+  var body = document.getElementById('fulltext-body');
+  if (!body) return;
+  body.addEventListener('click', function (e) {
+    var btn = e.target.closest('.table-copy-btn');
+    if (!btn) return;
+    var originalLabel = btn.textContent;
+    r2CopyToClipboard(btn.getAttribute('data-copy-text') || '', function () {
+      btn.textContent = 'Copied ✓';
+      setTimeout(function () { btn.textContent = originalLabel; }, 1500);
+    });
+  });
+})();
 </script>
 {% endblock %}

@@ -26,10 +26,12 @@ except ImportError:  # pymupdf not installed - build without full-text sections
     def extract_fulltext(pdf_path, fig_url_prefix):
         return {"html": "", "figures": []}
     print("pymupdf not available - skipping PDF full-text extraction.")
+from manuscript_override import load_override, apply_table_overrides
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "_site")
+OVERRIDES = os.path.join(ROOT, "overrides")
 
 BASE = os.environ.get("BASE_URL", "/")
 if not BASE.startswith("/"):
@@ -430,6 +432,17 @@ def main():
     # assets/static copytree calls (their destination must not exist yet).
     fulltext_figures = []
     for a in articles:
+        # A hand-curated Markdown export of the copy-edited manuscript, if
+        # one exists for this article, supplies cleaner tables/references
+        # than what PDF extraction/the OJS scrape produce - see
+        # scripts/manuscript_override.py's own docstring. Reading it here,
+        # before referencesHtml is otherwise used below, so citation
+        # tooltips build against whichever reference list ends up
+        # canonical.
+        override = load_override(OVERRIDES, a["urlPath"])
+        if override and override.get("referencesHtml"):
+            a["referencesHtml"] = override["referencesHtml"]
+
         a["stats"] = normalize_article_stats(stats.get(a["submissionId"]))
         pub_month = a["datePublished"][:7] if a.get("datePublished") else None
         a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
@@ -438,7 +451,7 @@ def main():
         # GitHub repo that doubles as both the materials and the code) -
         # merge those specific rows instead of repeating an identical link
         # two or three times in the sidebar text list.
-        merge_fields = (("dataUrl", "Data"), ("materialsUrl", "Materials"),
+        merge_fields = (("materialsUrl", "Materials"), ("dataUrl", "Data"),
                          ("codeUrl", "Code"))
         merged_by_url = {}
         merged_order = []
@@ -463,12 +476,12 @@ def main():
         a["badges"] = [
             {"label": label, "url": extras[key], "icon": icon}
             for key, label, icon in (
-                ("peerReviewUrl", "Open Review", "static/img/badges/openreview.svg"),
-                ("reproCertUrl", "Reproducibility Certificate", "static/img/badges/reprocert.svg"),
                 ("preregisteredUrl", "Preregistered", "static/img/badges/preregestered.png"),
-                ("dataUrl", "Open Data", "static/img/badges/opendata.png"),
                 ("materialsUrl", "Open Materials", "static/img/badges/openmaterial.png"),
-                ("codeUrl", "Open Code", "static/img/badges/opencode.png"))
+                ("dataUrl", "Open Data", "static/img/badges/opendata.png"),
+                ("codeUrl", "Open Code", "static/img/badges/opencode.png"),
+                ("reproCertUrl", "Reproducibility Certificate", "static/img/badges/reprocert.svg"),
+                ("peerReviewUrl", "Open Review", "static/img/badges/openreview.svg"))
             if extras.get(key)
         ]
         a["laySummary"] = extras.get("laySummary") or ""
@@ -486,6 +499,9 @@ def main():
                 prefix = BASE + "assets/fulltext/" + a["urlPath"] + "-"
                 result = extract_fulltext(pdf_path, prefix)
                 full_html = result["html"]
+                if full_html and override and override.get("tables"):
+                    full_html = apply_table_overrides(full_html, override["tables"],
+                                                       a["urlPath"])
                 if full_html and a.get("referencesHtml"):
                     full_html = link_citations(full_html, a["referencesHtml"])
                 a["fullTextHtml"] = full_html

@@ -473,6 +473,12 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   font-size: .85rem; color: var(--ink-soft); margin-top: .6rem; text-align: left;
 }
 .fulltext-table figcaption { margin-top: 0; margin-bottom: .6rem; }
+.table-copy-btn {
+  display: block; margin: 0 0 .6rem; font: 600 .72rem var(--sans);
+  color: var(--muted); background: #fff; border: 1px solid var(--rule);
+  border-radius: 6px; padding: .25rem .6rem; cursor: pointer;
+}
+.table-copy-btn:hover { color: var(--accent-dark); border-color: var(--accent); }
 .figure-lightbox {
   position: fixed; inset: 0; z-index: 200; display: none;
   align-items: center; justify-content: center; padding: 2rem;
@@ -520,7 +526,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .footnote-backref:hover, .footnote-backref:focus { color: var(--accent-dark); }
 
 /* Reading-options toolbar (gear toggle) above the extracted full text. */
-.fulltext-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.fulltext-toolbar {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1rem; margin-bottom: 1rem;
+  padding-left: 38px;   /* room for the floating TOC toggle above at top-left */
+}
 .fulltext-note { margin: 0; font-style: italic; }
 .fulltext-settings-toggle {
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
@@ -530,6 +540,39 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .fulltext-settings-toggle:hover, .fulltext-settings-toggle[aria-expanded="true"] {
   color: var(--accent-dark); border-color: var(--accent);
 }
+
+/* Floating table-of-contents toggle for the full-text view - see the
+   "Floating table-of-contents toggle" IIFE in article.html for the
+   expand/collapse behavior. Positioned relative to .view-panel (the tab
+   content area), top-left, so it stays put regardless of scroll position
+   within the full-text body. */
+.view-panel { position: relative; }
+.fulltext-toc-toggle {
+  position: absolute; top: 0; left: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0; background: #fff;
+  border: 1.5px solid var(--rule); border-radius: 6px;
+  color: var(--muted); cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.fulltext-toc-toggle:hover, .fulltext-toc-toggle[aria-expanded="true"] {
+  color: var(--accent-dark); border-color: var(--accent);
+}
+.fulltext-toc {
+  position: absolute; top: 34px; left: 0; z-index: 5;
+  display: flex; flex-direction: column; gap: .1rem;
+  max-height: 60vh; min-width: 220px; max-width: 80vw;
+  overflow-y: auto; padding: .5rem; background: #fff;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.fulltext-toc[hidden] { display: none; }
+.fulltext-toc a {
+  padding: .3rem .5rem; border-radius: 6px; font-size: .85rem;
+  color: var(--ink-soft); text-decoration: none;
+}
+.fulltext-toc a:hover, .fulltext-toc a:focus { background: var(--bg-alt); color: var(--accent-dark); }
+.fulltext-toc-h4 { padding-left: 1.3rem !important; font-size: .8rem !important; }
 
 /* The reading-options box itself - a row of labeled button groups, shown
    between the toolbar and the full text when the gear is toggled open. */
