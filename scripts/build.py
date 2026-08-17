@@ -183,6 +183,15 @@ SURNAME_RE = re.compile(
     r"([A-ZÀ-Þ][\w'’.\-]*(?:\s[A-ZÀ-Þ][\w'’\-]*)?)"
     r"\s*,\s*[A-ZÀ-Þ]\.")
 
+# ACL/computational-linguistics style bibliography entries look like
+# "Firstname Middle Lastname[, Firstname2 Lastname2, ...][, and|and
+# Firstname_n Lastname_n]. YYYY[a-z]?. Title..." - given-name-first order
+# (no comma before the surname, unlike APA), and a bare "YYYY." rather than
+# "(YYYY)". _ACL_ENTRY_RE finds the author segment + year; _ACL_SPLIT_RE
+# then breaks that segment into individual names on every comma or " and ".
+_ACL_ENTRY_RE = re.compile(r"^(.*?)\.\s*(\d{4}[a-z]?)\.\s")
+_ACL_SPLIT_RE = re.compile(r",\s*(?:and\s+)?|\s+and\s+")
+
 TAG_RE = re.compile(r"<[^>]*>")
 
 
@@ -204,26 +213,46 @@ def _reference_html(p):
     return re.sub(r"\s+([,.;:])", r"\1", fragment)
 
 
+def _acl_surname(name):
+    """Best-effort surname from one ACL-style "Firstname Middle Lastname"
+    name: the last whitespace-separated token, which also does the right
+    thing for a hyphenated given name ("Chih-Jen Lin" -> "Lin") and an
+    initialed middle name ("Andrew W. E. McDonald" -> "McDonald")."""
+    name = name.strip().rstrip(".")
+    parts = name.split()
+    return parts[-1] if parts else name
+
+
 def _reference_entries(references_html):
     """[(html_fragment, surnames[], "YYYY[x]"), ...] parsed from the
-    OJS-scraped reference list - one <p> per reference, APA-style "Surname,
-    F., & Surname2, G. (YYYY[x]). Title...". Entries whose leading
-    author/year can't be parsed are skipped (never shown as a tooltip is
-    safer than a wrong one).
+    OJS-scraped reference list - one <p> per reference. Tries APA style
+    first ("Surname, F., & Surname2, G. (YYYY[x]). Title..."); if that
+    doesn't match, falls back to ACL/computational-linguistics style
+    ("Firstname Lastname and Firstname2 Lastname2. YYYY[x]. Title...",
+    e.g. as used in scripts/manuscript_override.py-sourced references
+    too) - see _ACL_ENTRY_RE. Entries whose leading author/year can't be
+    parsed by either are skipped (never shown as a tooltip is safer than
+    a wrong one).
     """
     soup = BeautifulSoup(references_html or "", "html.parser")
     entries = []
     for p in soup.find_all("p"):
         text = re.sub(r"\s+", " ", p.get_text(" ", strip=True)).strip()
         m = re.match(r"^(.*?)\((\d{4}[a-z]?)\)", text)
-        if not m:
-            continue
-        author_segment, year = m.group(1), m.group(2)
-        surnames = SURNAME_RE.findall(author_segment)
-        if not surnames:
-            m2 = re.match(r"^([A-ZÀ-Þ][\w'’\-]+)", author_segment.strip())
-            if m2:
-                surnames = [m2.group(1)]
+        if m:
+            author_segment, year = m.group(1), m.group(2)
+            surnames = SURNAME_RE.findall(author_segment)
+            if not surnames:
+                m2 = re.match(r"^([A-ZÀ-Þ][\w'’\-]+)", author_segment.strip())
+                if m2:
+                    surnames = [m2.group(1)]
+        else:
+            m3 = _ACL_ENTRY_RE.match(text)
+            if not m3:
+                continue
+            author_segment, year = m3.group(1), m3.group(2)
+            names = [n for n in _ACL_SPLIT_RE.split(author_segment) if n.strip()]
+            surnames = [_acl_surname(n) for n in names]
         if surnames:
             entries.append((_reference_html(p), surnames, year))
     return entries
@@ -259,22 +288,32 @@ def link_citations(fulltext_html, references_html):
     lookup = {}
     for full_html, surnames, year in entries:
         if len(surnames) == 1:
-            who = surnames[0]
+            whos = [surnames[0]]
         elif len(surnames) == 2:
-            who = "%s & %s" % (surnames[0], surnames[1])
+            # Both joiners are real in-text forms, not just an APA-vs-ACL
+            # split: "&" is the parenthetical-citation convention, "and"
+            # the narrative one ("Smith and Jones (2020) found...") - and
+            # it's also literally what ACL-style bibliographies + their
+            # in-text citations use even parenthetically (e.g. "(Abbasi
+            # and Chen, 2008)"). Generating surface forms for both covers
+            # every case actually observed rather than assuming one style.
+            whos = ["%s & %s" % (surnames[0], surnames[1]),
+                    "%s and %s" % (surnames[0], surnames[1])]
         else:
-            who = "%s et al." % surnames[0]
-        who_amp = who.replace("&", "&amp;")
+            whos = ["%s et al." % surnames[0]]
         full = full_html
-        # Every surface form the citation might take in-text: narrative
-        # "(YYYY)", and the two parenthetical spacings seen in practice -
-        # some journals put a comma before the year, some don't (the latter
-        # also covers multi-citation groups like "(A 2020; B et al. 2021)",
-        # since each piece is matched on its own without the shared parens).
-        for surface in ("%s (%s)" % (who_amp, year),
-                        "%s, %s" % (who_amp, year),
-                        "%s %s" % (who_amp, year)):
-            lookup.setdefault(surface, full)
+        for who in whos:
+            who_amp = who.replace("&", "&amp;")
+            # Every surface form the citation might take in-text: narrative
+            # "(YYYY)", and the two parenthetical spacings seen in practice -
+            # some journals put a comma before the year, some don't (the
+            # latter also covers multi-citation groups like "(A 2020; B et
+            # al. 2021)", since each piece is matched on its own without
+            # the shared parens).
+            for surface in ("%s (%s)" % (who_amp, year),
+                            "%s, %s" % (who_amp, year),
+                            "%s %s" % (who_amp, year)):
+                lookup.setdefault(surface, full)
 
     if not lookup:
         return fulltext_html

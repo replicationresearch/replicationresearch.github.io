@@ -543,7 +543,16 @@ def _figure_rect_above(page, caption_rect, text_blocks, furniture):
     rect = rect & band
     if rect.width < MIN_FIG_W or rect.height < MIN_FIG_H:
         return None
-    return rect + (-4, -4, 4, 4)       # a little breathing room
+    padded = rect + (-4, -4, 4, 4)     # a little breathing room ...
+    # ... but never let it cross into the caption below or the body text
+    # above - band's own bounds (top_limit/caption_rect.y0) are already
+    # the correct edges; padding past them clips in a sliver of whichever
+    # text sits just outside the real figure (confirmed in practice: a
+    # figure's image was showing the first line of its own caption at the
+    # bottom edge).
+    padded.y0 = max(padded.y0, top_limit)
+    padded.y1 = min(padded.y1, caption_rect.y0)
+    return padded
 
 
 def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
