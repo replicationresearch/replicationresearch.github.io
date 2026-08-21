@@ -1,112 +1,5 @@
 [
  {
-  "abstractHtml": "<p>Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.</p>",
-  "authors": [
-   {
-    "affiliation": "University of Münster",
-    "name": "Lukas Röseler",
-    "orcid": "https://orcid.org/0000-0002-6446-1901"
-   },
-   {
-    "affiliation": "Birkbeck, University of London",
-    "name": "Lukas Wallrich",
-    "orcid": "https://orcid.org/0000-0003-2121-5177"
-   },
-   {
-    "affiliation": "Ludwig-Maximilians-University Munich",
-    "name": "Susanne Adler",
-    "orcid": "https://orcid.org/0000-0002-3211-6871"
-   },
-   {
-    "affiliation": "University of Münster",
-    "name": "Prince Oppong Boakye",
-    "orcid": "https://orcid.org/0009-0003-5447-8034"
-   },
-   {
-    "affiliation": "University of Greenwich",
-    "name": "Thomas Rhys Evans",
-    "orcid": "https://orcid.org/0000-0002-6670-0718"
-   },
-   {
-    "affiliation": "Charité – Universitätsmedizin Berlin",
-    "name": "Janik Goltermann",
-    "orcid": "https://orcid.org/0000-0003-3087-1002"
-   },
-   {
-    "affiliation": "Tilburg University",
-    "name": "Tamarinde Haven",
-    "orcid": "https://orcid.org/0000-0002-4702-2472"
-   },
-   {
-    "affiliation": "University of Hamburg",
-    "name": "Jan Horstmann",
-    "orcid": "https://orcid.org/0000-0001-8047-2232"
-   },
-   {
-    "affiliation": "Haukeland University Hospital",
-    "name": "Max Korbmacher",
-    "orcid": "https://orcid.org/0000-0002-8113-2560"
-   },
-   {
-    "affiliation": "University of Münster",
-    "name": "Miriam Müller",
-    "orcid": "https://orcid.org/0009-0006-6029-8808"
-   },
-   {
-    "affiliation": "Erasmus University Rotterdam",
-    "name": "Steven Verheyen",
-    "orcid": "https://orcid.org/0000-0002-6778-6744"
-   },
-   {
-    "affiliation": "University of Amsterdam",
-    "name": "Ingmar Visser",
-    "orcid": "https://orcid.org/0000-0003-3855-2778"
-   },
-   {
-    "affiliation": "Utrecht University",
-    "name": "Flavio Azevedo",
-    "orcid": "https://orcid.org/0000-0001-9000-8513"
-   }
-  ],
-  "bibtexText": "@article{Röseler_Wallrich_Adler_Oppong Boakye_Evans_Goltermann_Haven_Horstmann_Korbmacher_Müller_et al._2025,\n  title={A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2)},\n  volume={1},\n  url={https://ejournals.uni-muenster.de/replicationresearch/article/view/ie},\n  DOI={10.17879/replicationresearch-2025-9022},\n  abstractNote={&amp;lt;p&amp;gt;Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.&amp;lt;/p&amp;gt;},\n  journal={Replication Research},\n  author={Röseler, Lukas and Wallrich, Lukas and Adler, Susanne and Oppong Boakye, Prince and Evans, Thomas Rhys and Goltermann, Janik and Haven, Tamarinde and Horstmann, Jan and Korbmacher, Max and Müller, Miriam and et al.},\n  year={2025},\n  month={Oct.}\n}",
-  "bibtexUrl": "https://ejournals.uni-muenster.de/replicationresearch/citationstylelanguage/download/bibtex?submissionId=9022&publicationId=9700",
-  "categories": [
-   "Transdisciplinary"
-  ],
-  "citation": "Röseler, L., Wallrich, L., Adler, S., Oppong Boakye, P., Evans, T. R., Goltermann, J., … Azevedo, F. (2025). A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2). Replication Research, 1. https://doi.org/10.17879/replicationresearch-2025-9022",
-  "datePublished": "2025-10-20",
-  "doi": "10.17879/replicationresearch-2025-9022",
-  "doiUrl": "https://doi.org/10.17879/replicationresearch-2025-9022",
-  "galleys": [
-   {
-    "downloadUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/download/ie/ie",
-    "isPdf": true,
-    "label": "PDF",
-    "localPdf": "ie-ie.pdf",
-    "viewUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/view/ie/ie"
-   }
-  ],
-  "issueId": "vol1",
-  "issueTitle": "Vol. 1 (2025)",
-  "keywords": [
-   "reproduction",
-   "replication",
-   "metascience",
-   "open science",
-   "open access"
-  ],
-  "licenseHtml": "<p>Copyright (c) 2025 Lukas Röseler, Lukas Wallrich, Susanne Adler, Prince Oppong Boakye, Thomas Rhys Evans, Janik Goltermann, Tamarinde Haven, Jan Horstmann, Max Korbmacher, Miriam Müller, Steven Verheyen, Ingmar Visser, Flavio Azevedo</p>\n<a href=\"https://creativecommons.org/licenses/by/4.0/\" rel=\"license\"><img alt=\"Creative Commons License\" src=\"__BASE__assets/img/52d37f6a-88x31.png\"/></a><p>This work is licensed under a <a href=\"https://creativecommons.org/licenses/by/4.0/\" rel=\"license\">Creative Commons Attribution 4.0 International License</a>.</p>",
-  "ojsUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/view/ie",
-  "referencesHtml": "<p>Ankel-Peters, J., Brodeur, A., Dreber, A., Johannesson, M., Neubauer, F., &amp; Rose, J. (2025). A protocol for structured robustness reproductions and replicability assessments. Q Open, 5(3). <a href=\"https://doi.org/10.1093/qopen/qoaf004\">https://doi.org/10.1093/qopen/qoaf004</a> </p>\n<p>Baba, A., Cook, D. M., McGarity, T. O., &amp; Bero, L. A. (2005). Legislating “sound science”: The role of the tobacco industry. American Journal of Public Health, 95(S1), 20–27. <a href=\"https://doi.org/10.2105/AJPH.2004.050963\">https://doi.org/10.2105/AJPH.2004.050963</a> </p>\n<p>Beall, J. (2017). What I learned from predatory publishers. Biochemia medica, 27(2), 273–278. <a href=\"https://doi.org/10.11613/BM.2017.029\">https://doi.org/10.11613/BM.2017.029</a> </p>\n<p>Berkeley Initiative for Transparency in the Social Sciences. (2020). Guide for accelerating computational reproducibility in the social sciences. Retrieved August 1, 2025, from <a href=\"https://bitss.github.io/ACRE\">https://bitss.github.io/ACRE</a> </p>\n<p>Brecht, B. (1974). Life of Galileo. Methuen Publishing. </p>\n<p>Brembs, B. (2018). Prestigious science journals struggle to reach even average reliability. Frontiers in human neuroscience, 12, 327726. <a href=\"https://doi.org/10.3389/fnhum.2018.00037\">https://doi.org/10.3389/fnhum.2018.00037</a> </p>\n<p>Center for Open Science. (2025). COS statement on “restoring gold standard science” executive order. Center for Open Science. Retrieved October 8, 2025, from <a href=\"https://web.archive.org/web/20250818092037/https://www.cos.io/about/news/cos-statement-on-restoring-gold-standard-science-executive-order\">https://web.archive.org/web/20250818092037/https://www.cos.io/about/news/cos-statement-on-restoring-gold-standard-science-executive-order</a> </p>\n<p>Clarke, B., Lee, P. Y., Schiavone, S. R., Rhemtulla, M., &amp; Vazire, S. (2023). The prevalence of direct replication articles in top-ranking psychology journals. <a href=\"https://doi.org/10.1037/amp0001385\">https://doi.org/10.1037/amp0001385</a> </p>\n<p>Grossmann, A., &amp; Brembs, B. (2021). Current market rates for scholarly publishing services. F1000Research, 10, 20. <a href=\"https://doi.org/10.12688/f1000research.27468.2\">https://doi.org/10.12688/f1000research.27468.2</a> </p>\n<p>Grunow, M., Schneider, H., Wagner, G. G., &amp; Wagner, J. (2018). Lack of reproducibility is seriously undermining the credibility of science as a whole [editorial]. International Journal for Re-Views in Empirical Economics, 2(2018-2), 1–6. <a href=\"https://doi.org/10.18718/81781.6\">https://doi.org/10.18718/81781.6</a> </p>\n<p>Haustein, S., Schares, E., Alperin, J. P., Hare, M., Butler, L. -A., &amp; Schönfelder, N. (2024). Estimating global article processing charges paid to six publishers for open access between 2019 and 2023. <a href=\"https://arxiv.org/abs/2407.16551\">https://arxiv.org/abs/2407.16551</a> </p>\n<p>Heyard, R., Pawel, S., Frese, J., Voelkl, B., Würbel, H., McCann, S., et al. (2025). A scoping review on metrics to quantify reproducibility: A multitude of questions leads to a multitude of metrics. Royal Society Open Science, 12(7), 242076. <a href=\"https://doi.org/10.1098/rsos.242076\">https://doi.org/10.1098/rsos.242076</a> </p>\n<p>Holcombe, A. O. (2019). Contributorship, not authorship: Use credit to indicate who did what. Publications, 7(3), 48. <a href=\"https://doi.org/10.3390/publications7030048\">https://doi.org/10.3390/publications7030048</a> </p>\n<p>King, G. (1995). Replication, replication. PS: Political Science &amp; Politics, 28(3), 444–452. <a href=\"https://doi.org/10.2307/420301\">https://doi.org/10.2307/420301</a> </p>\n<p>Makel, M. C., Plucker, J. A., &amp; Hegarty, B. (2012). Replications in psychology research: How often do they really occur? Perspectives on Psychological Science, 7(6), 537–542. <a href=\"https://doi.org/10.1177/1745691612460688\">https://doi.org/10.1177/1745691612460688</a> </p>\n<p>Munafò, M. R., Nosek, B. A., Bishop, D. V., Button, K. S., Chambers, C. D., Percie du Sert, N., &amp; Ioannidis, J. P. (2017). A manifesto for reproducible science. Nature Human Behaviour, 1(1), 0021. <a href=\"https://doi.org/10.1038/s41562-016-0021\">https://doi.org/10.1038/s41562-016-0021</a> </p>\n<p>Open Science Collaboration. (2015). Estimating the reproducibility of psychological science. Science, 349(6251), aac4716. <a href=\"https://doi.org/10.1126/science.aac4716\">https://doi.org/10.1126/science.aac4716</a> </p>\n<p>Page, M. J., McKenzie, J. E., Bossuyt, P. M., Boutron, I., Hoffmann, T. C., Mulrow, C. D., &amp; Moher, D. (2021). The PRISMA 2020 statement: An updated guideline for reporting systematic reviews. BMJ, 372, n71. <a href=\"https://doi.org/10.1136/bmj.n71\">https://doi.org/10.1136/bmj.n71</a> </p>\n<p>Perry, T., Morris, R., &amp; Lea, R. (2022). A decade of replication study in education? a mapping review (2011--2020). Educational Research and Evaluation, 27(1--2), 12–34. <a href=\"https://doi.org/10.1080/13803611.2021.2022315\">https://doi.org/10.1080/13803611.2021.2022315</a> </p>\n<p>Pridemore, W. A., Makel, M. C., &amp; Plucker, J. A. (2018). Replication in criminology and the social sciences. Annual Review of Criminology, 1, 19–38. <a href=\"https://doi.org/10.1146/annurev-criminol-032317-091849\">https://doi.org/10.1146/annurev-criminol-032317-091849</a> </p>\n<p>Reed, W. R., Röseler, L., Saam, M., &amp; Wallrich, L. (2025). No room at the inn? the case for specialized replication journals (tech. rep. No. 88). WiSo-HH Working Paper Series. <a href=\"https://www.econstor.eu/handle/10419/319083\">https://www.econstor.eu/handle/10419/319083</a> </p>\n<p>Röseler, L., Hein, M., &amp; Oppong Boakye, P. (2025). Standardized reproduction and replication templates (start). <a href=\"https://doi.org/10.17605/OSF.IO/BRXTD\">https://doi.org/10.17605/OSF.IO/BRXTD</a> </p>\n<p>Röseler, L., Moser, V., Schüller, S., &amp; Förster, C. (2025). Replication research symposium: Book of abstracts. replication research symposium (R2S), Münster, Germany. <a href=\"https://doi.org/10.5281/zenodo.15487804\">https://doi.org/10.5281/zenodo.15487804</a> </p>\n<p>Röseler, L., Wallrich, L., Adler, S., Evans, T. R., Goltermann, J., Gut, U., Korbmacher, M., Oppong Boakye, P., Verheyen, S., Visser, I., &amp; Azevedo, F. (2025). Replication research constitution (R2 launch). <a href=\"https://doi.org/10.5281/zenodo.17279413\">https://doi.org/10.5281/zenodo.17279413</a> </p>\n<p>Röseler, L., Wallrich, L., &amp; Azevedo, F. (2025). Conditions under which R2 will be discontinued after a runtime of 26 months. <a href=\"https://doi.org/10.5281/zenodo.17206100\">https://doi.org/10.5281/zenodo.17206100</a> </p>\n<p>Röseler, L., Wallrich, L., Hartmann, H., Hüffmeier, J., Goltermann, J., Pennington, C. R., Boyce, V., Field, S. M., Pittelkow, M.-M., Silverstein, P., van Ravenzwaaij, D., &amp; Azevedo, F. (2025). Handbook for reproduction and replication studies [*shared first authorship]. <a href=\"https://doi.org/10.5281/zenodo.16990114\">https://doi.org/10.5281/zenodo.16990114</a> </p>\n<p>Röseler, L., Kaiser, L., Doetsch, C., Klett, N., Seida, C., Schütz, A., Aczel, B., Adelina, N., Agostini, V., Alarie, S., et al. (2024). The replication database: Documenting the replicability of psychological science. Journal of Open Psychology Data, 12, 8. <a href=\"https://doi.org/10.5334/jopd.101\">https://doi.org/10.5334/jopd.101</a> </p>\n<p>Sauvé, S. A., Middleton, S. L., Gellersen, H., &amp; Azevedo, F. (2025). In pursuit of citational justice: A toolkit for equitable scholarship. <a href=\"https://doi.org/10.31222/osf.io/qjecy_v3\">https://doi.org/10.31222/osf.io/qjecy_v3</a> </p>\n<p>Schöch, C. (2023). Repetitive research: A conceptual space and terminology of replication, reproduction, revision, reanalysis, reinvestigation and reuse in digital humanities. International Journal of Digital Humanities, 5(2—3), 373–403. <a href=\"https://doi.org/10.1007/s42803-023-00073-y\">https://doi.org/10.1007/s42803-023-00073-y</a> </p>\n<p>UNESCO. (2021). UNESCO recommendation on open science (tech. rep.). <a href=\"https://doi.org/10.54677/MNMH8546\">https://doi.org/10.54677/MNMH8546</a> </p>",
-  "risText": "TY  - JOUR\nAU  - Röseler, Lukas\nAU  - Wallrich, Lukas\nAU  - Adler, Susanne\nAU  - Oppong Boakye, Prince\nAU  - Evans, Thomas Rhys\nAU  - Goltermann, Janik\nAU  - Haven, Tamarinde\nAU  - Horstmann, Jan\nAU  - Korbmacher, Max\nAU  - Müller, Miriam\nAU  - Verheyen, Steven\nAU  - Visser, Ingmar\nAU  - Azevedo, Flavio\nPY  - 2025/10/20\nY2  - 2026/08/21\nTI  - A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2)\nJF  - Replication Research\nJA  - R2\nVL  - 1\nIS  - \nSE  - Editorial Communication\nDO  - 10.17879/replicationresearch-2025-9022\nUR  - https://ejournals.uni-muenster.de/replicationresearch/article/view/ie\nSP  - \nAB  - &lt;p&gt;Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.&lt;/p&gt;\nER  -",
-  "risUrl": "https://ejournals.uni-muenster.de/replicationresearch/citationstylelanguage/download/ris?submissionId=9022&publicationId=9700",
-  "section": "Editorial Communication",
-  "submissionId": "9022",
-  "subtitle": "Inaugural Editorial of Replication Research (R2)",
-  "title": "A Community Model for Rigorous and Inclusive Scholarship",
-  "urlPath": "ie"
- },
- {
   "abstractHtml": "<p>Maintaining anonymity in natural language communication remains a challenging task. Even when the number of candidate authors is large, standard authorship attribution techniques that analyze writing style predict the original author with uncomfortably high accuracy. Adversarial stylometry provides a defense against authorship attribution, helping users avoid unwanted deanonymization. This paper reproduces and replicates experiments from a seminal study of defenses against authorship attribution (Brennan et al., 2012). After reproducing the experiment using the original data, we then replicate the experiment by repeating the online field experiment using the procedures described in the original paper. Although we reach the same conclusion as the original paper, our results suggest that the defenses studied may be overstated in their effectiveness. This is largely due to the absence of a control group in the original study. In our replication, we find evidence suggesting that an entirely automatic method, round-trip translation, warrants re-examination because it appears to reduce the effectiveness of established authorship attribution methods.</p>",
   "authors": [
    {
@@ -228,5 +121,112 @@
   "subtitle": "A Guest Editorial",
   "title": "From Replication Rates to Replication Evidence",
   "urlPath": "9577"
+ },
+ {
+  "abstractHtml": "<p>Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.</p>",
+  "authors": [
+   {
+    "affiliation": "University of Münster",
+    "name": "Lukas Röseler",
+    "orcid": "https://orcid.org/0000-0002-6446-1901"
+   },
+   {
+    "affiliation": "Birkbeck, University of London",
+    "name": "Lukas Wallrich",
+    "orcid": "https://orcid.org/0000-0003-2121-5177"
+   },
+   {
+    "affiliation": "Ludwig-Maximilians-University Munich",
+    "name": "Susanne Adler",
+    "orcid": "https://orcid.org/0000-0002-3211-6871"
+   },
+   {
+    "affiliation": "University of Münster",
+    "name": "Prince Oppong Boakye",
+    "orcid": "https://orcid.org/0009-0003-5447-8034"
+   },
+   {
+    "affiliation": "University of Greenwich",
+    "name": "Thomas Rhys Evans",
+    "orcid": "https://orcid.org/0000-0002-6670-0718"
+   },
+   {
+    "affiliation": "Charité – Universitätsmedizin Berlin",
+    "name": "Janik Goltermann",
+    "orcid": "https://orcid.org/0000-0003-3087-1002"
+   },
+   {
+    "affiliation": "Tilburg University",
+    "name": "Tamarinde Haven",
+    "orcid": "https://orcid.org/0000-0002-4702-2472"
+   },
+   {
+    "affiliation": "University of Hamburg",
+    "name": "Jan Horstmann",
+    "orcid": "https://orcid.org/0000-0001-8047-2232"
+   },
+   {
+    "affiliation": "Haukeland University Hospital",
+    "name": "Max Korbmacher",
+    "orcid": "https://orcid.org/0000-0002-8113-2560"
+   },
+   {
+    "affiliation": "University of Münster",
+    "name": "Miriam Müller",
+    "orcid": "https://orcid.org/0009-0006-6029-8808"
+   },
+   {
+    "affiliation": "Erasmus University Rotterdam",
+    "name": "Steven Verheyen",
+    "orcid": "https://orcid.org/0000-0002-6778-6744"
+   },
+   {
+    "affiliation": "University of Amsterdam",
+    "name": "Ingmar Visser",
+    "orcid": "https://orcid.org/0000-0003-3855-2778"
+   },
+   {
+    "affiliation": "Utrecht University",
+    "name": "Flavio Azevedo",
+    "orcid": "https://orcid.org/0000-0001-9000-8513"
+   }
+  ],
+  "bibtexText": "@article{Röseler_Wallrich_Adler_Oppong Boakye_Evans_Goltermann_Haven_Horstmann_Korbmacher_Müller_et al._2025,\n  title={A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2)},\n  volume={1},\n  url={https://ejournals.uni-muenster.de/replicationresearch/article/view/ie},\n  DOI={10.17879/replicationresearch-2025-9022},\n  abstractNote={&amp;lt;p&amp;gt;Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.&amp;lt;/p&amp;gt;},\n  journal={Replication Research},\n  author={Röseler, Lukas and Wallrich, Lukas and Adler, Susanne and Oppong Boakye, Prince and Evans, Thomas Rhys and Goltermann, Janik and Haven, Tamarinde and Horstmann, Jan and Korbmacher, Max and Müller, Miriam and et al.},\n  year={2025},\n  month={Oct.}\n}",
+  "bibtexUrl": "https://ejournals.uni-muenster.de/replicationresearch/citationstylelanguage/download/bibtex?submissionId=9022&publicationId=9700",
+  "categories": [
+   "Transdisciplinary"
+  ],
+  "citation": "Röseler, L., Wallrich, L., Adler, S., Oppong Boakye, P., Evans, T. R., Goltermann, J., … Azevedo, F. (2025). A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2). Replication Research, 1. https://doi.org/10.17879/replicationresearch-2025-9022",
+  "datePublished": "2025-10-20",
+  "doi": "10.17879/replicationresearch-2025-9022",
+  "doiUrl": "https://doi.org/10.17879/replicationresearch-2025-9022",
+  "galleys": [
+   {
+    "downloadUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/download/ie/ie",
+    "isPdf": true,
+    "label": "PDF",
+    "localPdf": "ie-ie.pdf",
+    "viewUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/view/ie/ie"
+   }
+  ],
+  "issueId": "vol1",
+  "issueTitle": "Vol. 1 (2025)",
+  "keywords": [
+   "reproduction",
+   "replication",
+   "metascience",
+   "open science",
+   "open access"
+  ],
+  "licenseHtml": "<p>Copyright (c) 2025 Lukas Röseler, Lukas Wallrich, Susanne Adler, Prince Oppong Boakye, Thomas Rhys Evans, Janik Goltermann, Tamarinde Haven, Jan Horstmann, Max Korbmacher, Miriam Müller, Steven Verheyen, Ingmar Visser, Flavio Azevedo</p>\n<a href=\"https://creativecommons.org/licenses/by/4.0/\" rel=\"license\"><img alt=\"Creative Commons License\" src=\"__BASE__assets/img/52d37f6a-88x31.png\"/></a><p>This work is licensed under a <a href=\"https://creativecommons.org/licenses/by/4.0/\" rel=\"license\">Creative Commons Attribution 4.0 International License</a>.</p>",
+  "ojsUrl": "https://ejournals.uni-muenster.de/replicationresearch/article/view/ie",
+  "referencesHtml": "<p>Ankel-Peters, J., Brodeur, A., Dreber, A., Johannesson, M., Neubauer, F., &amp; Rose, J. (2025). A protocol for structured robustness reproductions and replicability assessments. Q Open, 5(3). <a href=\"https://doi.org/10.1093/qopen/qoaf004\">https://doi.org/10.1093/qopen/qoaf004</a> </p>\n<p>Baba, A., Cook, D. M., McGarity, T. O., &amp; Bero, L. A. (2005). Legislating “sound science”: The role of the tobacco industry. American Journal of Public Health, 95(S1), 20–27. <a href=\"https://doi.org/10.2105/AJPH.2004.050963\">https://doi.org/10.2105/AJPH.2004.050963</a> </p>\n<p>Beall, J. (2017). What I learned from predatory publishers. Biochemia medica, 27(2), 273–278. <a href=\"https://doi.org/10.11613/BM.2017.029\">https://doi.org/10.11613/BM.2017.029</a> </p>\n<p>Berkeley Initiative for Transparency in the Social Sciences. (2020). Guide for accelerating computational reproducibility in the social sciences. Retrieved August 1, 2025, from <a href=\"https://bitss.github.io/ACRE\">https://bitss.github.io/ACRE</a> </p>\n<p>Brecht, B. (1974). Life of Galileo. Methuen Publishing. </p>\n<p>Brembs, B. (2018). Prestigious science journals struggle to reach even average reliability. Frontiers in human neuroscience, 12, 327726. <a href=\"https://doi.org/10.3389/fnhum.2018.00037\">https://doi.org/10.3389/fnhum.2018.00037</a> </p>\n<p>Center for Open Science. (2025). COS statement on “restoring gold standard science” executive order. Center for Open Science. Retrieved October 8, 2025, from <a href=\"https://web.archive.org/web/20250818092037/https://www.cos.io/about/news/cos-statement-on-restoring-gold-standard-science-executive-order\">https://web.archive.org/web/20250818092037/https://www.cos.io/about/news/cos-statement-on-restoring-gold-standard-science-executive-order</a> </p>\n<p>Clarke, B., Lee, P. Y., Schiavone, S. R., Rhemtulla, M., &amp; Vazire, S. (2023). The prevalence of direct replication articles in top-ranking psychology journals. <a href=\"https://doi.org/10.1037/amp0001385\">https://doi.org/10.1037/amp0001385</a> </p>\n<p>Grossmann, A., &amp; Brembs, B. (2021). Current market rates for scholarly publishing services. F1000Research, 10, 20. <a href=\"https://doi.org/10.12688/f1000research.27468.2\">https://doi.org/10.12688/f1000research.27468.2</a> </p>\n<p>Grunow, M., Schneider, H., Wagner, G. G., &amp; Wagner, J. (2018). Lack of reproducibility is seriously undermining the credibility of science as a whole [editorial]. International Journal for Re-Views in Empirical Economics, 2(2018-2), 1–6. <a href=\"https://doi.org/10.18718/81781.6\">https://doi.org/10.18718/81781.6</a> </p>\n<p>Haustein, S., Schares, E., Alperin, J. P., Hare, M., Butler, L. -A., &amp; Schönfelder, N. (2024). Estimating global article processing charges paid to six publishers for open access between 2019 and 2023. <a href=\"https://arxiv.org/abs/2407.16551\">https://arxiv.org/abs/2407.16551</a> </p>\n<p>Heyard, R., Pawel, S., Frese, J., Voelkl, B., Würbel, H., McCann, S., et al. (2025). A scoping review on metrics to quantify reproducibility: A multitude of questions leads to a multitude of metrics. Royal Society Open Science, 12(7), 242076. <a href=\"https://doi.org/10.1098/rsos.242076\">https://doi.org/10.1098/rsos.242076</a> </p>\n<p>Holcombe, A. O. (2019). Contributorship, not authorship: Use credit to indicate who did what. Publications, 7(3), 48. <a href=\"https://doi.org/10.3390/publications7030048\">https://doi.org/10.3390/publications7030048</a> </p>\n<p>King, G. (1995). Replication, replication. PS: Political Science &amp; Politics, 28(3), 444–452. <a href=\"https://doi.org/10.2307/420301\">https://doi.org/10.2307/420301</a> </p>\n<p>Makel, M. C., Plucker, J. A., &amp; Hegarty, B. (2012). Replications in psychology research: How often do they really occur? Perspectives on Psychological Science, 7(6), 537–542. <a href=\"https://doi.org/10.1177/1745691612460688\">https://doi.org/10.1177/1745691612460688</a> </p>\n<p>Munafò, M. R., Nosek, B. A., Bishop, D. V., Button, K. S., Chambers, C. D., Percie du Sert, N., &amp; Ioannidis, J. P. (2017). A manifesto for reproducible science. Nature Human Behaviour, 1(1), 0021. <a href=\"https://doi.org/10.1038/s41562-016-0021\">https://doi.org/10.1038/s41562-016-0021</a> </p>\n<p>Open Science Collaboration. (2015). Estimating the reproducibility of psychological science. Science, 349(6251), aac4716. <a href=\"https://doi.org/10.1126/science.aac4716\">https://doi.org/10.1126/science.aac4716</a> </p>\n<p>Page, M. J., McKenzie, J. E., Bossuyt, P. M., Boutron, I., Hoffmann, T. C., Mulrow, C. D., &amp; Moher, D. (2021). The PRISMA 2020 statement: An updated guideline for reporting systematic reviews. BMJ, 372, n71. <a href=\"https://doi.org/10.1136/bmj.n71\">https://doi.org/10.1136/bmj.n71</a> </p>\n<p>Perry, T., Morris, R., &amp; Lea, R. (2022). A decade of replication study in education? a mapping review (2011--2020). Educational Research and Evaluation, 27(1--2), 12–34. <a href=\"https://doi.org/10.1080/13803611.2021.2022315\">https://doi.org/10.1080/13803611.2021.2022315</a> </p>\n<p>Pridemore, W. A., Makel, M. C., &amp; Plucker, J. A. (2018). Replication in criminology and the social sciences. Annual Review of Criminology, 1, 19–38. <a href=\"https://doi.org/10.1146/annurev-criminol-032317-091849\">https://doi.org/10.1146/annurev-criminol-032317-091849</a> </p>\n<p>Reed, W. R., Röseler, L., Saam, M., &amp; Wallrich, L. (2025). No room at the inn? the case for specialized replication journals (tech. rep. No. 88). WiSo-HH Working Paper Series. <a href=\"https://www.econstor.eu/handle/10419/319083\">https://www.econstor.eu/handle/10419/319083</a> </p>\n<p>Röseler, L., Hein, M., &amp; Oppong Boakye, P. (2025). Standardized reproduction and replication templates (start). <a href=\"https://doi.org/10.17605/OSF.IO/BRXTD\">https://doi.org/10.17605/OSF.IO/BRXTD</a> </p>\n<p>Röseler, L., Moser, V., Schüller, S., &amp; Förster, C. (2025). Replication research symposium: Book of abstracts. replication research symposium (R2S), Münster, Germany. <a href=\"https://doi.org/10.5281/zenodo.15487804\">https://doi.org/10.5281/zenodo.15487804</a> </p>\n<p>Röseler, L., Wallrich, L., Adler, S., Evans, T. R., Goltermann, J., Gut, U., Korbmacher, M., Oppong Boakye, P., Verheyen, S., Visser, I., &amp; Azevedo, F. (2025). Replication research constitution (R2 launch). <a href=\"https://doi.org/10.5281/zenodo.17279413\">https://doi.org/10.5281/zenodo.17279413</a> </p>\n<p>Röseler, L., Wallrich, L., &amp; Azevedo, F. (2025). Conditions under which R2 will be discontinued after a runtime of 26 months. <a href=\"https://doi.org/10.5281/zenodo.17206100\">https://doi.org/10.5281/zenodo.17206100</a> </p>\n<p>Röseler, L., Wallrich, L., Hartmann, H., Hüffmeier, J., Goltermann, J., Pennington, C. R., Boyce, V., Field, S. M., Pittelkow, M.-M., Silverstein, P., van Ravenzwaaij, D., &amp; Azevedo, F. (2025). Handbook for reproduction and replication studies [*shared first authorship]. <a href=\"https://doi.org/10.5281/zenodo.16990114\">https://doi.org/10.5281/zenodo.16990114</a> </p>\n<p>Röseler, L., Kaiser, L., Doetsch, C., Klett, N., Seida, C., Schütz, A., Aczel, B., Adelina, N., Agostini, V., Alarie, S., et al. (2024). The replication database: Documenting the replicability of psychological science. Journal of Open Psychology Data, 12, 8. <a href=\"https://doi.org/10.5334/jopd.101\">https://doi.org/10.5334/jopd.101</a> </p>\n<p>Sauvé, S. A., Middleton, S. L., Gellersen, H., &amp; Azevedo, F. (2025). In pursuit of citational justice: A toolkit for equitable scholarship. <a href=\"https://doi.org/10.31222/osf.io/qjecy_v3\">https://doi.org/10.31222/osf.io/qjecy_v3</a> </p>\n<p>Schöch, C. (2023). Repetitive research: A conceptual space and terminology of replication, reproduction, revision, reanalysis, reinvestigation and reuse in digital humanities. International Journal of Digital Humanities, 5(2—3), 373–403. <a href=\"https://doi.org/10.1007/s42803-023-00073-y\">https://doi.org/10.1007/s42803-023-00073-y</a> </p>\n<p>UNESCO. (2021). UNESCO recommendation on open science (tech. rep.). <a href=\"https://doi.org/10.54677/MNMH8546\">https://doi.org/10.54677/MNMH8546</a> </p>",
+  "risText": "TY  - JOUR\nAU  - Röseler, Lukas\nAU  - Wallrich, Lukas\nAU  - Adler, Susanne\nAU  - Oppong Boakye, Prince\nAU  - Evans, Thomas Rhys\nAU  - Goltermann, Janik\nAU  - Haven, Tamarinde\nAU  - Horstmann, Jan\nAU  - Korbmacher, Max\nAU  - Müller, Miriam\nAU  - Verheyen, Steven\nAU  - Visser, Ingmar\nAU  - Azevedo, Flavio\nPY  - 2025/10/20\nY2  - 2026/08/21\nTI  - A Community Model for Rigorous and Inclusive Scholarship: Inaugural Editorial of Replication Research (R2)\nJF  - Replication Research\nJA  - R2\nVL  - 1\nIS  - \nSE  - Editorial Communication\nDO  - 10.17879/replicationresearch-2025-9022\nUR  - https://ejournals.uni-muenster.de/replicationresearch/article/view/ie\nSP  - \nAB  - &lt;p&gt;Reproducibility and replicability are vital for trustworthy, cumulative research, yet remain undervalued in most areas of academic publishing. Replication Research (R2) is a Diamond Open Access journal dedicated to publishing high-quality reproductions, replications, and related methodological work across disciplines. With robust standards for transparency, open peer review, and social responsibility, R2 offers practical guidance and support for authors. We aim to rebalance research culture by valuing diligence and robustness alongside innovation, thereby increasing confidence in research findings. We invite researchers to contribute to and benefit from an open, community-driven journal designed to elevate the status and impact of replications (repeated studies of published findings with different data) and reproductions (repeated tests of published findings with the same data). In this editorial, we introduce the aims, policies, and scope of Replication Research, outlining how the journal will operate and the values that guide it.&lt;/p&gt;\nER  -",
+  "risUrl": "https://ejournals.uni-muenster.de/replicationresearch/citationstylelanguage/download/ris?submissionId=9022&publicationId=9700",
+  "section": "Editorial Communication",
+  "submissionId": "9022",
+  "subtitle": "Inaugural Editorial of Replication Research (R2)",
+  "title": "A Community Model for Rigorous and Inclusive Scholarship",
+  "urlPath": "ie"
  }
 ]
