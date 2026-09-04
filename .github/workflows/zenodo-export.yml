@@ -1,18 +1,25 @@
 name: Build Zenodo snapshot export
 
-# Monthly, plus on demand. Each run creates a GitHub Release and publishes the
-# snapshot as a new version of the Zenodo record 10.5281/zenodo.21920085,
+# Yearly (Jan 1), plus on demand. Each run creates a GitHub Release and publishes
+# the snapshot as a new version of the Zenodo record 10.5281/zenodo.21920085,
 # which requires the ZENODO_TOKEN repository secret.
+#
+# Deliberately low-frequency and fully decoupled from build.yml ("Fetch content
+# and deploy mirror", the site's only high-priority job): separate schedule, no
+# shared concurrency group, no job dependency either way, so a failure or delay
+# here can never block, slow down, or affect that job or the live site. Keep it
+# that way - don't add a concurrency group shared with build.yml.
 on:
   schedule:
-    # 1st of the month, 05:47 UTC. Off the hour because GitHub delays or drops
-    # on-the-hour cron jobs, and well after the 04:23 daily content refresh in
+    # Jan 1, 05:47 UTC. Off the hour because GitHub delays or drops on-the-hour
+    # cron jobs, and well after that day's 04:23 daily content refresh in
     # build.yml has committed, so the snapshot archives current data.
-    - cron: "47 5 1 * *"
+    - cron: "47 5 1 1 *"
   workflow_dispatch: {}
 
 permissions:
   contents: write   # create a GitHub Release
+  issues: write      # open/close the "Zenodo snapshot export failed" tracking issue
 
 jobs:
   export:
@@ -99,12 +106,28 @@ jobs:
           # legacy serialisation (no access/pids/custom_fields), and building
           # the update payload from that would silently send nulls.
           RDM="Accept: application/vnd.inveniordm.v1+json"
+          # 502/503/504 are Zenodo-side gateway hiccups, not real failures - retry
+          # those a couple of times with a short backoff before giving up. Any
+          # other >=400 status is a real client/auth/validation error and fails
+          # immediately, same as before, since retrying those would just waste
+          # time on a non-transient problem.
           req() {
             local method="$1" url="$2"; shift 2
-            local out status
-            out=$(mktemp)
-            status=$(curl -sS -o "$out" -w '%{http_code}' -X "$method" -H "$AUTH" -H "$RDM" "$@" "$url")
-            if [ "$status" -ge 400 ]; then
+            local out status attempt
+            for attempt in 1 2 3; do
+              out=$(mktemp)
+              status=$(curl -sS -o "$out" -w '%{http_code}' -X "$method" -H "$AUTH" -H "$RDM" "$@" "$url")
+              if [ "$status" -lt 400 ]; then
+                cat "$out"
+                rm -f "$out"
+                return 0
+              fi
+              if [ "$attempt" -lt 3 ] && { [ "$status" = 502 ] || [ "$status" = 503 ] || [ "$status" = 504 ]; }; then
+                echo "  $method ${url#https://zenodo.org} got HTTP $status (attempt $attempt/3), retrying..." >&2
+                rm -f "$out"
+                sleep $((attempt * 5))
+                continue
+              fi
               {
                 echo "::error::$method ${url#https://zenodo.org} failed with HTTP $status"
                 echo "--- Zenodo response ---"
@@ -114,9 +137,7 @@ jobs:
               } >&2
               rm -f "$out"
               return 1
-            fi
-            cat "$out"
-            rm -f "$out"
+            done
           }
 
           echo "Checking record $RECORD_ID is reachable..."
@@ -173,3 +194,54 @@ jobs:
           DOI=$(req POST "$DRAFT/actions/publish" | jq -r '.pids.doi.identifier // .doi // "unknown"')
           echo "Published Zenodo version DOI: $DOI"
           echo "### Zenodo: [$DOI](https://doi.org/$DOI)" >> "$GITHUB_STEP_SUMMARY"
+
+      # This job runs once a year - a silent failure could otherwise go
+      # unnoticed for a full year, unlike build.yml's daily job. Same pattern
+      # as build.yml's own failure issue: durable and visible even if GitHub's
+      # default failed-run email is off or filtered, auto-closed on the next
+      # successful run (whether that's next year's scheduled run or a manual
+      # workflow_dispatch retry).
+      - name: Open/update failure issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Zenodo snapshot export failed";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `The scheduled Zenodo snapshot export failed on ${new Date().toISOString().slice(0, 10)}.\n\n` +
+              `Run log: ${runUrl}\n\n` +
+              "This does not affect the live mirror site - only the yearly Zenodo archive snapshot.";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 50,
+            });
+            const existing = issues.find(i => i.title === title && !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+
+      - name: Close failure issue if this run succeeded
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Zenodo snapshot export failed";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 50,
+            });
+            const existing = issues.find(i => i.title === title && !i.pull_request);
+            if (existing) {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number,
+                body: `The Zenodo snapshot export is passing again: ${runUrl}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: "closed",
+              });
+            }
