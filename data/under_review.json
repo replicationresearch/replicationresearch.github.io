@@ -1,5 +1,29 @@
 [
  {
+  "abstractHtml": "<p>In two experiments, Eitam, Hassin, and Schul (2008) found evidence that priming of nonconscious goal pursuit could extend beyond reproductions of past associations and facilitate novel learning, specifically implicit learning. Given the implications of such findings and dearth of subsequent investigations of this phenomenon, we conducted a direct replication of their second experiment using materials graciously shared by the original authors. Despite using a sample size that provided .80 power to detect the original effect size, we failed to find evidence that priming of nonconscious goal pursuit facilitated implicit learning. Our replication was conducted as part of the Reproducibility Project: Psychology (Open Science Collaboration, 2015) and study preregistration, materials, and data are available online (https://osf.io/edcr7).</p>",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Jason M. Prenoveau",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Matthew W Kirkhart",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "[not yet assigned]",
+  "id": "13",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/2wpqe_v1",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-2wpqe_v1/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Assessment",
+  "submissionDate": "2026-09-03",
+  "title": "No evidence for Nonconscious Goal Pursuit in Novel Environments: A Replication of Eitam et al.’s (2008) Experiment 2"
+ },
+ {
   "abstractHtml": "<p>We conducted a direct replication of Irving et al. (2022) examining whether a debunking statement reduces mistaken causal inferences from correlational evidence. We randomly allocated participants to read a news article containing either a correction statement (n = 65) or a no-correction control (n = 64). Participants in the correction group made fewer causal inferences (delta = 0.65, 95% HDI [0.30, 1.00]) and more correlational inferences (delta = 0.72, 95% HDI [0.36, 1.07]) compared to the no correction group. In exploratory analyses, we also supported the robustness of their findings to alternative modelling choices. Our findings represent a successful direct replication of Irving et al.</p>",
   "authors": [
    {
@@ -43,7 +67,7 @@
   "preprintUrl": "https://doi.org/10.31235/osf.io/zh56a_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-zh56a_v1/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "With editor (1st decision)",
+  "status": "With authors (1st revision)",
   "submissionDate": "2026-06-04",
   "title": "Re-analyzing ``I Hope to Hell Nothing Goes Back to The Way It Was Before'': COVID-19, Marginalization, and Native Nations"
  },
@@ -72,7 +96,7 @@
   "preprintUrl": "https://doi.org/10.31234/osf.io/5e8mz_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-5e8mz_v1/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Under review (1st round)",
+  "status": "With editor (1st decision)",
   "submissionDate": "2026-05-02",
   "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, & McClelland (2007)"
  },
