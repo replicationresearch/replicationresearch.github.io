@@ -957,6 +957,11 @@ def fetch_submission_stats():
             counts["declined"] += 1
         else:
             counts["underReview"] += 1
+    # Zero-fill every month since launch, not just the ones with a
+    # submission - otherwise a month with none simply has no key and the
+    # chart's x-axis silently skips over it instead of showing a gap.
+    for ym, _first, _next in _month_ranges(DATE_START):
+        monthly.setdefault(ym, 0)
     total = len(items) - excluded
     print("  %d submissions: %d published, %d under review, %d declined "
           "(%d excluded as test/incomplete)"
