@@ -910,12 +910,23 @@ def fetch_goatcounter_views(articles):
 STATUS_PUBLISHED = 3
 STATUS_DECLINED = 4
 
-# Submissions manually confirmed (in the OJS backend) to not be real
-# manuscripts under consideration - a test submission, or an incomplete
-# draft an author never finished the wizard for - so they're excluded from
-# the funnel entirely rather than counted as "under review". Add more IDs
-# here if further ones turn up.
-EXCLUDED_SUBMISSION_IDS = {9023, 9136, 9691}
+# Submissions manually confirmed (in the OJS backend) to not be a real
+# manuscript under consideration despite having gone through the full
+# wizard - e.g. an editor's own test submission - so they're excluded from
+# the funnel entirely rather than counted as "under review". Incomplete
+# drafts (never finished the wizard) don't need an entry here - see
+# _is_incomplete() below. Add more IDs here only for this "looks real but
+# isn't" case.
+EXCLUDED_SUBMISSION_IDS = {9023}
+
+
+def _is_incomplete(item):
+    """True if the author never finished the OJS submission wizard. OJS
+    sets submissionProgress to a non-empty string (the wizard step it's
+    stuck on) for such drafts and clears it once the submission is
+    actually completed - so this never needs a hardcoded ID, unlike
+    EXCLUDED_SUBMISSION_IDS above."""
+    return bool(item.get("submissionProgress"))
 
 
 def fetch_submission_stats():
@@ -943,7 +954,7 @@ def fetch_submission_stats():
     counts = {"published": 0, "underReview": 0, "declined": 0}
     excluded = 0
     for item in items:
-        if item.get("id") in EXCLUDED_SUBMISSION_IDS:
+        if item.get("id") in EXCLUDED_SUBMISSION_IDS or _is_incomplete(item):
             excluded += 1
             continue
         date = str(item.get("dateSubmitted") or "")[:7]
