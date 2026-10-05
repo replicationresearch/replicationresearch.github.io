@@ -173,6 +173,7 @@
           <div class="aside-section">
             <h2>Details</h2>
             <dl class="detail-list">
+              {% if article.submissionDate %}<dt>Submitted</dt><dd>{{ article.submissionDate }}</dd>{% endif %}
               {% if article.datePublished %}<dt>Published</dt><dd>{{ article.datePublished }}</dd>{% endif %}
               <dt>Issue</dt><dd><a href="{{ base }}issues/{{ article.issueId }}/">{{ article.issueTitle }}</a></dd>
               {% if article.section %}<dt>Section</dt><dd>{{ article.section }}</dd>{% endif %}

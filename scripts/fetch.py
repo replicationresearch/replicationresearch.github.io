@@ -1268,11 +1268,16 @@ def fetch_published_extras():
         doi = _bare_doi(row.get("Published DOI"))
         entry = {key: _doi_or_url(row.get(col)) for key, col in columns.items()}
         entry["laySummary"] = (row.get("Lay Summary") or "").strip()
-        if doi and any(entry.values()):
+        # Kept out of the any(entry.values()) test below on purpose: every
+        # sheet row has a submission date, so counting it would turn
+        # "has review/certificate links" into "has a DOI".
+        has_extras = any(entry.values())
+        entry["submissionDate"] = _parse_sheet_date(row.get("Submission Date") or "")
+        if doi and (has_extras or entry["submissionDate"]):
             extras[doi] = entry
 
-    print("  %d published article(s) with review/certificate links"
-          % len(extras))
+    print("  %d published article(s) with review/certificate links or a "
+          "submission date" % len(extras))
     return extras
 
 

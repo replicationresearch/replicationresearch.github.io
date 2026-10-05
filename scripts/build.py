@@ -524,6 +524,10 @@ def main():
             if extras.get(key)
         ]
         a["laySummary"] = extras.get("laySummary") or ""
+        # ISO date from the editors' sheet; only trusted if it parses as one
+        # (an unparseable cell is kept as raw text by fetch.py).
+        sub_date = extras.get("submissionDate") or ""
+        a["submissionDate"] = sub_date if re.match(r"^\d{4}-\d{2}-\d{2}$", sub_date) else ""
         a["citationHtml"] = linkify_citation(a.get("citation"), a.get("doiUrl"))
         pdf = next((g for g in a["galleys"] if g["localPdf"]), None)
         a["pdf"] = pdf
