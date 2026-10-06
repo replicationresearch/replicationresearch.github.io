@@ -305,6 +305,185 @@ def _body_font_size(doc):
     return max(sizes.items(), key=lambda kv: kv[1])[0] if sizes else 11.0
 
 
+# --- Manuscripts typeset one line per block ---------------------------------
+# A copy-edited manuscript (double-spaced, first-line-indent paragraphs) comes
+# out of PyMuPDF as one text block PER LINE, not one per paragraph - the
+# journal's own typeset PDFs never do this, so the rest of this module can
+# treat a block as a paragraph. _merge_line_blocks() rebuilds the paragraphs
+# for that layout (and only that layout - see _is_line_per_block).
+LIST_MARKER_RE = re.compile(r"^(\d{1,2}[.)]|[a-z][.)]|[%s])[\s%s]" % (BULLET_ITEM_CHARS, ZWSP))
+# "1.<ZWSP> text" paragraphs as left by that layout, for _group_numbered_lists
+NUMBERED_ITEM_RE = re.compile(r"<p>(\d{1,2})[.)][\s%s]+(.*?)</p>" % ZWSP, re.S)
+
+
+FLOAT_SPLIT_RE = re.compile(
+    r"<p>((?:(?!</p>).)*?[^.!?:;)\]\"”\s])\s*</p>"      # paragraph that stops mid-sentence
+    r"((?:<figure\b(?:(?!</figure>).)*</figure>)+)"             # one or more figures/tables
+    r"<p>([a-z0-9(][^<]*?(?:<(?!/p>)[^<]*?)*)</p>", re.S)       # ...resumed in lowercase
+
+
+def _hoist_floats_out_of_paragraphs(html_text):
+    """A figure/table that floats into the middle of a paragraph (its
+    position on the PDF page) is emitted between the two halves of that
+    paragraph. Rejoin the sentence and put the float after it."""
+    prev = None
+    while prev != html_text:
+        prev = html_text
+        html_text = FLOAT_SPLIT_RE.sub(
+            lambda m: "<p>%s %s</p>%s" % (m.group(1), m.group(3), m.group(2)), html_text)
+    return html_text
+
+
+def _group_numbered_lists(html_text):
+    """Turn runs of consecutive "<p>1. ...</p><p>2. ...</p>" paragraphs
+    (numbered 1, 2, 3, ... in order, at least two) into an <ol>."""
+    out, pos, items, expect, start = [], 0, [], 1, None
+    def flush(end):
+        nonlocal items, expect, start
+        if len(items) >= 2:
+            out.append("<ol>%s</ol>" % "".join("<li>%s</li>" % t for t in items))
+        elif items:
+            out.append(html_text[start:end])
+        items, expect, start = [], 1, None
+    for m in NUMBERED_ITEM_RE.finditer(html_text):
+        contiguous = items and m.start() == pos
+        if contiguous and int(m.group(1)) == expect:
+            items.append(m.group(2)); expect += 1; pos = m.end(); continue
+        if items:
+            flush(pos)
+        if m.start() > pos:
+            out.append(html_text[pos:m.start()])
+        if int(m.group(1)) == 1:
+            items, expect, start, pos = [m.group(2)], 2, m.start(), m.end()
+        else:
+            out.append(m.group(0)); pos = m.end()
+    if items:
+        flush(pos)
+    out.append(html_text[pos:])
+    return "".join(out)
+
+
+def _block_first_span(block):
+    for line in block["lines"]:
+        for span in line["spans"]:
+            if span["text"].strip():
+                return span
+    return None
+
+
+def _baseline_y(line):
+    """Baseline of a line. Its bbox top is NOT usable for line spacing: a
+    line holding a subscript, a tall bracket or an italic letter has a
+    different bbox top than its neighbours, which made regular double
+    spacing look irregular (and split paragraphs mid-sentence)."""
+    for span in line["spans"]:
+        if span["text"].strip():
+            return span["origin"][1]
+    return line["bbox"][3]
+
+
+def _is_body_block(block, body_size):
+    sp = _block_first_span(block)
+    return sp is not None and abs(sp["size"] - body_size) <= 0.4
+
+
+def _is_line_per_block(doc, body_size):
+    """True when body text is laid out one line per PyMuPDF block."""
+    single = total = 0
+    for page in doc:
+        for b in page.get_text("dict")["blocks"]:
+            if b["type"] == 0 and _is_body_block(b, body_size):
+                total += 1
+                single += len(b["lines"]) == 1
+    return total >= 30 and single / total >= 0.8
+
+
+def _line_layout_stats(doc, body_size):
+    """(left margin, usual baseline-to-baseline distance, right edge of the
+    text column) of the body text."""
+    lefts, pitches, rights = {}, [], []
+    for page in doc:
+        prev = None
+        for b in page.get_text("dict")["blocks"]:
+            if b["type"] != 0 or not _is_body_block(b, body_size):
+                prev = None
+                continue
+            x0, y0 = round(b["bbox"][0]), _baseline_y(b["lines"][0])
+            lefts[x0] = lefts.get(x0, 0) + 1
+            rights.append(b["bbox"][2])
+            if prev is not None and prev[0] == x0 and 0 < y0 - prev[1] < body_size * 4:
+                pitches.append(y0 - prev[1])
+            prev = (x0, y0)
+    left = max(lefts.items(), key=lambda kv: (kv[1], -kv[0]))[0] if lefts else 0
+    pitches.sort()
+    pitch = pitches[len(pitches) // 2] if pitches else body_size * 1.4
+    rights.sort()
+    right = rights[int(len(rights) * 0.95)] if rights else 0
+    return left, pitch, right
+
+
+def _merge_line_blocks(blocks, body_size, toc_titles, left, pitch, right):
+    """Merge consecutive one-line body blocks into paragraph blocks.
+
+    A new paragraph starts at a first-line indent, at a list marker, at a
+    heading, or after a gap bigger than the usual line distance. Returns the
+    new block list plus the set of indices (into it) of blocks that are NOT
+    indented - for the page's first block that means "continues the previous
+    page's paragraph".
+    """
+    out = []
+    for b in blocks:
+        sp = _block_first_span(b)
+        prev = out[-1] if out else None
+        can_merge = False
+        # A caption's wrapped second line comes out as its own block too:
+        # same (small) size and left edge, and right under it - not a
+        # caption of its own. (Body-size lines are handled below.)
+        pfirst0 = _block_first_span(prev) if prev is not None else None
+        # The wrapped line may sit at the left margin while the caption's
+        # first line is indented (and a double-spaced caption's lines are
+        # further apart than single-spaced ones).
+        if (prev is not None and sp is not None and pfirst0 is not None
+                and CAPTION_RE.match(_block_text(prev))
+                and not _is_body_block(prev, body_size)
+                and abs(sp["size"] - pfirst0["size"]) <= 0.3
+                and not CAPTION_RE.match(_block_text(b))
+                and left - 3 <= b["bbox"][0] <= prev["lines"][0]["bbox"][0] + 3
+                and 0 < _baseline_y(b["lines"][0]) - _baseline_y(prev["lines"][-1])
+                    <= pfirst0["size"] * 2.3):
+            can_merge = True
+        elif prev is not None and sp is not None and _is_body_block(b, body_size)                 and _is_body_block(prev, body_size):
+            text = _block_text(b)
+            norm = _norm(text)
+            pfirst = _block_first_span(prev)
+            # Bold must be the DOMINANT style of the line: a bold run-in
+            # label ("Causal Inferences. On average, ...") starts a normal
+            # paragraph and does not make the whole line a heading.
+            _, bold, _ = _span_stats(b)
+            heading_like = (bold and sp["size"] >= body_size + 1) or norm in toc_titles                 or (bold and len(text) < 120 and not text.rstrip().endswith("."))
+            prev_text = _block_text(prev)
+            _, prev_bold, _ = _span_stats(prev)
+            prev_heading = prev_bold and len(prev_text) < 120                 and not prev_text.rstrip().endswith(".")
+            indented = b["bbox"][0] > left + 10
+            in_list = LIST_MARKER_RE.match(_line_raw_text(prev["lines"][0]).lstrip()) is not None
+            # A short last line that ends a sentence closes a list item -
+            # what follows is a new paragraph even if it sits at the same
+            # indent as the item's hanging text.
+            if in_list and prev_text.rstrip()[-1:] in ".!?:"                     and prev["lines"][-1]["bbox"][2] < right - 40:
+                in_list = False
+            starts_item = LIST_MARKER_RE.match(text.lstrip()) is not None
+            gap = _baseline_y(b["lines"][0]) - _baseline_y(prev["lines"][-1])
+            regular_gap = abs(gap - pitch) <= 0.4 * pitch
+            can_merge = (regular_gap and not heading_like and not prev_heading
+                         and not starts_item and (not indented or in_list))
+        if can_merge:
+            prev["lines"] = prev["lines"] + b["lines"]
+            prev["bbox"] = tuple(fitz.Rect(prev["bbox"]) | fitz.Rect(b["bbox"]))
+        else:
+            out.append(dict(b, lines=list(b["lines"])))
+    return out
+
+
 def _furniture_texts(doc):
     """Normalized texts of running headers/footers: any block text repeated
     on 3+ pages is page furniture, not content."""
@@ -366,6 +545,43 @@ def _footnote_markers(doc, body_size):
 FOOTREF_MARKER_RE = re.compile(r"\x00FNREF:(\d+):(\d+)\x00")
 
 
+# Inline emphasis: italic/bold spans are wrapped in these control characters
+# while a paragraph is being assembled (they survive html.escape and the
+# de-hyphenation/whitespace passes) and become <em>/<strong> at the very end.
+_EM_ON, _EM_OFF, _STRONG_ON, _STRONG_OFF = "\x01", "\x02", "\x03", "\x04"
+_ITALIC_FONT_RE = re.compile(r"italic|oblique", re.IGNORECASE)
+_BOLD_FONT_RE = re.compile(r"bold|black|heavy", re.IGNORECASE)
+
+
+def _emphasis_marks(span):
+    """Span text wrapped in emphasis control characters; surrounding
+    whitespace stays outside the markers so words never get padded."""
+    text = span["text"]
+    core = text.strip()
+    if not core:
+        return text
+    bold = bool(span["flags"] & BOLD_FLAG) or bool(_BOLD_FONT_RE.search(span["font"]))
+    italic = bool(span["flags"] & 2) or bool(_ITALIC_FONT_RE.search(span["font"]))
+    if MATH_FONT_RE.search(span["font"]) or not (bold or italic):
+        return text
+    lead, trail = text[:len(text) - len(text.lstrip())], text[len(text.rstrip()):]
+    if italic:
+        core = _EM_ON + core + _EM_OFF
+    if bold:
+        core = _STRONG_ON + core + _STRONG_OFF
+    return lead + core + trail
+
+
+def _emphasis_tags(text):
+    """Turn the control characters into tags, merging adjacent runs
+    ("<em>a</em> <em>b</em>" -> "<em>a b</em>") so a styled phrase that
+    spans several PyMuPDF spans/lines stays one element."""
+    for off, on in ((_EM_OFF, _EM_ON), (_STRONG_OFF, _STRONG_ON)):
+        text = re.sub("%s( ?)%s" % (off, on), r"\1", text)
+    return (text.replace(_EM_ON, "<em>").replace(_EM_OFF, "</em>")
+                .replace(_STRONG_ON, "<strong>").replace(_STRONG_OFF, "</strong>"))
+
+
 def _paragraph_html(block, footnote_ids, page_index, body_size,
                      skip_leading_marker=False, unambiguous_marker_page=None):
     """HTML for a paragraph/footnote-body block: the same line/de-hyphenation
@@ -422,12 +638,12 @@ def _paragraph_html(block, footnote_ids, page_index, body_size,
             if is_ref:
                 out += "\x00FNREF:%d:%s\x00" % (target_page, stripped)
             else:
-                out += s
+                out += _emphasis_marks(span)
             prev_style = style
         return out
 
     raw = _assemble_block(block, join)
-    return html.escape(raw)
+    return _emphasis_tags(html.escape(raw))
 
 
 def _resolve_footrefs(html_text, footnote_bodies):
@@ -556,7 +772,7 @@ def _figure_rect_above(page, caption_rect, text_blocks, furniture):
 
 
 def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
-                       body_size, caption_tops):
+                       body_size, caption_tops, stop_at_body_text=False):
     """The table region belonging to a caption: unlike Figures (image above,
     caption below), this journal's Tables have their caption ABOVE the
     table content, so the region to capture is BELOW the caption - down to
@@ -584,7 +800,11 @@ def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
         size, bold, _ = _span_stats(tb)
         is_heading_like = (bold and size >= body_size + 1 and len(text) < 120
                            and not text.rstrip().endswith("."))
-        if is_furniture or is_heading_like:
+        # Manuscript layout: running text follows the table directly (no
+        # heading/footer in between), and its font is larger than the
+        # table's - so the first real run of body-size text ends the band.
+        is_body_text = stop_at_body_text and size >= body_size - 0.3 and len(text) >= 25
+        if is_furniture or is_heading_like or is_body_text:
             bottom_limit = top
 
     band = fitz.Rect(page.rect.x0, caption_rect.y1 + 2, page.rect.x1, bottom_limit)
@@ -604,7 +824,14 @@ def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
         rect |= r
     if rect.width < MIN_TABLE_W or rect.height < MIN_TABLE_H:
         return None
-    return rect + (-4, -4, 4, 4)       # a little breathing room
+    rect = rect + (-4, -4, 4, 4)       # a little breathing room
+    if stop_at_body_text:
+        # ...but never into the body text that ended the band, or the top
+        # sliver of its first line ends up cropped into the table image.
+        rect.y1 = min(rect.y1, bottom_limit - 1)
+        # and not up into the caption just above, either.
+        rect.y0 = max(rect.y0, caption_rect.y1 + 1)
+    return rect
 
 
 def _table_plain_text(page, rect):
@@ -709,6 +936,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     body_size = _body_font_size(doc)
     furniture = _furniture_texts(doc)
     footnote_numbers = _footnote_markers(doc, body_size)
+    line_per_block = _is_line_per_block(doc, body_size)
+    layout_left, layout_pitch, layout_right = _line_layout_stats(doc, body_size) if line_per_block else (0, 0, 0)
     # A footnote number that's only ever a candidate on ONE page can be
     # safely matched from an adjacent page too - covers a footnote whose
     # reference mark and body text land on different pages because the
@@ -722,6 +951,12 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     unambiguous_marker_page = {m: pages[0] for m, pages in marker_pages.items()
                                if len(pages) == 1}
     toc = [] if ignore_toc else doc.get_toc()
+    # Copy-edited PDFs can carry blank-titled bookmarks (confirmed on the
+    # Aggarwal et al. manuscript, whose very first bookmark is " "). A
+    # blank first entry makes first_heading "" - which no text block ever
+    # matches - so extraction found nothing, fell back to "no bookmarks"
+    # mode, and leaked the whole first-page masthead into the full text.
+    toc = [t for t in toc if _norm(t[1])]
     toc_titles = {_norm(t[1]): t[0] for t in toc}
     first_heading = _norm(toc[0][1]) if toc else None
 
@@ -737,6 +972,18 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
     for page_index, page in enumerate(doc):
         d = page.get_text("dict")
         text_blocks = [b for b in d["blocks"] if b["type"] == 0]
+        continues_prev_page = False
+        if line_per_block:
+            text_blocks = _merge_line_blocks(text_blocks, body_size, toc_titles,
+                                              layout_left, layout_pitch, layout_right)
+            first_body = next((b for b in text_blocks if _is_body_block(b, body_size)
+                               and _furniture_key(_block_text(b)) not in furniture), None)
+            # A page that opens with a body block sitting at the margin
+            # (not indented) is carrying on the previous page's paragraph.
+            # (first line's own x0 - the merged block's bbox also covers its
+            # hanging/continuation lines)
+            continues_prev_page = bool(first_body)                 and first_body["lines"][0]["bbox"][0] <= layout_left + 10                 and _block_first_span(first_body)["flags"] & BOLD_FLAG == 0                 and not LIST_MARKER_RE.match(_block_text(first_body).lstrip())
+            continuation_block = first_body
 
         # Pass 1: find captions and their figure/table regions, and
         # standalone large images, so pass 2 can skip any text living
@@ -756,7 +1003,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             if m.group(1).lower().startswith("table"):
                 rect = _table_rect_below(page, fitz.Rect(block["bbox"]),
                                          text_blocks, d["blocks"], furniture,
-                                         body_size, caption_tops)
+                                         body_size, caption_tops,
+                                         stop_at_body_text=line_per_block)
                 if rect is not None:
                     table_rects[i] = rect
             else:
@@ -881,10 +1129,33 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     continue
 
             if is_heading:
-                level = toc_titles.get(norm, 1)
-                tag = "h3" if level <= 1 else "h4"
-                hid = _heading_id(text, seen_heading_ids)
-                parts.append('<%s id="%s">%s</%s>' % (tag, hid, html.escape(text), tag))
+                # A section title directly followed by its first sub-section
+                # title ("Method" / "Transparency and Openness") shares one
+                # PyMuPDF block: one heading per line, the largest type
+                # size being the top level.
+                # Lines of one size are ONE heading wrapped over several
+                # lines (re-joined, de-hyphenated), not several headings.
+                groups = []
+                for l in block["lines"]:
+                    if not _line_raw_text(l):
+                        continue
+                    lsize = _block_first_span({"lines": [l]})["size"]
+                    if groups and abs(groups[-1][0] - lsize) <= 0.5:
+                        groups[-1][1].append(l)
+                    else:
+                        groups.append((lsize, [l]))
+                head_lines = [(_block_text({"lines": g}), {"spans": [{"size": sz}]})
+                              for sz, g in groups]
+                top_size = max(sz for sz, _ in groups)
+                for line_text, line in head_lines:
+                    line_norm = _norm(line_text)
+                    level = toc_titles.get(line_norm)
+                    if level is None:
+                        level = 1 if line["spans"][0]["size"] >= top_size - 0.5 else 2
+                    tag = "h3" if level <= 1 else "h4"
+                    hid = _heading_id(line_text, seen_heading_ids)
+                    parts.append('<%s id="%s">%s</%s>'
+                                 % (tag, hid, html.escape(line_text), tag))
                 continue
 
             # A block isn't necessarily ONE paragraph: a bulleted list or a
@@ -921,9 +1192,13 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     parts.append('<%s id="%s">%s</%s>'
                                  % (seg_tag, seg_hid, html.escape(seg_text), seg_tag))
                 else:
-                    parts.append("<p>%s</p>" % _paragraph_html(
+                    para = _paragraph_html(
                         {"lines": seg_lines}, page_footnote_ids, page_index,
-                        body_size, unambiguous_marker_page=unambiguous_marker_page))
+                        body_size, unambiguous_marker_page=unambiguous_marker_page)
+                    if continues_prev_page and block is continuation_block and parts                             and parts[-1].startswith("<p>") and parts[-1].endswith("</p>")                             and "fulltext-equation" not in parts[-1]:
+                        parts[-1] = parts[-1][:-4] + " " + para + "</p>"
+                    else:
+                        parts.append("<p>%s</p>" % para)
             if in_list:
                 parts.append("</ul>")
 
@@ -938,7 +1213,10 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
 
     footnote_bodies = {(page_index, marker): body_html
                         for page_index, marker, fid, refid, body_html in footnotes}
-    html_out = _resolve_footrefs("".join(parts), footnote_bodies)
+    html_out = "".join(parts)
+    if line_per_block:
+        html_out = _hoist_floats_out_of_paragraphs(_group_numbered_lists(html_out))
+    html_out = _resolve_footrefs(html_out, footnote_bodies)
 
     if footnotes:
         # Block-encounter order isn't reliably top-to-bottom for footnotes

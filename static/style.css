@@ -473,6 +473,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   font-size: .85rem; color: var(--ink-soft); margin-top: .6rem; text-align: left;
 }
 .fulltext-table figcaption { margin-top: 0; margin-bottom: .6rem; }
+/* Real (override-supplied) tables: the body's overflow-wrap:anywhere would
+   break short cells mid-word ("Simil|arity"); keep words whole and let the
+   table scroll sideways instead. */
+.fulltext-table table { margin: 0 0 .6rem; font-size: .86rem; text-align: left; }
+.fulltext-table th, .fulltext-table td { overflow-wrap: normal; vertical-align: top; min-width: 5.5rem; }
 .table-copy-btn {
   display: block; margin: 0 0 .6rem; font: 600 .72rem var(--sans);
   color: var(--muted); background: #fff; border: 1px solid var(--rule);

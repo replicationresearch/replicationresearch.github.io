@@ -25,7 +25,7 @@ import sys
 # Minimal inline Markdown -> HTML, scoped to what a Google-Docs export uses.
 # ---------------------------------------------------------------------------
 
-_ESCAPE_RE = re.compile(r"\\([.\-+_*\[\]()`!#])")
+_ESCAPE_RE = re.compile(r"\\([!-/:-@\[-`{-~])")  # CommonMark: backslash + any ASCII punctuation
 _LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 _ITALIC_RE = re.compile(r"\*(.+?)\*")
@@ -182,6 +182,11 @@ def parse_references(md_text):
                 current = []
             continue
         current.append(stripped)
+        # A Markdown hard break (two trailing spaces) also ends a reference:
+        # some exports list one reference per line with no blank lines.
+        if line.endswith("  "):
+            paragraphs.append(" ".join(current))
+            current = []
     if current:
         paragraphs.append(" ".join(current))
 

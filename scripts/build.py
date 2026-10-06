@@ -180,7 +180,8 @@ def sort_issues_newest_first(issues, articles_by_path):
 
 
 SURNAME_RE = re.compile(
-    r"([A-ZÀ-Þ][\w'’.\-]*(?:\s[A-ZÀ-Þ][\w'’\-]*)?)"
+    r"((?:(?:van|von|de|der|den|di|da|del|la|le|ter|ten|op|het)\s+)*"
+    r"[A-ZÀ-Þ][\w'’.\-]*(?:\s[A-ZÀ-Þ][\w'’\-]*)?)"
     r"\s*,\s*[A-ZÀ-Þ]\.")
 
 # ACL/computational-linguistics style bibliography entries look like
@@ -302,6 +303,9 @@ def link_citations(fulltext_html, references_html):
         else:
             whos = ["%s et al." % surnames[0]]
         full = full_html
+        # "van de Schoot" in the reference list is "Van de Schoot" when it
+        # starts an in-text citation.
+        whos = whos + [w[:1].upper() + w[1:] for w in whos if w[:1].islower()]
         for who in whos:
             who_amp = who.replace("&", "&amp;")
             # Every surface form the citation might take in-text: narrative
