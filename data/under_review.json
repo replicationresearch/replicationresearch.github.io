@@ -1,5 +1,49 @@
 [
  {
+  "abstractHtml": "<p>Response variability in questionnaires may reflect substantive differences, stable response tendencies, as well as careless responding, yet these interpretations are rarely examined together. In a preregistered laboratory study, 67 participants completed the same questionnaire under two truthful, an overtly careless, and a covertly careless instruction while adherence was monitored. We examined whether corrected response variability generalized across four content-diverse measures and how well common careless-responding indicators distinguished truthful from careless records. For the preregistered item-set operationalization, cross-measure correlations averaged r = .40 and .45 across the two truthful conditions, whereas the corresponding strict Baird-style correlations averaged r = .20 and .26. Overall corrected variability was highly stable across truthful assessments (item-set r = .92; strict r = .83) and remained moderately stable between truthful and careless conditions. Overall raw item-set variability was lower under careless instructions, whereas strict Baird-style variability was highest under covert carelessness. For carelessness in adherence-confirmed analyses, page time showed the strongest discrimination (AUCs = .85~.88), followed by retest correspondence, attention checks, and fake-adjective accuracy; longstring performed weakly. These findings indicate that response variability contains stable individual differences while also being sensitive to task engagement.</p>",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Leistner, Moritz",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Balcerzak, Laura",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Erhardt, Moritz",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Wiedenroth, Anne",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Wetzel, Eunike",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Leising, Daniel",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "16",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.23668/psycharchives.22555",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.23668-psycharchives.22555/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Check",
+  "submissionDate": "2026-10-08",
+  "title": "The Different Meanings of Response Variability: A Preregistered Replication and Extension"
+ },
+ {
   "abstractHtml": "<p>Abstract\n                <p>The present study aimed to directly replicate the seminal findings of Decety et al. (1989), while also extending the original work with a larger sample size and additional statistical analyses.</p>\n                <p>Thirty healthy adults completed both imagined and executed walking tasks over distances of 5, 10, and 15 meters. Participants also completed the Movement Imagery Questionnaire-3 (MIQ-3). Temporal correspondence between imagined and executed walking was assessed using repeated-measures ANOVA, correlation analyses, Bayesian equivalence tests, and Bland– Altman analyses.</p>\n                <p>Walking duration increased significantly with distance, while no significant differences were observed between imagined and executed walking times. Bayesian equivalence tests provided evidence supporting temporal equivalence between the two modalities, and Bland–Altman analyses indicated good agreement with minimal systematic bias. Strong positive correlations were found between imagined and executed durations at all distances. MIQ-3 scores were not significantly associated with differences between imagined and executed walking durations.</p>\n                <p>Overall, the findings successfully replicate and extend the original results reported by Decety et al. (1989), providing additional evidence supporting temporal equivalence between motor imagery and movement execution. By combining a larger sample size with contemporary statistical approaches, the present study strengthens support for the principle of functional equivalence for highly automated and cyclic movements.</p></p>",
   "authors": [
    {

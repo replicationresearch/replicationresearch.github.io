@@ -12,12 +12,12 @@
   "2026-07": 1,
   "2026-08": 0,
   "2026-09": 2,
-  "2026-10": 1
+  "2026-10": 2
  },
  "statusCounts": {
   "declined": 3,
   "published": 4,
-  "underReview": 9
+  "underReview": 10
  },
- "total": 16
+ "total": 17
 }
