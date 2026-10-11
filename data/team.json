@@ -17,9 +17,9 @@
     },
     {
      "affiliation": "University of Münster",
-     "name": "Neele Kolber",
+     "name": "Kira Schweickhardt",
      "roles": "Research Intern",
-     "slug": "neele-kolber"
+     "slug": "kira-schweickhardt"
     },
     {
      "affiliation": "University of Münster",
@@ -315,6 +315,12 @@
      "name": "Prince Oppong Boakye",
      "roles": "Research Assistant",
      "slug": "prince-oppong-boakye"
+    },
+    {
+     "affiliation": "University of Münster",
+     "name": "Neele Kolber",
+     "roles": "Research Intern",
+     "slug": "neele-kolber"
     }
    ],
    "noteHtml": "",
