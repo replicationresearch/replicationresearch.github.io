@@ -1,5 +1,29 @@
 [
  {
+  "abstractHtml": "<p>Björkman Nyqvist et al. (2024) evaluate a randomized experiment in rural Uganda that studies whether strengthening women’s communication skills within marriage can shift household decisions toward greater investment in child health. All treatments provide health and nutrition training, varying whether mothers or fathers are involved, while one additional treatment incorporates a communication skills curriculum for mothers, allowing the authors to isolate the effect of communication. The authors report five core findings: First, women offered communication training report improved relationship quality. Second, the communication treatment increases the frequency of discussions between spouses about health and finances, but does not improve men’s health knowledge, indicating limited information transmission. Third, communication training does not increase the adoption of health-promoting behaviors beyond the gains from women’s health training alone. Fourth, the communication training shifts household spending, particularly on meat and fish. Fifth, none of the treatments improves the study's primary child health outcomes. We successfully computationally reproduce the paper's main claims, and show that the results are robust to corrections for multiple hypothesis testing, inclusion of control variables in analyses, and an alternative definition of relationship quality measure.</p>",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Evan Veer",
+    "orcid": "https://orcid.org/0009-0008-5498-5753"
+   },
+   {
+    "affiliation": "",
+    "name": "Lenka Fiala",
+    "orcid": "https://orcid.org/0000-0003-0216-7050"
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "17",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.31235/osf.io/7qgtj_v1",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-7qgtj_v1/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Pre-Review Revision",
+  "submissionDate": "2026-10-12",
+  "title": "A comment on “A Mother's Voice: Impacts of Spousal Communication Training on Child Health Investments”"
+ },
+ {
   "abstractHtml": "<p>Response variability in questionnaires may reflect substantive differences, stable response tendencies, as well as careless responding, yet these interpretations are rarely examined together. In a preregistered laboratory study, 67 participants completed the same questionnaire under two truthful, an overtly careless, and a covertly careless instruction while adherence was monitored. We examined whether corrected response variability generalized across four content-diverse measures and how well common careless-responding indicators distinguished truthful from careless records. For the preregistered item-set operationalization, cross-measure correlations averaged r = .40 and .45 across the two truthful conditions, whereas the corresponding strict Baird-style correlations averaged r = .20 and .26. Overall corrected variability was highly stable across truthful assessments (item-set r = .92; strict r = .83) and remained moderately stable between truthful and careless conditions. Overall raw item-set variability was lower under careless instructions, whereas strict Baird-style variability was highest under covert carelessness. For carelessness in adherence-confirmed analyses, page time showed the strongest discrimination (AUCs = .85~.88), followed by retest correspondence, attention checks, and fake-adjective accuracy; longstring performed weakly. These findings indicate that response variability contains stable individual differences while also being sensitive to task engagement.</p>",
   "authors": [
    {
