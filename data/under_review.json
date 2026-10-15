@@ -1,5 +1,24 @@
 [
  {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "van der Wel",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "19",
+  "laySummary": "",
+  "preprintUrl": "",
+  "prereviewUrl": "",
+  "pubpeerUrl": "",
+  "status": "Initial Check",
+  "submissionDate": "2026-10-15",
+  "title": "van der Wel Agency"
+ },
+ {
   "abstractHtml": "<p>Björkman Nyqvist et al. (2024) evaluate a randomized experiment in rural Uganda that studies whether strengthening women’s communication skills within marriage can shift household decisions toward greater investment in child health. All treatments provide health and nutrition training, varying whether mothers or fathers are involved, while one additional treatment incorporates a communication skills curriculum for mothers, allowing the authors to isolate the effect of communication. The authors report five core findings: First, women offered communication training report improved relationship quality. Second, the communication treatment increases the frequency of discussions between spouses about health and finances, but does not improve men’s health knowledge, indicating limited information transmission. Third, communication training does not increase the adoption of health-promoting behaviors beyond the gains from women’s health training alone. Fourth, the communication training shifts household spending, particularly on meat and fish. Fifth, none of the treatments improves the study's primary child health outcomes. We successfully computationally reproduce the paper's main claims, and show that the results are robust to corrections for multiple hypothesis testing, inclusion of control variables in analyses, and an alternative definition of relationship quality measure.</p>",
   "authors": [
    {
@@ -107,7 +126,7 @@
   "preprintUrl": "https://doi.org/10.64898/2026.09.02.748865",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.64898-2026.09.02.748865/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Pre-Review Revision",
+  "status": "With editors",
   "submissionDate": "2026-09-09",
   "title": "Mental Timing in Locomotion: Walking Across Real and Imagined Distances"
  },
@@ -150,7 +169,7 @@
   "preprintUrl": "https://doi.org/10.31235/osf.io/zh56a_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-zh56a_v1/write-a-prereview",
   "pubpeerUrl": "https://pubpeer.com/publications/6EE269B0528B79963B933DF41DC335",
-  "status": "With editor (1st decision)",
+  "status": "With authors (2nd revision)",
   "submissionDate": "2026-06-04",
   "title": "Re-analyzing ``I Hope to Hell Nothing Goes Back to The Way It Was Before'': COVID-19, Marginalization, and Native Nations"
  },
