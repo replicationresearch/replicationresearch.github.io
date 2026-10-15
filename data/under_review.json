@@ -1,22 +1,37 @@
 [
  {
-  "abstractHtml": "",
+  "abstractHtml": "<p>In a recent meta-analysis, Mariano et al. (2025) conclude that people experience a stronger sense of agency over positive than negative outcomes, indexed by temporal compression. In this commentary, we evaluate that claim and identify several concerns about its validity. First, we argue that temporal compression effects should be standardized before being combined, because values in milliseconds are not necessarily comparable across different paradigms. When we analyzed standardized effects, evidence for a valence effect was absent once adjusting for publication bias. Second, we identified data integrity issues, identifying several studies that were included but either (1) did not manipulate outcome valence at all, or (2) contained only a positive or negative condition compared to a neutral condition. Excluding these studies meant that even unstandardized effects did not support Mariano et al.’s headline finding.</p>",
   "authors": [
    {
     "affiliation": "",
-    "name": "van der Wel",
+    "name": "Robrecht van der Wel",
     "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Shaheed Azaad",
+    "orcid": "https://orcid.org/0000-0003-1242-4284"
+   },
+   {
+    "affiliation": "",
+    "name": "Pernille Hemmer",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "John Michael",
+    "orcid": "https://orcid.org/0000-0002-8771-8976"
    }
   ],
   "handlingEditor": "not yet assigned",
   "id": "19",
   "laySummary": "",
-  "preprintUrl": "",
-  "prereviewUrl": "",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/wkcgf_v5",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-wkcgf_v5/write-a-prereview",
   "pubpeerUrl": "",
   "status": "Initial Check",
   "submissionDate": "2026-10-15",
-  "title": "van der Wel Agency"
+  "title": "No evidence that positive outcomes elicit a stronger sense of agency once correcting for publication bias: a commentary on, and re-analysis of, Mariano et al. (2025)"
  },
  {
   "abstractHtml": "<p>Björkman Nyqvist et al. (2024) evaluate a randomized experiment in rural Uganda that studies whether strengthening women’s communication skills within marriage can shift household decisions toward greater investment in child health. All treatments provide health and nutrition training, varying whether mothers or fathers are involved, while one additional treatment incorporates a communication skills curriculum for mothers, allowing the authors to isolate the effect of communication. The authors report five core findings: First, women offered communication training report improved relationship quality. Second, the communication treatment increases the frequency of discussions between spouses about health and finances, but does not improve men’s health knowledge, indicating limited information transmission. Third, communication training does not increase the adoption of health-promoting behaviors beyond the gains from women’s health training alone. Fourth, the communication training shifts household spending, particularly on meat and fish. Fifth, none of the treatments improves the study's primary child health outcomes. We successfully computationally reproduce the paper's main claims, and show that the results are robust to corrections for multiple hypothesis testing, inclusion of control variables in analyses, and an alternative definition of relationship quality measure.</p>",
