@@ -34,12 +34,8 @@
   {% if submissions %}
   <section class="submission-charts">
     <div class="submission-chart-box">
-      <h3>New submissions per month</h3>
+      <h3>New submissions per month ({{ submissions.total }} total)</h3>
       {{ submissions.monthlyChart | safe }}
-    </div>
-    <div class="submission-chart-box">
-      <h3>Submission status ({{ submissions.total }} total)</h3>
-      {{ submissions.statusBar | safe }}
     </div>
   </section>
   {% endif %}

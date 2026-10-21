@@ -901,84 +901,66 @@ def fetch_goatcounter_views(articles):
 
 
 # ---------------------------------------------------------------------------
-# Submission funnel (for the Submissions page charts): how many manuscripts
-# came in per month, and how they broke down (published / under review /
-# declined). Uses the same OJS_API_KEY as the stats above.
+# Submission funnel (for the Submissions page chart): how many manuscripts
+# came in per month and what became of each (published / under review /
+# declined / withdrawn). Read from the editors' Google Sheet - the one
+# complete ledger of submissions, including desk rejections that never get
+# far in OJS and without OJS's test submissions and unfinished drafts - so
+# it needs no API key. The sheet itself is defined further down.
 # ---------------------------------------------------------------------------
 
-# pkp-lib submission status constants (stable since OJS 3.0).
-STATUS_PUBLISHED = 3
-STATUS_DECLINED = 4
-
-# Submissions manually confirmed (in the OJS backend) to not be a real
-# manuscript under consideration despite having gone through the full
-# wizard - e.g. an editor's own test submission - so they're excluded from
-# the funnel entirely rather than counted as "under review". Incomplete
-# drafts (never finished the wizard) don't need an entry here - see
-# _is_incomplete() below. Add more IDs here only for this "looks real but
-# isn't" case.
-EXCLUDED_SUBMISSION_IDS = {9023}
-
-
-def _is_incomplete(item):
-    """True if the author never finished the OJS submission wizard. OJS
-    sets submissionProgress to a non-empty string (the wizard step it's
-    stuck on) for such drafts and clears it once the submission is
-    actually completed - so this never needs a hardcoded ID, unlike
-    EXCLUDED_SUBMISSION_IDS above."""
-    return bool(item.get("submissionProgress"))
+def submission_status(row):
+    """published / withdrawn / declined / underReview for one sheet row,
+    from the editors' free-text "Stage" (and the DOI column for published)."""
+    stage = (row.get("Stage") or "").strip().lower()
+    if stage == "published" or (row.get("Published DOI") or "").strip():
+        return "published"
+    if stage.startswith("withdrawn"):
+        return "withdrawn"
+    if "reject" in stage:
+        return "declined"
+    return "underReview"
 
 
 def fetch_submission_stats():
-    if not API_KEY:
-        print("OJS_API_KEY not set - skipping submission-funnel stats.")
-        return None
-    print("Fetching submission list via OJS API ...")
-    items = []
-    offset = 0
-    while True:
-        data = api_get("/submissions", {"count": 100, "offset": offset})
-        if not data:
-            break
-        batch = data.get("items") or []
-        items.extend(batch)
-        total = data.get("itemsMax", 0)
-        offset += len(batch)
-        if not batch or offset >= total:
-            break
-    if not items:
-        print("  no submissions returned - skipping.", file=sys.stderr)
+    import csv
+    import io
+
+    print("Counting submissions from the editors' Google Sheet ...")
+    try:
+        rows = list(csv.DictReader(io.StringIO(get(SHEET_CSV_URL).text)))
+    except Exception as e:  # noqa: BLE001
+        print("  sheet fetch failed: %s" % e, file=sys.stderr)
         return None
 
-    monthly = {}
-    counts = {"published": 0, "underReview": 0, "declined": 0}
-    excluded = 0
-    for item in items:
-        if item.get("id") in EXCLUDED_SUBMISSION_IDS or _is_incomplete(item):
-            excluded += 1
-            continue
-        date = str(item.get("dateSubmitted") or "")[:7]
-        m = re.match(r"\d{4}-\d{2}$", date)
-        if m:
-            monthly[date] = monthly.get(date, 0) + 1
-        status = item.get("status")
-        if status == STATUS_PUBLISHED:
-            counts["published"] += 1
-        elif status == STATUS_DECLINED:
-            counts["declined"] += 1
-        else:
-            counts["underReview"] += 1
+    blank = lambda: {"published": 0, "underReview": 0, "declined": 0, "withdrawn": 0}
+    counts, monthly, monthly_by_status = blank(), {}, {}
+    for row in rows:
+        when = _parse_sheet_date(row.get("Submission Date") or "")
+        if not re.match(r"\d{4}-\d{2}-\d{2}$", when):
+            continue                      # not a submission row (blank/notes)
+        bucket = submission_status(row)
+        counts[bucket] += 1
+        ym = when[:7]
+        monthly[ym] = monthly.get(ym, 0) + 1
+        monthly_by_status.setdefault(ym, blank())[bucket] += 1
+    if not monthly:
+        print("  no submission rows found in the sheet - skipping.", file=sys.stderr)
+        return None
+
     # Zero-fill every month since launch, not just the ones with a
     # submission - otherwise a month with none simply has no key and the
     # chart's x-axis silently skips over it instead of showing a gap.
     for ym, _first, _next in _month_ranges(DATE_START):
         monthly.setdefault(ym, 0)
-    total = len(items) - excluded
-    print("  %d submissions: %d published, %d under review, %d declined "
-          "(%d excluded as test/incomplete)"
-          % (total, counts["published"], counts["underReview"],
-             counts["declined"], excluded))
-    return {"monthly": monthly, "statusCounts": counts, "total": total}
+        monthly_by_status.setdefault(ym, blank())
+    total = sum(counts.values())
+    print("  %d submissions: %d published, %d under review, %d declined, "
+          "%d withdrawn" % (total, counts["published"], counts["underReview"],
+                            counts["declined"], counts["withdrawn"]))
+    return {"monthly": dict(sorted(monthly.items())),
+            "monthlyByStatus": dict(sorted(monthly_by_status.items())),
+            "statusCounts": counts, "total": total}
 
 
 # ---------------------------------------------------------------------------

@@ -446,9 +446,8 @@ def main():
     submissions_charts = None
     if submissions and submissions.get("monthly"):
         submissions_charts = {
-            "monthlyChart": simple_bar_chart(
-                submissions["monthly"], "bar-submissions",
-                "New submissions per month"),
+            "monthlyChart": submissions_stacked_chart(
+                submissions.get("monthlyByStatus"), submissions["monthly"]),
             "statusBar": status_stacked_bar(submissions["statusCounts"]),
             "statusCounts": submissions["statusCounts"],
             "total": submissions["total"],
@@ -725,45 +724,87 @@ def stats_chart(stats, min_month=None, width=256, height=96):
             '%s</svg>' % (width, height, "".join(parts)))
 
 
-def simple_bar_chart(values, css_class, aria_label, width=280, height=90):
-    """Minimalist single-series monthly bar chart: a y-axis with the peak
-    value and 0, and the first/last month as x-axis labels - the same
-    minimal axis treatment as stats_chart(), just for a single series.
+STACK_STATUSES = (("published", "status-published", "Published"),
+                  ("underReview", "status-underreview", "Under review"),
+                  ("declined", "status-declined", "Declined"),
+                  ("withdrawn", "status-withdrawn", "Withdrawn"),
+                  ("submissions", "status-unknown", "Submissions"))
+
+
+def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190):
+    """Stacked column chart of new submissions per month: one column per
+    month since launch (empty months stay as gaps), every submission one
+    block coloured by its current status (the same colours the status bar
+    uses). Plain HTML/CSS with a hover/focus tooltip per status block
+    ("Under review: 2 - March 2026") - like status_stacked_bar(), not a
+    native SVG <title>, which is unreliable across browsers and absent on
+    touch. Falls back to a single neutral colour when only month totals are
+    known (data written before per-status counts were collected).
     """
-    months = sorted(values)
+    if monthly_by_status:
+        data = {ym: {k: v for k, v in counts.items() if v}
+                for ym, counts in monthly_by_status.items()}
+    else:
+        data = {ym: ({"submissions": n} if n else {})
+                for ym, n in (monthly or {}).items()}
+    months = sorted(data)
     if len(months) < 2:
         return ""
-    peak = max([*values.values(), 1])
-    label_h = 14
-    axis_w = 30       # room left of the y-axis for its tick labels
-    plot_h = height - label_h
-    group_w = (width - axis_w) / len(months)
-    bar_w = max(3.0, min(16.0, group_w - 3.0))
-    bars = [
-        '<line class="chart-axis" x1="%d" y1="2" x2="%d" y2="%d"/>'
-        % (axis_w, axis_w, plot_h),
-        '<line class="chart-axis" x1="%d" y1="%d" x2="%d" y2="%d"/>'
-        % (axis_w, plot_h, width, plot_h),
-        '<text class="chart-label" x="%d" y="10" text-anchor="end">%d</text>'
-        % (axis_w - 4, peak),
-        '<text class="chart-label" x="%d" y="%d" text-anchor="end">0</text>'
-        % (axis_w - 4, plot_h),
-    ]
-    for i, month in enumerate(months):
-        value = values.get(month, 0)
-        h = plot_h * value / peak
-        x0 = axis_w + i * group_w + (group_w - bar_w) / 2
-        bars.append(
-            '<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="%.1f">'
-            '<title>%s: %d</title></rect>'
-            % (css_class, x0, plot_h - h, bar_w, max(h, 0.5), month, value))
-    labels = (
-        '<text class="chart-label" x="%d" y="%d">%s</text>'
-        '<text class="chart-label" x="%d" y="%d" text-anchor="end">%s</text>'
-        % (axis_w, height - 2, months[0], width, height - 2, months[-1]))
-    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" '
-            'aria-label="%s">%s%s</svg>'
-            % (width, height, aria_label, "".join(bars), labels))
+    totals = {ym: sum(data[ym].values()) for ym in months}
+    peak = max([*totals.values(), 1])
+    unit = min(plot_h / peak, 56.0)
+    plot_px = unit * peak
+    sparse_labels = len(months) > 18
+
+    def month_name(ym):
+        return datetime.date(int(ym[:4]), int(ym[5:7]), 1).strftime("%B %Y")
+
+    cols = []
+    for idx, ym in enumerate(months):
+        full = month_name(ym)
+        segs = []
+        for key, css, label in STACK_STATUSES:
+            n = data[ym].get(key, 0)
+            if not n:
+                continue
+            segs.append(
+                '<span class="stack-seg %s" style="height:%.2fpx;--u:%.2fpx" tabindex="0">'
+                '<span class="stack-tooltip">%s: %d &middot; %s</span></span>'
+                % (css, n * unit, unit, label, n, full))
+        if not segs:
+            segs.append(
+                '<span class="stack-empty" tabindex="0">'
+                '<span class="stack-tooltip">No submissions &middot; %s</span></span>'
+                % full)
+        mon = full[:3]
+        show_label = not sparse_labels or ym[5:] in ("01", "04", "07", "10")
+        label = ""
+        if show_label:
+            label = mon + ('<br>' + ym[:4] if ym[5:] == "01" or idx == 0 else "")
+        edge = " stack-col-first" if idx == 0 else (
+            " stack-col-last" if idx == len(months) - 1 else "")
+        cols.append('<div class="stack-col%s"><div class="stack-bar">%s</div>'
+                    '<span class="stack-x">%s</span></div>'
+                    % (edge, "".join(segs), label))
+
+    ticks = sorted({0, peak} | ({*range(1, peak)} if peak <= 6 else set()))
+    yaxis = "".join(
+        '<span class="stack-y" style="bottom:%.2fpx">%d</span>' % (t * unit, t)
+        for t in ticks)
+    grid = "".join(
+        '<span class="stack-grid" style="bottom:%.2fpx"></span>' % (t * unit)
+        for t in ticks if t)
+    present = {k for ym in months for k in data[ym]}
+    legend = "".join(
+        '<span class="stack-legend-item"><i class="%s"></i>%s</span>'
+        % (css, label) for key, css, label in STACK_STATUSES if key in present)
+    return ('<div class="stack-chart" role="img" '
+            'aria-label="New submissions per month, coloured by status">'
+            '<div class="stack-legend">%s</div>'
+            '<div class="stack-plot" style="height:%.2fpx">'
+            '<div class="stack-yaxis">%s</div>%s'
+            '<div class="stack-cols">%s</div></div></div>'
+            % (legend, plot_px, yaxis, grid, "".join(cols)))
 
 
 def status_stacked_bar(counts):
@@ -778,7 +819,8 @@ def status_stacked_bar(counts):
     """
     order = [("published", "status-published", "Published"),
              ("underReview", "status-underreview", "Under review"),
-             ("declined", "status-declined", "Declined")]
+             ("declined", "status-declined", "Declined"),
+             ("withdrawn", "status-withdrawn", "Withdrawn")]
     total = sum(counts.get(k, 0) for k, _, _ in order) or 1
     segs = []
     for key, css, label in order:

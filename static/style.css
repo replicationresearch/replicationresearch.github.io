@@ -828,6 +828,49 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .submission-chart-box h3 { font-size: 1rem; margin: 0 0 .8rem; }
 .bar-submissions { fill: var(--accent); }
 
+/* submissions_stacked_chart(): one column per month, one block per
+   submission coloured by status (colours defined with .status-* below),
+   plain HTML so each block can carry the same kind of hover/focus tooltip
+   as the status bar. */
+.stack-legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin: 0 0 1.1rem; font-size: .82rem; color: var(--ink-soft); }
+.stack-legend-item i { display: inline-block; width: .8rem; height: .8rem; border-radius: 2px; margin-right: .4rem; vertical-align: -1px; }
+.stack-plot { position: relative; margin: 0 0 2.8rem 1.9rem; border-bottom: 1px solid var(--muted); }
+.stack-y { position: absolute; left: -1.9rem; width: 1.4rem; text-align: right; transform: translateY(50%); font-size: .72rem; color: var(--muted); line-height: 1; }
+.stack-grid { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--rule); }
+.stack-cols { position: absolute; inset: 0; display: flex; gap: 6px; }
+.stack-col { position: relative; flex: 1 1 0; min-width: 0; display: flex; justify-content: center; }
+.stack-bar { position: relative; width: min(100%, 36px); height: 100%; display: flex; flex-direction: column-reverse; }
+.stack-seg { position: relative; display: block; width: 100%; outline-offset: 1px; cursor: default; }
+.stack-bar .stack-seg {
+  background-image: repeating-linear-gradient(to top, transparent 0,
+    transparent calc(var(--u) - 1.5px), rgba(255,255,255,.92) calc(var(--u) - 1.5px),
+    rgba(255,255,255,.92) var(--u));
+}
+.stack-seg:last-child { border-radius: 3px 3px 0 0; }
+.stack-empty { position: absolute; inset: 0; outline-offset: -2px; cursor: default; }
+.stack-x { position: absolute; top: 100%; margin-top: .4rem; font-size: .72rem; color: var(--muted); text-align: center; line-height: 1.2; white-space: nowrap; }
+.stack-tooltip {
+  position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px;
+  transform: translateX(-50%) translateY(4px);
+  width: max-content; background: var(--ink); color: #fff;
+  font-size: .82rem; line-height: 1.4; padding: .45rem .7rem;
+  border-radius: 8px; box-shadow: var(--shadow); z-index: 5; white-space: nowrap;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.stack-empty .stack-tooltip { bottom: 14px; margin-bottom: 0; }
+.stack-seg:hover .stack-tooltip, .stack-seg:focus .stack-tooltip,
+.stack-empty:hover .stack-tooltip, .stack-empty:focus .stack-tooltip {
+  opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+}
+.stack-col-first .stack-tooltip { left: 0; transform: translateY(4px); }
+.stack-col-first .stack-seg:hover .stack-tooltip, .stack-col-first .stack-seg:focus .stack-tooltip,
+.stack-col-first .stack-empty:hover .stack-tooltip, .stack-col-first .stack-empty:focus .stack-tooltip { transform: translateY(0); }
+.stack-col-last .stack-tooltip { left: auto; right: 0; transform: translateY(4px); }
+.stack-col-last .stack-seg:hover .stack-tooltip, .stack-col-last .stack-seg:focus .stack-tooltip,
+.stack-col-last .stack-empty:hover .stack-tooltip, .stack-col-last .stack-empty:focus .stack-tooltip { transform: translateY(0); }
+.status-unknown { background: #9aa7b3; }
+
 /* status_stacked_bar(): plain HTML/CSS, not SVG - a native SVG <title>
    tooltip is unreliable across browsers (and absent on touch), so each
    segment gets a custom hover/focus tooltip instead, matching the
@@ -843,6 +886,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .status-published { background: #2a8a5f; }
 .status-underreview { background: #d9a441; }
 .status-declined { background: #c1594f; }
+.status-withdrawn { background: #6f8196; }
 .status-tooltip {
   position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px;
   transform: translateX(-50%) translateY(4px);

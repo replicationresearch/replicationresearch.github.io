@@ -3,8 +3,8 @@
   "2025-10": 1,
   "2025-11": 1,
   "2025-12": 0,
-  "2026-01": 1,
-  "2026-02": 1,
+  "2026-01": 0,
+  "2026-02": 2,
   "2026-03": 2,
   "2026-04": 3,
   "2026-05": 2,
@@ -14,10 +14,91 @@
   "2026-09": 2,
   "2026-10": 5
  },
+ "monthlyByStatus": {
+  "2025-10": {
+   "declined": 0,
+   "published": 1,
+   "underReview": 0,
+   "withdrawn": 0
+  },
+  "2025-11": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 1,
+   "withdrawn": 0
+  },
+  "2025-12": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 0,
+   "withdrawn": 0
+  },
+  "2026-01": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 0,
+   "withdrawn": 0
+  },
+  "2026-02": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 2,
+   "withdrawn": 0
+  },
+  "2026-03": {
+   "declined": 0,
+   "published": 1,
+   "underReview": 0,
+   "withdrawn": 1
+  },
+  "2026-04": {
+   "declined": 0,
+   "published": 1,
+   "underReview": 2,
+   "withdrawn": 0
+  },
+  "2026-05": {
+   "declined": 1,
+   "published": 0,
+   "underReview": 1,
+   "withdrawn": 0
+  },
+  "2026-06": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 1,
+   "withdrawn": 0
+  },
+  "2026-07": {
+   "declined": 0,
+   "published": 1,
+   "underReview": 0,
+   "withdrawn": 0
+  },
+  "2026-08": {
+   "declined": 0,
+   "published": 0,
+   "underReview": 0,
+   "withdrawn": 0
+  },
+  "2026-09": {
+   "declined": 1,
+   "published": 0,
+   "underReview": 1,
+   "withdrawn": 0
+  },
+  "2026-10": {
+   "declined": 2,
+   "published": 0,
+   "underReview": 3,
+   "withdrawn": 0
+  }
+ },
  "statusCounts": {
-  "declined": 5,
+  "declined": 4,
   "published": 4,
-  "underReview": 11
+  "underReview": 11,
+  "withdrawn": 1
  },
  "total": 20
 }
