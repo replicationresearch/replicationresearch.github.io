@@ -1,0 +1,97 @@
+[
+ {
+  "authors": [
+   "Lukas Röseler"
+  ],
+  "belongsTo": {
+   "categories": [
+    "Psychology"
+   ],
+   "section": "Replications (different data)",
+   "title": "Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
+   "urlPath": "10085"
+  },
+  "date": "2026-08-26",
+  "doi": "10.5281/zenodo.22111340",
+  "downloads": 40,
+  "fullTitle": "R2 Reproducibility Certificate (Human + AI) for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
+  "kind": "certificate",
+  "recordId": "22111340",
+  "title": "R2 Reproducibility Certificate (Human + AI)",
+  "url": "https://zenodo.org/records/22111340",
+  "views": 38
+ },
+ {
+  "authors": [
+   "Lukas Röseler",
+   "Miriam Müller",
+   "Robbie Clark",
+   "Robert Ross"
+  ],
+  "belongsTo": {
+   "categories": [
+    "Psychology"
+   ],
+   "section": "Replications (different data)",
+   "title": "Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
+   "urlPath": "10085"
+  },
+  "date": "2026-08-26",
+  "doi": "10.5281/zenodo.22111148",
+  "downloads": 31,
+  "fullTitle": "R2 Review Report for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
+  "kind": "review",
+  "recordId": "22111148",
+  "title": "R2 Review Report",
+  "url": "https://zenodo.org/records/22111148",
+  "views": 48
+ },
+ {
+  "authors": [
+   "Lukas Röseler"
+  ],
+  "belongsTo": {
+   "categories": [
+    "Linguistics"
+   ],
+   "section": "Multi-study articles",
+   "title": "Reproduction and Replication of an Adversarial Stylometry Experiment",
+   "urlPath": "9414"
+  },
+  "date": "2026-08-13",
+  "doi": "10.5281/zenodo.21807707",
+  "downloads": 34,
+  "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
+  "kind": "certificate",
+  "recordId": "21807707",
+  "title": "R2 Reproducibility Certificate (AI)",
+  "url": "https://zenodo.org/records/21807707",
+  "views": 54
+ },
+ {
+  "authors": [
+   "Elen Le Foll",
+   "Miriam Müller",
+   "Michael Brennan",
+   "Joao Pedro Padua",
+   "Lukas Röseler"
+  ],
+  "belongsTo": {
+   "categories": [
+    "Linguistics"
+   ],
+   "section": "Multi-study articles",
+   "title": "Reproduction and Replication of an Adversarial Stylometry Experiment",
+   "urlPath": "9414"
+  },
+  "date": "2026-08-05",
+  "doi": "10.5281/zenodo.21807854",
+  "downloads": 39,
+  "fullTitle": "R2 Review Report for: Reproduction and Replication of an Adversarial Stylometry Experiment",
+  "kind": "review",
+  "recordId": "21807854",
+  "title": "R2 Review Report",
+  "url": "https://zenodo.org/records/21807854",
+  "views": 74
+ }
+]
