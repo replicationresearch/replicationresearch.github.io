@@ -340,6 +340,18 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   font-weight: 700; color: var(--accent-deep); margin: 0 0 .2rem;
 }
 .article-authors { color: var(--ink-soft); font-size: .92rem; margin: 0 0 .5rem; }
+
+/* Articles page: Zenodo-hosted review reports / reproducibility certificates */
+.article-card-badged { display: flex; gap: 1rem; align-items: flex-start; }
+.article-card-main { min-width: 0; flex: 1; }
+.item-badge { flex: none; width: 48px; height: 48px; border-radius: 4px; background: #fff; }
+.article-belongs { margin: 0 0 .45rem; }
+.belongs-tag {
+  display: inline-block; max-width: 100%; font-size: .8rem; color: var(--ink-soft);
+  background: var(--bg-alt); border: 1px solid var(--rule); border-radius: 999px;
+  padding: .12rem .65rem; overflow-wrap: anywhere;
+}
+.belongs-tag a { font-weight: 600; }
 .article-excerpt { color: var(--ink-soft); font-size: .93rem; margin: 0 0 .6rem; }
 .article-links { margin: .3rem 0 0; }
 

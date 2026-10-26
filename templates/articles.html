@@ -11,6 +11,21 @@
 
     <div class="articles-filter-row">
       <details class="articles-categories">
+        <summary>Type <span class="articles-categories-summary" id="articles-type-summary"></span></summary>
+        <div class="category-panel">
+          <div class="category-actions">
+            <button type="button" data-select="all">Select all</button>
+            <button type="button" data-select="none">Select none</button>
+          </div>
+          <div class="category-list" id="articles-type-list">
+            <label><input type="checkbox" value="article" checked> Articles</label>
+            <label><input type="checkbox" value="review"> Review Reports</label>
+            <label><input type="checkbox" value="certificate"> Reproducibility Certificates</label>
+          </div>
+        </div>
+      </details>
+
+      <details class="articles-categories">
         <summary>Section <span class="articles-categories-summary" id="articles-section-summary"></span></summary>
         <div class="category-panel">
           <div class="category-actions">
@@ -53,7 +68,7 @@
 
   <p class="meta" id="articles-count"></p>
   <ul class="article-list" id="articles-results"></ul>
-  <p class="meta" id="articles-empty" hidden>No articles match these filters.</p>
+  <p class="meta" id="articles-empty" hidden>Nothing matches these filters.</p>
 </div>
 
 <script id="articles-data" type="application/json">{{ articles_json | safe }}</script>
@@ -75,7 +90,7 @@
   // Both the Section and Categories filters are "check all that apply"
   // checkbox panels with identical markup/behavior - one small helper
   // instead of duplicating the selected()/summary()/select-all logic twice.
-  function checkboxFilter(listId, summaryId) {
+  function checkboxFilter(listId, summaryId, showNames) {
     var list = document.getElementById(listId);
     var summary = document.getElementById(summaryId);
     function selected() {
@@ -84,6 +99,12 @@
     function updateSummary() {
       var total = list.querySelectorAll('input').length;
       var checked = selected().length;
+      if (showNames && checked && checked < total) {
+        summary.textContent = '(' + Array.from(list.querySelectorAll('input:checked')).map(function (c) {
+          return c.parentElement.textContent.trim();
+        }).join(', ') + ')';
+        return;
+      }
       summary.textContent = checked === total ? '(all)' : '(' + checked + '/' + total + ')';
     }
     list.addEventListener('change', function () { updateSummary(); render(); });
@@ -98,6 +119,7 @@
     return { selected: selected, all: function () { return list.querySelectorAll('input').length; } };
   }
 
+  var typeFilter = checkboxFilter('articles-type-list', 'articles-type-summary', true);
   var sectionFilter = checkboxFilter('articles-section-list', 'articles-section-summary');
   var categoryFilter = checkboxFilter('articles-category-list', 'articles-categories-summary');
 
@@ -114,6 +136,7 @@
 
   function render() {
     var q = searchInput.value.trim().toLowerCase();
+    var types = typeFilter.selected();
     var sections = sectionFilter.selected();
     var allSectionsSelected = sections.length === sectionFilter.all();
     var cats = categoryFilter.selected();
@@ -122,6 +145,7 @@
     var hi = Math.max(parseInt(yearMin.value, 10), parseInt(yearMax.value, 10));
 
     var filtered = records.filter(function (r) {
+      if (types.indexOf(r.type) === -1) return false;
       if (!allSectionsSelected && sections.indexOf(r.section) === -1) return false;
       if (r.year != null && (r.year < lo || r.year > hi)) return false;
       if (!allCatsSelected) {
@@ -130,35 +154,55 @@
         if (!hasMatch) return false;
       }
       if (q) {
-        var haystack = (r.title + ' ' + r.subtitle + ' ' + r.authors.join(' ')).toLowerCase();
+        var haystack = (r.title + ' ' + r.subtitle + ' ' + r.authors.join(' ') + ' ' +
+          (r.belongsTo ? r.belongsTo.title : '')).toLowerCase();
         if (haystack.indexOf(q) === -1) return false;
       }
       return true;
     });
 
-    count.textContent = filtered.length + (filtered.length === 1 ? ' article' : ' articles');
+    var noun = types.length === 1 && types[0] === 'article' ? 'article' : 'item';
+    count.textContent = filtered.length + ' ' + noun + (filtered.length === 1 ? '' : 's');
     empty.hidden = filtered.length !== 0;
     results.innerHTML = filtered.map(rowHtml).join('');
   }
 
+  var typeLabels = { review: 'Review Report', certificate: 'Reproducibility Certificate' };
+
   function rowHtml(r) {
     var title = escapeHtml(r.title) + (r.subtitle ? '<span class="subtitle">: ' + escapeHtml(r.subtitle) + '</span>' : '');
     var authors = r.authors.map(escapeHtml).join(', ');
+    var onZenodo = r.type !== 'article';
     var stats = '';
     if (r.views != null || r.downloads != null) {
       stats = '<span class="article-stats">' +
-        (r.views != null ? '<span class="stat-item" title="Views">' + eyeIcon + ' ' + r.views + ' views</span>' : '') +
-        (r.downloads != null ? '<span class="stat-item" title="PDF downloads">' + downloadIcon + ' ' + r.downloads + ' downloads</span>' : '') +
+        (r.views != null ? '<span class="stat-item" title="' + (onZenodo ? 'Views on Zenodo' : 'Views') + '">' + eyeIcon + ' ' + r.views + ' views</span>' : '') +
+        (r.downloads != null ? '<span class="stat-item" title="' + (onZenodo ? 'Downloads on Zenodo' : 'PDF downloads') + '">' + downloadIcon + ' ' + r.downloads + ' downloads</span>' : '') +
         '</span>';
     }
-    return '<li class="article-card article-card-boxed">' +
-      (r.section ? '<p class="article-section">' + escapeHtml(r.section) + '</p>' : '') +
-      '<h4><a href="' + base + r.url + '">' + title + '</a></h4>' +
+    var label = onZenodo ? typeLabels[r.type] : r.section;
+    var href = onZenodo ? r.url : base + r.url;
+    var external = onZenodo ? ' target="_blank" rel="noopener"' : '';
+    var belongs = '';
+    if (r.belongsTo) {
+      var parent = r.belongsTo.url
+        ? '<a href="' + base + r.belongsTo.url + '">' + escapeHtml(r.belongsTo.title) + '</a>'
+        : escapeHtml(r.belongsTo.title);
+      belongs = '<p class="article-belongs"><span class="belongs-tag">belongs to ' + parent + '</span></p>';
+    }
+    var badge = r.badge
+      ? '<img class="item-badge" src="' + base + r.badge + '" alt="' + escapeHtml(typeLabels[r.type] || '') + ' badge">'
+      : '';
+    var body = (label ? '<p class="article-section">' + escapeHtml(label) + '</p>' : '') +
+      '<h4><a href="' + href + '"' + external + '>' + title + '</a></h4>' +
       (authors ? '<p class="article-authors">' + authors + '</p>' : '') +
+      belongs +
       '<p class="article-links">' +
       (r.year ? '<span class="article-year">' + r.year + '</span>' : '') +
       stats +
-      '</p></li>';
+      '</p>';
+    return '<li class="article-card article-card-boxed' + (badge ? ' article-card-badged' : '') + '">' +
+      (badge ? badge + '<div class="article-card-main">' + body + '</div>' : body) + '</li>';
   }
 
   function escapeHtml(s) {

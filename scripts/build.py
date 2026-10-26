@@ -345,7 +345,11 @@ def link_citations(fulltext_html, references_html):
     return "".join(out)
 
 
-def build_articles_index(articles):
+ZENODO_ITEM_BADGES = {"review": "static/img/badges/openreview.svg",
+                      "certificate": "static/img/badges/reprocert.svg"}
+
+
+def build_articles_index(articles, zenodo_items=()):
     """Payload for the client-side Articles browsing page: one compact
     record per article - search/filter/sort all happen in the browser
     against this, so it only carries what's shown or filtered on, not
@@ -379,6 +383,38 @@ def build_articles_index(articles):
             "date": a.get("datePublished") or "",
             "views": stats.get("totalViews"),
             "downloads": stats.get("pdfDownloads"),
+            "type": "article",
+        })
+    # Review reports and reproducibility certificates (Zenodo records). They
+    # inherit section/categories from the article they belong to so the
+    # existing filters treat them consistently; views/downloads are Zenodo's.
+    for item in zenodo_items:
+        parent = item.get("belongsTo") or {}
+        try:
+            year = int(item["date"][:4])
+        except (KeyError, ValueError):
+            year = None
+        if year:
+            years.append(year)
+        categories.update(parent.get("categories") or [])
+        records.append({
+            "title": item["title"],
+            "subtitle": "",
+            "url": item["url"],
+            "external": True,
+            "section": parent.get("section") or "",
+            "categories": parent.get("categories") or [],
+            "authors": item.get("authors") or [],
+            "year": year,
+            "date": item.get("date") or "",
+            "views": item.get("views"),
+            "downloads": item.get("downloads"),
+            "type": item["kind"],
+            "badge": ZENODO_ITEM_BADGES.get(item["kind"], ""),
+            "belongsTo": {"title": parent["title"],
+                          "url": ("articles/%s/" % parent["urlPath"])
+                                 if parent.get("urlPath") else ""}
+                         if parent.get("title") else None,
         })
     records.sort(key=lambda r: r["date"], reverse=True)
     this_year = datetime.date.today().year
@@ -594,7 +630,10 @@ def main():
            under_review=under_review,
            submissions=submissions_charts)
 
-    articles_index = build_articles_index(articles)
+    zenodo_items = []
+    if os.path.exists(os.path.join(DATA, "zenodo_items.json")):
+        zenodo_items = load("zenodo_items.json")
+    articles_index = build_articles_index(articles, zenodo_items)
     render("articles.html", os.path.join("articles", "index.html"),
            articles_index=articles_index,
            articles_json=json.dumps(articles_index, ensure_ascii=False)

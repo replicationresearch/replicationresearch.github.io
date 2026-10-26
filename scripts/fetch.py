@@ -1220,6 +1220,93 @@ def _doi_or_url(value):
     return ""
 
 
+# ---------------------------------------------------------------------------
+# Review reports and reproducibility certificates (Articles page): the
+# editors link each one from the sheet ("Peer Review Report" / "Reproducibility
+# Certificate" columns) as a Zenodo record. Title, authors, date and the
+# record's own view/download counts come from Zenodo's public records API - no
+# key needed.
+# ---------------------------------------------------------------------------
+
+ZENODO_API = "https://zenodo.org/api/records/%s"
+ZENODO_KINDS = (("review", "Peer Review Report"),
+                ("certificate", "Reproducibility Certificate"))
+_ZENODO_ID_RE = re.compile(r"zenodo\.(\d+)|zenodo\.org/records?/(\d+)", re.IGNORECASE)
+
+
+def _zenodo_record_id(url):
+    m = _ZENODO_ID_RE.search(url or "")
+    return (m.group(1) or m.group(2)) if m else ""
+
+
+def _flip_name(name):
+    """Zenodo's "Röseler, Lukas" -> "Lukas Röseler"."""
+    last, sep, first = (name or "").partition(",")
+    return ("%s %s" % (first.strip(), last.strip())).strip() if sep else last.strip()
+
+
+def fetch_zenodo_items(articles, under_review):
+    import csv
+    import io
+
+    print("Fetching review reports / reproducibility certificates from Zenodo ...")
+    try:
+        rows = list(csv.DictReader(io.StringIO(get(SHEET_CSV_URL).text)))
+    except Exception as e:  # noqa: BLE001
+        print("  sheet fetch failed: %s" % e, file=sys.stderr)
+        return None
+
+    by_doi = {a.get("doi"): a for a in articles if a.get("doi")}
+    pending = {str(u.get("id")): u for u in under_review or []}
+    items, failed = [], False
+    for row in rows:
+        sheet_id = (row.get("ID") or "").strip()
+        parent = by_doi.get(_bare_doi(row.get("Published DOI")))
+        for kind, column in ZENODO_KINDS:
+            rec_id = _zenodo_record_id(_doi_or_url(row.get(column)))
+            if not rec_id:
+                continue
+            try:
+                rec = get(ZENODO_API % rec_id).json()
+            except Exception as e:  # noqa: BLE001
+                print("  Zenodo record %s failed: %s" % (rec_id, e), file=sys.stderr)
+                failed = True
+                continue
+            meta = rec.get("metadata") or {}
+            stats = rec.get("stats") or {}
+            full_title = _unescape_fully((meta.get("title") or "").strip())
+            if parent:
+                belongs = {"title": parent["title"],
+                           "urlPath": parent.get("urlPath") or "",
+                           "section": parent.get("section") or "",
+                           "categories": parent.get("categories") or []}
+            elif sheet_id in pending:
+                belongs = {"title": pending[sheet_id]["title"], "urlPath": "",
+                           "section": "", "categories": []}
+            else:
+                belongs = None
+            items.append({
+                "kind": kind,
+                "recordId": rec_id,
+                "url": (rec.get("links") or {}).get("self_html")
+                       or "https://zenodo.org/records/%s" % rec_id,
+                "doi": rec.get("doi") or "",
+                "fullTitle": full_title,
+                # "R2 Review Report for: <article title>" -> "R2 Review Report"
+                "title": full_title.split(" for: ")[0] or full_title,
+                "authors": [_flip_name(c.get("name")) for c in meta.get("creators") or []],
+                "date": meta.get("publication_date") or "",
+                "views": stats.get("version_views", stats.get("views")),
+                "downloads": stats.get("version_downloads", stats.get("downloads")),
+                "belongsTo": belongs,
+            })
+    if failed and not items:
+        return None
+    items.sort(key=lambda i: (i["date"], i["recordId"]), reverse=True)
+    print("  %d Zenodo item(s)" % len(items))
+    return items
+
+
 def fetch_published_extras():
     """Per-article extras the editors track in the sheet rather than in OJS
     - peer review report, reproducibility certificate, preregistration,
@@ -1333,6 +1420,7 @@ def main():
     submission_stats = fetch_submission_stats()
     under_review = fetch_under_review()
     published_extras = fetch_published_extras()
+    zenodo_items = fetch_zenodo_items(articles, under_review)
 
     # Sanity checks: never publish an obviously broken harvest.
     problems = []
@@ -1376,6 +1464,10 @@ def main():
         write_json("published_extras.json", published_extras)
     else:
         print("Keeping previous published_extras.json (fetch unavailable).")
+    if zenodo_items is not None:
+        write_json("zenodo_items.json", zenodo_items)
+    else:
+        print("Keeping previous zenodo_items.json (fetch unavailable).")
 
     print("Done: %d issues, %d articles, %d pages, %d announcements, %d PDFs."
           % (len(issues), len(articles), len(pages), len(announcements),
