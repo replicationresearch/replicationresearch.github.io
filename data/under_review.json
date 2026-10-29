@@ -1,22 +1,122 @@
 [
  {
-  "abstractHtml": "",
+  "abstractHtml": "<p>We conducted a direct replication of Drew et al. (2017). The experiment examines visualsearch behavior, including eye movements, when participants are looking for one of manymemorized objects. The original experiment found that the search strategy for this kind ofsearch, called hybrid search, involves “one visual search [and] many memory searches.” Ourreplication (N=38) finds strong agreement with the original (N=14) results. As the number ofmemorized objects increases, participants fixate longer on each individual object. Furthermore,refixations are generally rare, with fewer than half of the visual items refixated during search.We conducted this replication as part of the course Research Methods in Cognitive Science atVassar College, and we briefly discuss the pedagogical framing of this work.</p>",
   "authors": [
    {
     "affiliation": "",
-    "name": "de Leeuw",
+    "name": "Joshua R de Leeuw",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "John H Long",
+    "orcid": "https://orcid.org/0000-0002-9095-9770"
+   },
+   {
+    "affiliation": "",
+    "name": "Hana Colley",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Asher Donnelly",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Layla Fakki",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Carmen Haley",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "John D Jarolimek",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Sydney Jones",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Ellie Kogan",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Gabriel Jove Leonard",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Mingyang Liao",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Nicholas Misko",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Esmé Nix",
+    "orcid": "https://orcid.org/0009-0009-2736-5388"
+   },
+   {
+    "affiliation": "",
+    "name": "Zoe North",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Nidhi Pandruvada",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Samip Paudel",
+    "orcid": "https://orcid.org/0009-0007-2082-0363"
+   },
+   {
+    "affiliation": "",
+    "name": "Cassidy Schuchat",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Hannah Tsukamoto",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Kinsey Wang",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Joselyn Xa-Chin",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Aijia Zou",
     "orcid": ""
    }
   ],
   "handlingEditor": "not yet assigned",
   "id": "20",
   "laySummary": "",
-  "preprintUrl": "",
-  "prereviewUrl": "",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/erp9w_v1",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-erp9w_v1/write-a-prereview",
   "pubpeerUrl": "",
   "status": "Initial Editorial Assessment",
   "submissionDate": "2026-10-28",
-  "title": "Untitled submission"
+  "title": "Visual search with many targets in mind: A successful replication of Drew, Boettcher, and Wolfe (2017)"
  },
  {
   "abstractHtml": "<p>In a recent meta-analysis, Mariano et al. (2025) conclude that people experience a stronger sense of agency over positive than negative outcomes, indexed by temporal compression. In this commentary, we evaluate that claim and identify several concerns about its validity. First, we argue that temporal compression effects should be standardized before being combined, because values in milliseconds are not necessarily comparable across different paradigms. When we analyzed standardized effects, evidence for a valence effect was absent once adjusting for publication bias. Second, we identified data integrity issues, identifying several studies that were included but either (1) did not manipulate outcome valence at all, or (2) contained only a positive or negative condition compared to a neutral condition. Excluding these studies meant that even unstandardized effects did not support Mariano et al.’s headline finding.</p>",
@@ -110,7 +210,7 @@
     "orcid": ""
    }
   ],
-  "handlingEditor": "not yet assigned",
+  "handlingEditor": "Lukas Röseler",
   "id": "16",
   "laySummary": "",
   "preprintUrl": "https://doi.org/10.23668/psycharchives.22555",
