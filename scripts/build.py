@@ -1020,12 +1020,13 @@ def fix_typography(text):
     prime/derivative notation like Y'') and a lone backtick (code or
     package names like `lme4`) never trigger, and ordinary apostrophes /
     possessives ("world's") are untouched because the single-quote rule
-    requires a literal backtick to anchor it. Applied to plain-text fields
-    (titles, subtitles) only."""
+    requires a literal backtick to anchor it. Quotes must sit at word
+    boundaries, so the closing backtick of `lme4` can't pair with a later
+    possessive. Applied to plain-text fields (titles, subtitles) only."""
     if not text:
         return text
-    text = re.sub(r"``([^`']+?)''", r"“\1”", text)
-    text = re.sub(r"`([^`']+?)'", r"‘\1’", text)
+    text = re.sub(r"(?<![\w`])``([^`]+?)''(?![\w'])", r"“\1”", text)
+    text = re.sub(r"(?<![\w`])`(?=\w)([^`']+?)'(?![\w'])", r"‘\1’", text)
     return text
 
 
