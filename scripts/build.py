@@ -484,6 +484,16 @@ def main():
     if os.path.exists(under_review_path):
         under_review = load("under_review.json")
 
+    # Normalize TeX-style quotes ( ``...'' ) that come through in some
+    # Crossref-sourced titles/subtitles before they reach any template
+    # or the submissions chart's hover cards.
+    for a in articles:
+        a["title"] = fix_typography(a.get("title"))
+        if a.get("subtitle"):
+            a["subtitle"] = fix_typography(a["subtitle"])
+    for r in under_review:
+        r["title"] = fix_typography(r.get("title"))
+
     # Shown on both the Submissions page and the homepage's Under Review
     # card - computed once here so both render() calls can share it.
     submissions_charts = None
@@ -999,6 +1009,25 @@ def team_with_photos(team):
             # Deterministic accent tone for the placeholder circle.
             member["hue"] = sum(ord(c) for c in slug) % 5
     return team
+
+
+def fix_typography(text):
+    """Turn *paired* TeX/BibTeX-style quotes that leak in from Crossref
+    titles into real typographic quotes: ``...'' -> “...”, `...' -> ‘...’.
+
+    Only matched open/close pairs are converted, so overloaded characters
+    are left alone in their non-quote uses: a lone `` '' `` (inch marks,
+    prime/derivative notation like Y'') and a lone backtick (code or
+    package names like `lme4`) never trigger, and ordinary apostrophes /
+    possessives ("world's") are untouched because the single-quote rule
+    requires a literal backtick to anchor it. Quotes must sit at word
+    boundaries, so the closing backtick of `lme4` can't pair with a later
+    possessive. Applied to plain-text fields (titles, subtitles) only."""
+    if not text:
+        return text
+    text = re.sub(r"(?<![\w`])``([^`]+?)''(?![\w'])", r"“\1”", text)
+    text = re.sub(r"(?<![\w`])`(?=\w)([^`']+?)'(?![\w'])", r"‘\1’", text)
+    return text
 
 
 def excerpt(fragment, length=220):
