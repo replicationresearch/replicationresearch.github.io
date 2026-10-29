@@ -484,6 +484,16 @@ def main():
     if os.path.exists(under_review_path):
         under_review = load("under_review.json")
 
+    # Normalize TeX-style quotes ( ``...'' ) that come through in some
+    # Crossref-sourced titles/subtitles before they reach any template
+    # or the submissions chart's hover cards.
+    for a in articles:
+        a["title"] = fix_typography(a.get("title"))
+        if a.get("subtitle"):
+            a["subtitle"] = fix_typography(a["subtitle"])
+    for r in under_review:
+        r["title"] = fix_typography(r.get("title"))
+
     # Shown on both the Submissions page and the homepage's Under Review
     # card - computed once here so both render() calls can share it.
     submissions_charts = None
@@ -508,15 +518,6 @@ def main():
     published_extras_path = os.path.join(DATA, "published_extras.json")
     if os.path.exists(published_extras_path):
         published_extras = load("published_extras.json")
-
-    # Normalize TeX-style quotes ( ``...'' ) that come through in some
-    # Crossref-sourced titles/subtitles before they reach any template.
-    for a in articles:
-        a["title"] = fix_typography(a.get("title"))
-        if a.get("subtitle"):
-            a["subtitle"] = fix_typography(a["subtitle"])
-    for r in under_review:
-        r["title"] = fix_typography(r.get("title"))
 
     articles_by_path = {a["urlPath"]: a for a in articles}
     issues = sort_issues_newest_first(issues, articles_by_path)
@@ -1023,8 +1024,8 @@ def fix_typography(text):
     (titles, subtitles) only."""
     if not text:
         return text
-    text = re.sub(r"``(.+?)''", r"“\1”", text)
-    text = re.sub(r"`(.+?)'", r"‘\1’", text)
+    text = re.sub(r"``([^`']+?)''", r"“\1”", text)
+    text = re.sub(r"`([^`']+?)'", r"‘\1’", text)
     return text
 
 
