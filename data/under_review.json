@@ -1,5 +1,24 @@
 [
  {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "de Leeuw",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "20",
+  "laySummary": "",
+  "preprintUrl": "",
+  "prereviewUrl": "",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Assessment",
+  "submissionDate": "2026-10-28",
+  "title": "Untitled submission"
+ },
+ {
   "abstractHtml": "<p>In a recent meta-analysis, Mariano et al. (2025) conclude that people experience a stronger sense of agency over positive than negative outcomes, indexed by temporal compression. In this commentary, we evaluate that claim and identify several concerns about its validity. First, we argue that temporal compression effects should be standardized before being combined, because values in milliseconds are not necessarily comparable across different paradigms. When we analyzed standardized effects, evidence for a valence effect was absent once adjusting for publication bias. Second, we identified data integrity issues, identifying several studies that were included but either (1) did not manipulate outcome valence at all, or (2) contained only a positive or negative condition compared to a neutral condition. Excluding these studies meant that even unstandardized effects did not support Mariano et al.’s headline finding.</p>",
   "authors": [
    {

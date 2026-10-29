@@ -12,7 +12,7 @@
   "2026-07": 1,
   "2026-08": 0,
   "2026-09": 2,
-  "2026-10": 5
+  "2026-10": 6
  },
  "monthlyByStatus": {
   "2025-10": {
@@ -90,15 +90,15 @@
   "2026-10": {
    "declined": 2,
    "published": 0,
-   "underReview": 3,
+   "underReview": 4,
    "withdrawn": 0
   }
  },
  "statusCounts": {
   "declined": 4,
   "published": 4,
-  "underReview": 11,
+  "underReview": 12,
   "withdrawn": 1
  },
- "total": 20
+ "total": 21
 }
