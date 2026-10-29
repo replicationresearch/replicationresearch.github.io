@@ -469,10 +469,10 @@ def main():
     issues = load("issues.json")
     articles = load("articles.json")
     pages = load("pages.json")
-    for p in pages:
-        p["html"] = fix_harvested_typos(p.get("html") or "")
     announcements = load("announcements.json")
     stats = load("stats.json")
+    for p in pages + announcements:
+        p["html"] = fix_harvested_typos(p.get("html") or "")
 
     submissions = None
     submissions_path = os.path.join(DATA, "submissions.json")
@@ -777,7 +777,12 @@ STACK_STATUSES = (("published", "status-published", "Published"),
 
 # Typos in the OJS source text, corrected at build time so the daily
 # re-harvest doesn't bring them back. Remove an entry once OJS is fixed.
-HARVEST_TYPO_FIXES = (("ChatGTP", "ChatGPT"),)
+HARVEST_TYPO_FIXES = ((" ther ", " their "),
+                      ("incldue", "include"),
+                      ("need to be complement", "need to complement"),
+                      ("(Stanford University, USA<", "(Stanford University, USA)<"),
+                      ("On 10/10/2026, Replication Research was opened",
+                       "On 10/10/2025, Replication Research was opened"))
 
 
 def fix_harvested_typos(text):
