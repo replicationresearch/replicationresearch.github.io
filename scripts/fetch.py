@@ -934,7 +934,7 @@ def fetch_submission_stats():
         return None
 
     blank = lambda: {"published": 0, "underReview": 0, "declined": 0, "withdrawn": 0}
-    counts, monthly, monthly_by_status = blank(), {}, {}
+    counts, monthly, monthly_by_status, items = blank(), {}, {}, []
     for row in rows:
         when = _parse_sheet_date(row.get("Submission Date") or "")
         if not re.match(r"\d{4}-\d{2}-\d{2}$", when):
@@ -944,6 +944,12 @@ def fetch_submission_stats():
         ym = when[:7]
         monthly[ym] = monthly.get(ym, 0) + 1
         monthly_by_status.setdefault(ym, blank())[bucket] += 1
+        # Per-submission rows let the chart link each block to its article
+        # or Under Review entry. Only the sheet ID and the public DOI go in -
+        # build.py looks titles up from data that is already published.
+        items.append({"id": (row.get("ID") or "").strip(), "month": ym,
+                      "date": when, "status": bucket,
+                      "publishedDoi": _bare_doi(row.get("Published DOI"))})
     if not monthly:
         print("  no submission rows found in the sheet - skipping.", file=sys.stderr)
         return None
@@ -960,6 +966,7 @@ def fetch_submission_stats():
                             counts["declined"], counts["withdrawn"]))
     return {"monthly": dict(sorted(monthly.items())),
             "monthlyByStatus": dict(sorted(monthly_by_status.items())),
+            "items": sorted(items, key=lambda i: i["date"]),
             "statusCounts": counts, "total": total}
 
 

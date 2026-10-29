@@ -469,6 +469,8 @@ def main():
     issues = load("issues.json")
     articles = load("articles.json")
     pages = load("pages.json")
+    for p in pages:
+        p["html"] = fix_harvested_typos(p.get("html") or "")
     announcements = load("announcements.json")
     stats = load("stats.json")
 
@@ -477,13 +479,21 @@ def main():
     if os.path.exists(submissions_path):
         submissions = load("submissions.json")
 
+    under_review = []
+    under_review_path = os.path.join(DATA, "under_review.json")
+    if os.path.exists(under_review_path):
+        under_review = load("under_review.json")
+
     # Shown on both the Submissions page and the homepage's Under Review
     # card - computed once here so both render() calls can share it.
     submissions_charts = None
     if submissions and submissions.get("monthly"):
         submissions_charts = {
             "monthlyChart": submissions_stacked_chart(
-                submissions.get("monthlyByStatus"), submissions["monthly"]),
+                submissions.get("monthlyByStatus"), submissions["monthly"],
+                items=submissions.get("items"),
+                links=_submission_links(submissions.get("items"), articles,
+                                        under_review)),
             "statusBar": status_stacked_bar(submissions["statusCounts"]),
             "statusCounts": submissions["statusCounts"],
             "total": submissions["total"],
@@ -493,11 +503,6 @@ def main():
     team_path = os.path.join(DATA, "team.json")
     if os.path.exists(team_path):
         team = team_with_photos(load("team.json"))
-
-    under_review = []
-    under_review_path = os.path.join(DATA, "under_review.json")
-    if os.path.exists(under_review_path):
-        under_review = load("under_review.json")
 
     published_extras = {}
     published_extras_path = os.path.join(DATA, "published_extras.json")
@@ -770,7 +775,64 @@ STACK_STATUSES = (("published", "status-published", "Published"),
                   ("submissions", "status-unknown", "Submissions"))
 
 
-def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190):
+# Typos in the OJS source text, corrected at build time so the daily
+# re-harvest doesn't bring them back. Remove an entry once OJS is fixed.
+HARVEST_TYPO_FIXES = (("ChatGTP", "ChatGPT"),)
+
+
+def fix_harvested_typos(text):
+    for wrong, right in HARVEST_TYPO_FIXES:
+        text = text.replace(wrong, right)
+    return text
+
+
+def _submission_links(items, articles, under_review):
+    """{sheet ID: {url, title, authors, status}} for submissions the site
+    already shows publicly: published ones (matched on DOI to their article
+    page) and those on the home page's Under Review list. Declined,
+    withdrawn and not-yet-listed submissions get no entry, so the chart
+    never reveals more about them than their status and month.
+    """
+    by_doi = {(a.get("doi") or "").lower(): a for a in articles if a.get("doi")}
+    listed = {str(r.get("id")): r for r in under_review or []}
+    links = {}
+    for item in items or []:
+        art = by_doi.get(item.get("publishedDoi") or "")
+        if item["status"] == "published" and art:
+            links[item["id"]] = {
+                "url": BASE + "articles/%s/" % art["urlPath"],
+                "title": art.get("title") or "",
+                "authors": [au.get("name", "") for au in art.get("authors") or []],
+                "detail": _published_label(art.get("datePublished")),
+                "cta": "Read article"}
+        elif item["status"] == "underReview" and item["id"] in listed:
+            r = listed[item["id"]]
+            links[item["id"]] = {
+                "url": BASE + "#under-review-%s" % item["id"],
+                "title": r.get("title") or "",
+                "authors": [au.get("name", "") for au in r.get("authors") or []],
+                "detail": r.get("status") or "",
+                "cta": "View submission"}
+    return links
+
+
+def _published_label(iso):
+    try:
+        d = datetime.date.fromisoformat((iso or "")[:10])
+    except ValueError:
+        return "Published"
+    return "Published %d %s" % (d.day, d.strftime("%B %Y"))
+
+
+def _short_authors(names):
+    names = [n for n in names if n]
+    if len(names) > 3:
+        return "%s et al." % names[0]
+    return ", ".join(names)
+
+
+def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190,
+                              items=None, links=None):
     """Stacked column chart of new submissions per month: one column per
     month since launch (empty months stay as gaps), every submission one
     block coloured by its current status (the same colours the status bar
@@ -779,7 +841,15 @@ def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190):
     native SVG <title>, which is unreliable across browsers and absent on
     touch. Falls back to a single neutral colour when only month totals are
     known (data written before per-status counts were collected).
+
+    With per-submission `items`, every submission is its own block, and
+    the ones in `links` (see _submission_links) become links to their
+    article or Under Review entry, with a title card on hover/focus.
     """
+    links = links or {}
+    by_month = {}
+    for item in items or []:
+        by_month.setdefault(item["month"], []).append(item)
     if monthly_by_status:
         data = {ym: {k: v for k, v in counts.items() if v}
                 for ym, counts in monthly_by_status.items()}
@@ -805,6 +875,12 @@ def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190):
         for key, css, label in STACK_STATUSES:
             n = data[ym].get(key, 0)
             if not n:
+                continue
+            singles = [i for i in by_month.get(ym, []) if i["status"] == key]
+            if len(singles) == n:
+                segs.extend(_submission_block(i, css, label, full, unit,
+                                              links.get(i["id"]))
+                            for i in singles)
                 continue
             segs.append(
                 '<span class="stack-seg %s" style="height:%.2fpx;--u:%.2fpx" tabindex="0">'
@@ -844,6 +920,28 @@ def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190):
             '<div class="stack-yaxis">%s</div>%s'
             '<div class="stack-cols">%s</div></div></div>'
             % (legend, plot_px, yaxis, grid, "".join(cols)))
+
+
+def _submission_block(item, css, label, month, unit, link):
+    """One submission's block in submissions_stacked_chart(): a link with a
+    title card if the submission is public, else a plain status tooltip."""
+    esc = html.escape
+    style = 'style="height:%.2fpx;--u:%.2fpx"' % (unit, unit)
+    if not link:
+        return ('<span class="stack-seg %s" %s tabindex="0">'
+                '<span class="stack-tooltip">%s &middot; submitted %s</span></span>'
+                % (css, style, label, month))
+    authors = _short_authors(link["authors"])
+    card = ('<span class="stack-tooltip stack-card">'
+            '<span class="stack-card-status"><i class="%s"></i>%s</span>'
+            '<span class="stack-card-title">%s</span>%s'
+            '<span class="stack-card-meta">Submitted %s</span>'
+            '<span class="stack-card-cta">%s &rarr;</span></span>'
+            % (css, esc(link["detail"] or label), esc(link["title"]),
+               '<span class="stack-card-authors">%s</span>' % esc(authors)
+               if authors else "", month, esc(link["cta"])))
+    return ('<a class="stack-seg stack-link %s" %s href="%s" aria-label="%s: %s">%s</a>'
+            % (css, style, esc(link["url"]), label, esc(link["title"]), card))
 
 
 def status_stacked_bar(counts):

@@ -1,4 +1,153 @@
 {
+ "items": [
+  {
+   "date": "2025-10-01",
+   "id": "0",
+   "month": "2025-10",
+   "publishedDoi": "10.17879/replicationresearch-2025-9022",
+   "status": "published"
+  },
+  {
+   "date": "2025-11-15",
+   "id": "1",
+   "month": "2025-11",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-02-03",
+   "id": "2",
+   "month": "2026-02",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-02-25",
+   "id": "3",
+   "month": "2026-02",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-03-04",
+   "id": "4",
+   "month": "2026-03",
+   "publishedDoi": "10.17879/replicationresearch-2026-9414",
+   "status": "published"
+  },
+  {
+   "date": "2026-03-29",
+   "id": "5",
+   "month": "2026-03",
+   "publishedDoi": "",
+   "status": "withdrawn"
+  },
+  {
+   "date": "2026-04-21",
+   "id": "6",
+   "month": "2026-04",
+   "publishedDoi": "10.17879/replicationresearch-2026-9577",
+   "status": "published"
+  },
+  {
+   "date": "2026-04-22",
+   "id": "7",
+   "month": "2026-04",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-04-30",
+   "id": "8",
+   "month": "2026-04",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-05-02",
+   "id": "9",
+   "month": "2026-05",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-05-22",
+   "id": "10",
+   "month": "2026-05",
+   "publishedDoi": "",
+   "status": "declined"
+  },
+  {
+   "date": "2026-06-04",
+   "id": "11",
+   "month": "2026-06",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-07-24",
+   "id": "12",
+   "month": "2026-07",
+   "publishedDoi": "10.17879/replicationresearch-2026-10085",
+   "status": "published"
+  },
+  {
+   "date": "2026-09-03",
+   "id": "13",
+   "month": "2026-09",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-09-09",
+   "id": "14",
+   "month": "2026-09",
+   "publishedDoi": "",
+   "status": "declined"
+  },
+  {
+   "date": "2026-10-07",
+   "id": "15",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "declined"
+  },
+  {
+   "date": "2026-10-08",
+   "id": "16",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-10-12",
+   "id": "17",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-10-12",
+   "id": "18",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "declined"
+  },
+  {
+   "date": "2026-10-15",
+   "id": "19",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-10-28",
+   "id": "20",
+   "month": "2026-10",
+   "publishedDoi": "",
+   "status": "underReview"
+  }
+ ],
  "monthly": {
   "2025-10": 1,
   "2025-11": 1,

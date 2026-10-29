@@ -80,7 +80,7 @@
         {% if under_review %}
         <ul class="article-list">
           {% for r in under_review %}
-          <li class="article-card">
+          <li class="article-card" id="under-review-{{ r.id }}">
             <p class="article-section">{{ r.status }}</p>
             <h4>{{ r.title }}</h4>
             <p class="article-authors">{% for au in r.authors %}{{ au.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% if r.handlingEditor %}{% if r.authors %}<br>{% endif %}Handling editor: {{ r.handlingEditor }}{% endif %}{% if r.submissionDate %}{% if r.authors or r.handlingEditor %}<br>{% endif %}Submitted: {{ r.submissionDate }}{% endif %}</p>

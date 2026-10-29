@@ -495,7 +495,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   color: var(--muted); background: #fff; border: 1px solid var(--rule);
   border-radius: 6px; padding: .25rem .6rem; cursor: pointer;
 }
-.table-copy-btn:hover { color: var(--accent-dark); border-color: var(--accent); }
+.table-copy-btn:hover { color: var(--accent-dark); border-color: var(--accent-deep); }
 .figure-lightbox {
   position: fixed; inset: 0; z-index: 200; display: none;
   align-items: center; justify-content: center; padding: 2rem;
@@ -704,7 +704,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   transition: color .15s ease, border-color .15s ease;
 }
 .view-tab:hover { color: var(--ink); }
-.view-tab.is-active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.view-tab.is-active { color: var(--accent-dark); border-bottom-color: var(--accent-deep); }
 .view-tab-badge {
   font: 700 .62rem var(--sans); text-transform: uppercase; letter-spacing: .06em;
   color: var(--accent-dark); background: var(--accent-soft);
@@ -749,7 +749,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
     box-shadow: var(--shadow); color: var(--muted); cursor: pointer; z-index: 3;
     transition: right .2s ease, color .15s ease, border-color .15s ease;
   }
-  .sidebar-toggle:hover { color: var(--accent-dark); border-color: var(--accent); }
+  .sidebar-toggle:hover { color: var(--accent-dark); border-color: var(--accent-deep); }
   .sidebar-toggle-icon { display: block; transition: transform .2s ease; }
   .article-layout.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
   .article-layout.sidebar-collapsed .article-aside { display: none; }
@@ -771,7 +771,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   background: #fff; border: 1px solid var(--rule); border-radius: 6px;
   padding: .15rem .5rem; cursor: pointer; transition: all .15s ease;
 }
-.copy-btn:hover { color: var(--accent-dark); border-color: var(--accent); }
+.copy-btn:hover { color: var(--accent-dark); border-color: var(--accent-deep); }
 .citation-links a { margin-right: .9rem; font-size: .88rem; font-weight: 600; }
 .citation-links .copy-btn-link {
   background: none; border: none; padding: 0; margin-right: .9rem;
@@ -881,6 +881,26 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .stack-col-last .stack-tooltip { left: auto; right: 0; transform: translateY(4px); }
 .stack-col-last .stack-seg:hover .stack-tooltip, .stack-col-last .stack-seg:focus .stack-tooltip,
 .stack-col-last .stack-empty:hover .stack-tooltip, .stack-col-last .stack-empty:focus .stack-tooltip { transform: translateY(0); }
+/* Blocks for public submissions link to their article / Under Review entry
+   and show a title card instead of the one-line tooltip. */
+.stack-link { cursor: pointer; transition: filter .15s ease; }
+.stack-link:hover, .stack-link:focus-visible { filter: brightness(1.12) saturate(1.1); }
+.stack-card {
+  display: flex; flex-direction: column; gap: .3rem;
+  width: 17rem; white-space: normal; padding: .75rem .9rem .7rem;
+  background: var(--paper, #fff); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(20, 30, 45, .18), 0 2px 6px rgba(20, 30, 45, .08);
+}
+.stack-card-status { font-size: .72rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-soft); }
+.stack-card-status i { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: .4rem; vertical-align: 0; }
+.stack-card-title { font-family: var(--serif, inherit); font-size: .95rem; font-weight: 600; line-height: 1.3; color: var(--ink); }
+.stack-card-authors, .stack-card-meta { font-size: .78rem; line-height: 1.35; color: var(--ink-soft); }
+.stack-card-cta { margin-top: .2rem; font-size: .78rem; font-weight: 600; color: var(--accent-deep); }
+.stack-link:hover .stack-tooltip, .stack-link:focus .stack-tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.stack-col-first .stack-link:hover .stack-tooltip, .stack-col-first .stack-link:focus .stack-tooltip,
+.stack-col-last .stack-link:hover .stack-tooltip, .stack-col-last .stack-link:focus .stack-tooltip { transform: translateY(0); }
+.article-card:target { outline: 2px solid var(--accent); outline-offset: 10px; border-radius: 6px; scroll-margin-top: 6rem; }
 .status-unknown { background: #9aa7b3; }
 
 /* status_stacked_bar(): plain HTML/CSS, not SVG - a native SVG <title>
@@ -931,7 +951,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   padding: .6rem .9rem; font-size: .95rem; font-family: var(--sans);
   border: 1.5px solid var(--rule); border-radius: 999px; color: var(--ink);
 }
-.articles-search:focus { outline: none; border-color: var(--accent); }
+.articles-search:focus { outline: none; border-color: var(--accent-deep); }
 .articles-filter-row { display: flex; flex-wrap: wrap; gap: 1.2rem 1.8rem; align-items: flex-start; }
 .articles-filter { display: flex; flex-direction: column; gap: .35rem; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 
@@ -945,7 +965,7 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 /* Arrow sits inline after the value ("(all)") rather than dropping onto its
    own line below it — the summary is a flex column, so a summary::after
    would become an orphaned third row. */
-.articles-categories-summary::after { content: " ▾"; color: var(--accent); }
+.articles-categories-summary::after { content: " ▾"; color: var(--accent-deep); }
 .articles-categories[open] .articles-categories-summary::after { content: " ▴"; }
 .category-panel {
   position: absolute; top: calc(100% + .4rem); left: 0; z-index: 5; width: 260px;
