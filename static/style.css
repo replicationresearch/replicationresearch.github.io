@@ -883,8 +883,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .stack-col-last .stack-empty:hover .stack-tooltip, .stack-col-last .stack-empty:focus .stack-tooltip { transform: translateY(0); }
 /* Blocks for public submissions link to their article / Under Review entry
    and show a title card instead of the one-line tooltip. */
-.stack-link { cursor: pointer; transition: filter .15s ease; }
-.stack-link:hover, .stack-link:focus-visible { filter: brightness(1.12) saturate(1.1); }
+/* Highlight with an inset shadow, not `filter`: a filter makes the block a
+   stacking context, trapping the card's z-index so later columns paint over it. */
+.stack-link { cursor: pointer; transition: box-shadow .15s ease; }
+.stack-link:hover, .stack-link:focus-visible { box-shadow: inset 0 0 0 100px rgba(255, 255, 255, .18); }
+.stack-col:hover, .stack-col:focus-within { z-index: 10; }
 .stack-card {
   display: flex; flex-direction: column; gap: .3rem;
   width: 17rem; white-space: normal; padding: .75rem .9rem .7rem;

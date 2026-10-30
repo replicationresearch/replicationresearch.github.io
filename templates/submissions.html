@@ -59,4 +59,23 @@
   });
 })();
 </script>
+<script>
+// Chart tooltips are centred on their column, so near the screen edge on
+// narrow viewports they would spill off-screen - nudge them back inside.
+(function () {
+  function fit(e) {
+    var block = e.target.closest && e.target.closest('.stack-seg, .stack-empty');
+    var tip = block && block.querySelector('.stack-tooltip');
+    if (!tip) return;
+    tip.style.marginLeft = '';
+    var r = tip.getBoundingClientRect(), pad = 8;
+    var vw = document.documentElement.clientWidth;
+    var shift = r.left < pad ? pad - r.left
+              : (r.right > vw - pad ? vw - pad - r.right : 0);
+    if (shift) tip.style.marginLeft = shift + 'px';
+  }
+  document.addEventListener('mouseover', fit);
+  document.addEventListener('focusin', fit);
+})();
+</script>
 {% endblock %}
