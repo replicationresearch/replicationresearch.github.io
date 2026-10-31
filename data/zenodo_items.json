@@ -19,7 +19,7 @@
   "recordId": "22111340",
   "title": "R2 Reproducibility Certificate (Human + AI)",
   "url": "https://zenodo.org/records/22111340",
-  "views": 43
+  "views": 46
  },
  {
   "authors": [
@@ -38,7 +38,7 @@
   },
   "date": "2026-08-26",
   "doi": "10.5281/zenodo.22111148",
-  "downloads": 34,
+  "downloads": 35,
   "fullTitle": "R2 Review Report for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
   "kind": "review",
   "recordId": "22111148",
@@ -66,7 +66,7 @@
   "recordId": "21807707",
   "title": "R2 Reproducibility Certificate (AI)",
   "url": "https://zenodo.org/records/21807707",
-  "views": 56
+  "views": 57
  },
  {
   "authors": [
@@ -92,6 +92,6 @@
   "recordId": "21807854",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/21807854",
-  "views": 77
+  "views": 78
  }
 ]

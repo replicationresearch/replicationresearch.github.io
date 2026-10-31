@@ -117,7 +117,7 @@
    "id": "16",
    "month": "2026-10",
    "publishedDoi": "",
-   "status": "declined"
+   "status": "underReview"
   },
   {
    "date": "2026-10-12",
@@ -237,16 +237,16 @@
    "withdrawn": 0
   },
   "2026-10": {
-   "declined": 3,
+   "declined": 2,
    "published": 0,
-   "underReview": 3,
+   "underReview": 4,
    "withdrawn": 0
   }
  },
  "statusCounts": {
-  "declined": 5,
+  "declined": 4,
   "published": 4,
-  "underReview": 11,
+  "underReview": 12,
   "withdrawn": 1
  },
  "total": 21

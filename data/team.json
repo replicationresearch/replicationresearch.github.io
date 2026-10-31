@@ -136,23 +136,16 @@
      "name": "Ulrike Gut",
      "roles": "Linguistics",
      "slug": "ulrike-gut"
-    }
-   ],
-   "noteHtml": "",
-   "title": "Associate Editors"
-  },
-  {
-   "hasPhotos": true,
-   "members": [
+    },
     {
-     "affiliation": "Finders University & LMU Klinikum",
+     "affiliation": "Flinders University & LMU Klinikum",
      "name": "Irene Sophia Plank",
-     "roles": "",
+     "roles": "Neuroscience",
      "slug": "irene-sophia-plank"
     }
    ],
    "noteHtml": "",
-   "title": "Guest Editors"
+   "title": "Associate Editors"
   },
   {
    "hasPhotos": true,
