@@ -20,6 +20,14 @@ the site root; build.py replaces it with the configured base URL.
 
 Exits non-zero if the harvest looks broken (empty issue list, missing content
 containers, ...) so a failed run never wipes the published site.
+
+OJS upgrades (3.3 -> 3.5): the harvest is also compared with the previous one
+(scripts/harvest_guard.py) and refused if something that used to be there is
+gone or much shorter, and a change of the OJS major.minor version is refused
+until accepted explicitly. Environment switches (set by the workflow's manual
+run inputs): R2_DRY_RUN=1 harvests and reports but writes nothing,
+R2_ACCEPT_OJS_UPGRADE=1 accepts a new OJS version, R2_ACCEPT_CHANGES=1 accepts
+content that shrank on purpose.
 """
 
 import hashlib
@@ -32,6 +40,9 @@ import urllib.parse
 
 import requests
 from bs4 import BeautifulSoup
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import harvest_guard  # noqa: E402
 
 SITE = "https://ejournals.uni-muenster.de"
 JOURNAL = SITE + "/replicationresearch"
@@ -290,10 +301,16 @@ def _format_bibtex(text):
     return "%s%s,\n  %s\n}" % (prefix, key, ",\n  ".join(fields))
 
 
+OJS_VERSION = [""]       # set by scrape_journal() from the page's generator meta tag
+
+
 def scrape_journal():
     print("Scraping journal homepage ...")
     url = JOURNAL + "/index"
     doc = soup_of(url)
+    generator = doc.find("meta", attrs={"name": "generator"})
+    OJS_VERSION[0] = harvest_guard.parse_ojs_version(
+        generator.get("content") if generator else "")
 
     def meta(name, prop=False):
         tag = doc.find("meta", attrs={("property" if prop else "name"): name})
@@ -1369,9 +1386,30 @@ def write_json(name, payload):
     print("Wrote data/%s" % name)
 
 
+def _load_previous():
+    """The data written by the previous harvest ({} per file that doesn't
+    exist yet), for harvest_guard's regression check."""
+    out = {}
+    for key, default in (("journal", {}), ("issues", []), ("articles", []),
+                         ("pages", []), ("team", {}), ("announcements", [])):
+        path = os.path.join(DATA_DIR, key + ".json")
+        try:
+            with open(path, encoding="utf-8") as fh:
+                out[key] = json.load(fh)
+        except (OSError, ValueError):
+            out[key] = default
+    try:
+        with open(os.path.join(DATA_DIR, "ojs_version.json"), encoding="utf-8") as fh:
+            out["_version"] = json.load(fh).get("version", "")
+    except (OSError, ValueError):
+        out["_version"] = ""
+    return out
+
+
 def main():
     for d in (DATA_DIR, PDF_DIR, IMG_DIR):
         os.makedirs(d, exist_ok=True)
+    previous = _load_previous()
 
     # Every scrape_* call below is isolated with try/except: a single broken
     # selector (e.g. after OJS is upgraded and a theme class gets renamed)
@@ -1449,6 +1487,37 @@ def main():
         print("HARVEST FAILED: " + "; ".join(problems), file=sys.stderr)
         sys.exit(1)
 
+    # Regression check against the previous harvest + OJS version gate.
+    current = {"journal": journal, "issues": issues, "articles": articles,
+               "pages": pages, "team": team, "announcements": announcements}
+    guard_problems, guard_warnings = harvest_guard.check(previous, current)
+    old_version, new_version = previous["_version"], OJS_VERSION[0]
+    upgraded = harvest_guard.version_changed(old_version, new_version)
+    text = harvest_guard.report(previous, current, guard_problems, guard_warnings,
+                                old_version, new_version)
+    print(text)
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as fh:
+            fh.write(text)
+    blocked = []
+    if guard_problems and os.environ.get("R2_ACCEPT_CHANGES") != "1":
+        blocked.append("%d regression(s) against the previous harvest"
+                       % len(guard_problems))
+    if upgraded and os.environ.get("R2_ACCEPT_OJS_UPGRADE") != "1":
+        blocked.append("OJS was upgraded (%s -> %s): review the report above, "
+                       "then run once with accept_ojs_upgrade"
+                       % (old_version, new_version))
+    if os.environ.get("R2_DRY_RUN") == "1":
+        print("DRY RUN: nothing was written.%s"
+              % ("  BLOCKED: " + "; ".join(blocked) if blocked else "  Would publish."))
+        sys.exit(1 if blocked else 0)
+    if blocked:
+        print("HARVEST FAILED: " + "; ".join(blocked), file=sys.stderr)
+        sys.exit(1)
+
+    if new_version:
+        write_json("ojs_version.json", {"version": new_version})
     write_json("journal.json", journal)
     write_json("issues.json", issues)
     write_json("articles.json", articles)

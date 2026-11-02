@@ -105,6 +105,42 @@ output `scripts/build.py` produces for the live GitHub Pages deploy) and
 combines it into the single file, rewriting internal links to fragment
 anchors and inlining local images/CSS as it goes.
 
+## OJS upgrade (3.3 → 3.5): freeze and safe switch-over
+
+**Daily updates are frozen from 2026-11-09** (`FREEZE_FROM` in
+`.github/workflows/build.yml`): scheduled runs do nothing, so the live site
+keeps showing the last good build. Pushes still deploy, but from the data
+already in the repo (OJS is not contacted). To lift the freeze set the
+repository **variable** `MIRROR_RESUME` to `true` (Settings → Secrets and
+variables → Actions → Variables) or move the date.
+
+After the upgrade, check the new OJS before going live again:
+
+1. **Actions → "Fetch content and deploy mirror" → Run workflow**, tick
+   **dry_run**. It harvests the upgraded OJS and compares it with the data of
+   the previous harvest (`scripts/harvest_guard.py`), but writes, commits and
+   deploys nothing. The result is on the run's summary page: OJS version,
+   dataset sizes, how many articles have each field filled, and every
+   *blocking problem* (an article, page or field that existed before and is
+   missing, empty or much shorter now). The run is red if anything blocks.
+2. Fix the scraper if something is listed (the usual suspect is a renamed theme
+   class in `scripts/fetch.py`), run the dry run again until it is clean.
+3. Run the workflow once **without** dry_run but with **accept_ojs_upgrade**
+   ticked. A changed OJS major.minor version is otherwise refused even when the
+   checks pass, so an unnoticed upgrade can never go live by itself. (If
+   something shrank on purpose, tick **accept_changes** as well.)
+4. Set `MIRROR_RESUME=true` (or delete the freeze) to resume the daily updates.
+
+The same checks run on every normal harvest, so a scrape that quietly returns
+empty fields can never replace good data: the run fails, opens the "Mirror
+build failed" issue, and the live site stays as it was. The harvest also still
+needs the OJS REST API (`OJS_API_KEY`, view/download counts only — a failing
+API call keeps the previous numbers).
+
+GitHub switches off scheduled workflows after 60 days without repository
+activity; a long freeze with no commits can therefore also disable the daily
+schedule — re-enable it from the Actions tab (or push anything) when resuming.
+
 ## Notes
 
 - GitHub disables scheduled workflows after ~60 days without repository

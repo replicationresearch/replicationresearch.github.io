@@ -5,9 +5,34 @@ on:
     # Daily, off the hour (GitHub delays/drops on-the-hour cron jobs).
     # 04:23 UTC = 06:23 CEST / 05:23 CET.
     - cron: "23 4 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Harvest OJS and show the check report, but write/commit/deploy nothing"
+        type: boolean
+        default: false
+      accept_ojs_upgrade:
+        description: "Accept a changed OJS major.minor version (use once after the upgrade, after a dry run looked right)"
+        type: boolean
+        default: false
+      accept_changes:
+        description: "Accept content that shrank on purpose (regression check overridden)"
+        type: boolean
+        default: false
   push:
     branches: [main]
+
+env:
+  # OJS 3.3 -> 3.5 upgrade freeze. From this date (UTC) the SCHEDULED daily
+  # updates are skipped, so the live site keeps showing the last good build
+  # until it has been checked against the upgraded OJS. To resume: set the
+  # repository variable MIRROR_RESUME to "true" (Settings > Secrets and
+  # variables > Actions > Variables) or move this date. While frozen:
+  #   - scheduled runs do nothing,
+  #   - pushes still deploy, but from the committed data (OJS isn't contacted),
+  #   - manual runs still contact OJS - start with "dry_run" to see the check
+  #     report, then run once with "accept_ojs_upgrade".
+  FREEZE_FROM: "2026-11-09"
 
 permissions:
   contents: write   # commit refreshed data/ and assets/
@@ -21,7 +46,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      frozen: ${{ steps.freeze.outputs.frozen }}
+    steps:
+      - name: Check the OJS-upgrade update freeze
+        id: freeze
+        run: |
+          today=$(date -u +%F)
+          frozen=false
+          if [[ ! "$today" < "$FREEZE_FROM" && "${{ vars.MIRROR_RESUME }}" != "true" ]]; then
+            frozen=true
+          fi
+          echo "frozen=$frozen" >> "$GITHUB_OUTPUT"
+          if [ "$frozen" = "true" ]; then
+            echo "::notice::Daily updates are frozen (since $FREEZE_FROM, MIRROR_RESUME is not 'true'). Scheduled runs are skipped; pushes deploy from committed data."
+          fi
+
   build-and-deploy:
+    needs: gate
+    # Frozen: the scheduled daily run is skipped entirely.
+    if: ${{ !(needs.gate.outputs.frozen == 'true' && github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -50,14 +96,21 @@ jobs:
             echo "value=/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
           fi
 
+      # Frozen pushes skip OJS and build from the data already in the repo;
+      # manual runs (dry run or real) always contact OJS.
       - name: Fetch content from OJS
+        if: ${{ needs.gate.outputs.frozen != 'true' || github.event_name == 'workflow_dispatch' }}
         env:
           OJS_API_KEY: ${{ secrets.OJS_API_KEY }}
           GOATCOUNTER_API_TOKEN: ${{ secrets.GOATCOUNTER_API_TOKEN }}
           BASE_URL: ${{ steps.base_url.outputs.value }}
+          R2_DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+          R2_ACCEPT_OJS_UPGRADE: ${{ inputs.accept_ojs_upgrade && '1' || '' }}
+          R2_ACCEPT_CHANGES: ${{ inputs.accept_changes && '1' || '' }}
         run: python scripts/fetch.py
 
       - name: Commit refreshed content if changed
+        if: ${{ inputs.dry_run != true && (needs.gate.outputs.frozen != 'true' || github.event_name == 'workflow_dispatch') }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -71,11 +124,13 @@ jobs:
           fi
 
       - name: Build static site
+        if: ${{ inputs.dry_run != true }}
         env:
           BASE_URL: ${{ steps.base_url.outputs.value }}
         run: python scripts/build.py
 
       - name: Enable GitHub Pages (first run)
+        if: ${{ inputs.dry_run != true }}
         uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -86,7 +141,7 @@ jobs:
         # attempt then uploads a second one with the same name, and
         # deploy-pages fails with "Multiple artifacts named github-pages
         # were unexpectedly found". Only relevant on attempt 2+.
-        if: github.run_attempt != '1'
+        if: ${{ github.run_attempt != '1' && inputs.dry_run != true }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -98,12 +153,14 @@ jobs:
           done
 
       - name: Upload Pages artifact
+        if: ${{ inputs.dry_run != true }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
+        if: ${{ inputs.dry_run != true }}
         uses: actions/deploy-pages@v4
 
       # Fallback notification: GitHub already emails repo owners on a failed
@@ -114,7 +171,7 @@ jobs:
       # checks pass, and a failed step stops the job before build/deploy run,
       # so the last successful build stays live untouched.
       - name: Open/update failure issue
-        if: failure()
+        if: ${{ failure() && inputs.dry_run != true }}
         uses: actions/github-script@v7
         with:
           script: |
@@ -138,7 +195,7 @@ jobs:
             }
 
       - name: Close failure issue if this run succeeded
-        if: success()
+        if: ${{ success() && inputs.dry_run != true && (needs.gate.outputs.frozen != 'true' || github.event_name == 'workflow_dispatch') }}
         uses: actions/github-script@v7
         with:
           script: |
