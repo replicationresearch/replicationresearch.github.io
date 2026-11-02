@@ -1,5 +1,24 @@
 [
  {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Volmer",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "",
+  "id": "21",
+  "laySummary": "",
+  "preprintUrl": "",
+  "prereviewUrl": "",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Assessment",
+  "submissionDate": "2026-11-01",
+  "title": "Volmer Framing"
+ },
+ {
   "abstractHtml": "<p>We conducted a direct replication of Drew et al. (2017). The experiment examines visualsearch behavior, including eye movements, when participants are looking for one of manymemorized objects. The original experiment found that the search strategy for this kind ofsearch, called hybrid search, involves “one visual search [and] many memory searches.” Ourreplication (N=38) finds strong agreement with the original (N=14) results. As the number ofmemorized objects increases, participants fixate longer on each individual object. Furthermore,refixations are generally rare, with fewer than half of the visual items refixated during search.We conducted this replication as part of the course Research Methods in Cognitive Science atVassar College, and we briefly discuss the pedagogical framing of this work.</p>",
   "authors": [
    {
@@ -284,7 +303,7 @@
   ],
   "handlingEditor": "Lydia Riedl",
   "id": "9",
-  "laySummary": "",
+  "laySummary": "This study repeated an earlier experiment testing whether words or labels help people learn to distinguish between similar categories of objects (for example, two types of aliens being described as \"leebish\" or \"grecious\"). Unlike in the original study, the researchers found that such labels did not help adults learn the categories faster, suggesting that their benefit for learning fine differences between objects may be limited.",
   "preprintUrl": "https://doi.org/10.31234/osf.io/5e8mz_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-5e8mz_v1/write-a-prereview",
   "pubpeerUrl": "https://pubpeer.com/publications/236832147E61591BDAE2284C462BA7",

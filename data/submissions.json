@@ -146,6 +146,13 @@
    "month": "2026-10",
    "publishedDoi": "",
    "status": "underReview"
+  },
+  {
+   "date": "2026-11-01",
+   "id": "21",
+   "month": "2026-11",
+   "publishedDoi": "",
+   "status": "underReview"
   }
  ],
  "monthly": {
@@ -162,7 +169,7 @@
   "2026-08": 0,
   "2026-09": 2,
   "2026-10": 6,
-  "2026-11": 0
+  "2026-11": 1
  },
  "monthlyByStatus": {
   "2025-10": {
@@ -246,15 +253,15 @@
   "2026-11": {
    "declined": 0,
    "published": 0,
-   "underReview": 0,
+   "underReview": 1,
    "withdrawn": 0
   }
  },
  "statusCounts": {
   "declined": 4,
   "published": 4,
-  "underReview": 12,
+  "underReview": 13,
   "withdrawn": 1
  },
- "total": 21
+ "total": 22
 }
