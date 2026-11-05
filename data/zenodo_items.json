@@ -19,7 +19,7 @@
   "recordId": "22111340",
   "title": "R2 Reproducibility Certificate (Human + AI)",
   "url": "https://zenodo.org/records/22111340",
-  "views": 49
+  "views": 50
  },
  {
   "authors": [
@@ -44,7 +44,7 @@
   "recordId": "22111148",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/22111148",
-  "views": 58
+  "views": 60
  },
  {
   "authors": [
@@ -60,7 +60,7 @@
   },
   "date": "2026-08-13",
   "doi": "10.5281/zenodo.21807707",
-  "downloads": 36,
+  "downloads": 38,
   "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "certificate",
   "recordId": "21807707",
