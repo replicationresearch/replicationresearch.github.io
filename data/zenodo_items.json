@@ -1,6 +1,23 @@
 [
  {
   "authors": [
+   "Irene Sophia Plank",
+   "Miriam Müller",
+   "Lukas Röseler"
+  ],
+  "belongsTo": null,
+  "date": "2026-11-06",
+  "doi": "10.5281/zenodo.24003823",
+  "downloads": 0,
+  "fullTitle": "Replication Research Review Report for: Mental Timing in Locomotion: Walking Across Real and Imagined Distances",
+  "kind": "review",
+  "recordId": "24003822",
+  "title": "Replication Research Review Report",
+  "url": "https://zenodo.org/records/24003823",
+  "views": 0
+ },
+ {
+  "authors": [
    "Lukas Röseler"
   ],
   "belongsTo": {
@@ -13,13 +30,13 @@
   },
   "date": "2026-08-26",
   "doi": "10.5281/zenodo.22111340",
-  "downloads": 62,
+  "downloads": 64,
   "fullTitle": "R2 Reproducibility Certificate (Human + AI) for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
   "kind": "certificate",
   "recordId": "22111340",
   "title": "R2 Reproducibility Certificate (Human + AI)",
   "url": "https://zenodo.org/records/22111340",
-  "views": 50
+  "views": 51
  },
  {
   "authors": [
@@ -38,13 +55,13 @@
   },
   "date": "2026-08-26",
   "doi": "10.5281/zenodo.22111148",
-  "downloads": 36,
+  "downloads": 37,
   "fullTitle": "R2 Review Report for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
   "kind": "review",
   "recordId": "22111148",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/22111148",
-  "views": 60
+  "views": 63
  },
  {
   "authors": [
@@ -60,13 +77,13 @@
   },
   "date": "2026-08-13",
   "doi": "10.5281/zenodo.21807707",
-  "downloads": 38,
+  "downloads": 39,
   "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "certificate",
   "recordId": "21807707",
   "title": "R2 Reproducibility Certificate (AI)",
   "url": "https://zenodo.org/records/21807707",
-  "views": 64
+  "views": 66
  },
  {
   "authors": [
@@ -92,6 +109,6 @@
   "recordId": "21807854",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/21807854",
-  "views": 84
+  "views": 86
  }
 ]
