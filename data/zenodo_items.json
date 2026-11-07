@@ -8,13 +8,13 @@
   "belongsTo": null,
   "date": "2026-11-06",
   "doi": "10.5281/zenodo.24003823",
-  "downloads": 0,
+  "downloads": 3,
   "fullTitle": "Replication Research Review Report for: Mental Timing in Locomotion: Walking Across Real and Imagined Distances",
   "kind": "review",
   "recordId": "24003822",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24003823",
-  "views": 0
+  "views": 3
  },
  {
   "authors": [
@@ -61,7 +61,7 @@
   "recordId": "22111148",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/22111148",
-  "views": 63
+  "views": 64
  },
  {
   "authors": [
@@ -77,13 +77,13 @@
   },
   "date": "2026-08-13",
   "doi": "10.5281/zenodo.21807707",
-  "downloads": 39,
+  "downloads": 41,
   "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "certificate",
   "recordId": "21807707",
   "title": "R2 Reproducibility Certificate (AI)",
   "url": "https://zenodo.org/records/21807707",
-  "views": 66
+  "views": 68
  },
  {
   "authors": [
@@ -103,12 +103,12 @@
   },
   "date": "2026-08-05",
   "doi": "10.5281/zenodo.21807854",
-  "downloads": 41,
+  "downloads": 42,
   "fullTitle": "R2 Review Report for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "review",
   "recordId": "21807854",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/21807854",
-  "views": 86
+  "views": 90
  }
 ]
