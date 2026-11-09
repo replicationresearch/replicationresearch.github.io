@@ -130,6 +130,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .stat-item svg { flex-shrink: 0; }
 
 /* Header (dark) */
+/* Site-wide notice (BANNER in scripts/build.py): dark red, white text. */
+.site-banner { background: #8b1e2d; color: #fff; text-align: center; }
+.site-banner[hidden] { display: none; }
+.site-banner p { margin: 0; padding: .6rem 0; font-size: .95rem; font-weight: 600; line-height: 1.4; }
+
 .site-header {
   position: sticky; top: 0; z-index: 50; background: rgba(38, 45, 52, .97);
   backdrop-filter: blur(8px); border-bottom: 1px solid #1b2127;

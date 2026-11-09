@@ -24,6 +24,22 @@ function r2RandomizeLogoColor(el) {
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
+{% if banner %}
+<div class="site-banner" role="status" data-until="{{ banner.until }}">
+  <div class="wrap"><p>{{ banner.text }}</p></div>
+</div>
+<script>
+// Hide the banner after its last day (the site may not be rebuilt by then).
+(function () {
+  var el = document.querySelector('.site-banner');
+  var until = el && el.getAttribute('data-until');
+  if (!until) return;
+  var d = new Date(), pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var today = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  if (today > until) el.hidden = true;
+})();
+</script>
+{% endif %}
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="{{ base }}">
