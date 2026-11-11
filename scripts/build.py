@@ -27,6 +27,7 @@ except ImportError:  # pymupdf not installed - build without full-text sections
         return {"html": "", "figures": []}
     print("pymupdf not available - skipping PDF full-text extraction.")
 from manuscript_override import load_override, apply_table_overrides
+from sitemap import write_sitemap_and_robots
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -34,6 +35,10 @@ OUT = os.path.join(ROOT, "_site")
 OVERRIDES = os.path.join(ROOT, "overrides")
 
 BASE = os.environ.get("BASE_URL", "/")
+# Public origin the site is served from: canonical links, Open Graph URLs and
+# the sitemap are absolute. Other deployments (e.g. a GitLab copy) set SITE_URL
+# to their own address.
+SITE_URL = os.environ.get("SITE_URL", "https://www.replicationresearch.org").rstrip("/")
 if not BASE.startswith("/"):
     BASE = "/" + BASE
 if not BASE.endswith("/"):
@@ -627,6 +632,7 @@ def main():
 
     common = {
         "base": BASE,
+        "site_url": SITE_URL,
         "banner": BANNER,
         "journal": journal,
         "nav": nav,
@@ -641,7 +647,15 @@ def main():
     os.makedirs(OUT)
 
     def render(template, out_path, **ctx):
-        html = env.get_template(template).render(**common, **ctx)
+        # Path of the page inside the site ("" = front page, "articles/ie/"),
+        # and its absolute canonical address.
+        page_path = out_path.replace(os.sep, "/")
+        page_path = "" if page_path == "index.html" else (
+            page_path[:-len("index.html")] if page_path.endswith("/index.html") else page_path)
+        html = env.get_template(template).render(
+            **common, page_path=page_path,
+            page_url="" if page_path == "404.html" else SITE_URL + BASE + page_path,
+            **ctx)
         target = os.path.join(OUT, out_path)
         os.makedirs(os.path.dirname(target), exist_ok=True)
         with open(target, "w", encoding="utf-8") as fh:
@@ -716,6 +730,22 @@ def main():
             with open(os.path.join(fig_dir, name), "wb") as fh:
                 fh.write(png)
     open(os.path.join(OUT, ".nojekyll"), "w").close()
+    # Files that must sit in the site root as they are (search-console
+    # verification files, ...): everything in site_root/.
+    site_root = os.path.join(ROOT, "site_root")
+    if os.path.isdir(site_root):
+        for name in os.listdir(site_root):
+            shutil.copy2(os.path.join(site_root, name), os.path.join(OUT, name))
+
+    # sitemap.xml + robots.txt; lastmod only where the data has a real date.
+    lastmods = {"articles/%s/" % a["urlPath"]: a.get("datePublished") or ""
+                for a in articles}
+    lastmods.update({"issues/%s/" % i["id"]: i.get("datePublished") or ""
+                     for i in issues})
+    lastmods.update({"announcements/%s/" % an["id"]: an.get("date") or ""
+                     for an in announcements})
+    n_urls = write_sitemap_and_robots(OUT, SITE_URL, BASE, lastmods)
+    print("Wrote sitemap.xml (%d URLs) and robots.txt" % n_urls)
 
     n_pages = sum(len(files) for _, _, files in os.walk(OUT))
     print("Built %d files into _site/ (base URL %s)" % (n_pages, BASE))

@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}{{ journal.name }}{% endblock %}</title>
-<meta name="description" content="{% block description %}{{ journal.description }}{% endblock %}">
+{%- import "seo.html" as seo %}
+{%- set seo_title %}{% block title %}{{ journal.name }}{% endblock %}{% endset %}
+{%- set seo_description %}{% block description %}{{ seo.description }}{% endblock %}{% endset %}
+{%- set seo_type %}{% block og_type %}website{% endblock %}{% endset %}
+{%- set seo_robots %}{% block robots %}index, follow{% endblock %}{% endset %}
+<title>{{ seo_title | striptags | trim }}</title>
+<meta name="description" content="{{ seo_description | striptags | trim }}">
+{{ seo.head(seo_title | striptags | trim, seo_description | striptags | trim, page_url,
+            home=(page_path == ""), og_type=seo_type | trim, robots=seo_robots | trim) }}
+{% block head_extra %}{% endblock %}
 {% if journal.favicon %}<link rel="icon" href="{{ journal.favicon }}">{% endif %}
 <link rel="stylesheet" href="{{ base }}static/style.css">
 <script>

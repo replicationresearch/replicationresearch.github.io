@@ -1,5 +1,14 @@
 # Replication Research (R2) — Mirror Site
 
+**Replication Research** is a diamond open-access, researcher-led journal
+publishing reproductions, replications, and conceptual articles advancing
+scientific reproducibility and transparency.
+**Website: <https://www.replicationresearch.org/>** · Citable snapshot of the
+site: [10.5281/zenodo.21920085](https://doi.org/10.5281/zenodo.21920085) ·
+Please cite individual articles by their own DOI, not this repository.
+
+This repository builds the journal's website:
+
 A beautiful, static, self-updating mirror of the journal
 [*Replication Research*](https://ejournals.uni-muenster.de/index.php/replicationresearch/index)
 (OJS), hosted on GitHub Pages.
@@ -104,6 +113,18 @@ snapshot can be cited or linked to directly, e.g.
 output `scripts/build.py` produces for the live GitHub Pages deploy) and
 combines it into the single file, rewriting internal links to fragment
 anchors and inlining local images/CSS as it goes.
+
+## Search engines
+
+Every page carries the search/social tags in `templates/seo.html` (the same
+ones as OJS's "Custom Tags"), a canonical link, and — on articles — Google
+Scholar's Highwire tags. `scripts/sitemap.py` writes `sitemap.xml` and
+`robots.txt` at build time. For Google Search Console / Bing Webmaster Tools
+verification by meta tag, paste the code into `google_verification` /
+`bing_verification` at the top of `templates/seo.html`. `SITE_URL` (default
+`https://www.replicationresearch.org`) sets the address used in all absolute
+URLs. Files that must live in the site root unchanged (e.g. Google's
+`google<code>.html` verification file) go into `site_root/`.
 
 ## OJS upgrade (3.3 → 3.5): freeze and safe switch-over
 

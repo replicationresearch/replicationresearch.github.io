@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Page not found · {{ journal.name }}{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
 {% block content %}
 <script>
 // IONOS's forwarding endpoint exposes an internal /defaultsite fallback path,
