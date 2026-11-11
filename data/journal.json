@@ -56,12 +56,6 @@
  "ojsUrl": "https://ejournals.uni-muenster.de/replicationresearch",
  "sidebarBlocks": [
   {
-   "html": "<p><img alt=\"\" height=\"28\" src=\"__BASE__assets/img/e98db466-baustelle.svg.png\" width=\"32\"/><br/>Please note that no submissions will be accepted from 9 to 13 November due to the OJS system upgrade!</p>",
-   "id": "customblock-migration",
-   "title": "migration",
-   "titleHidden": true
-  },
-  {
    "html": "<p><a href=\"__BASE__about/submissions/\" rel=\"noopener\" target=\"_blank\" title=\"Make a Submission\"><img alt=\"\" height=\"40\" src=\"__BASE__assets/img/e04ee3d6-make-a-submission.png\" width=\"200\"/></a></p>\n<p><a href=\"https://forms.gle/g2y5DvLs5oumrvEx9\" rel=\"noopener\" target=\"_blank\" title=\"Pre-Submission Inquiry\"><img alt=\"\" height=\"40\" src=\"__BASE__assets/img/e79ba727-pre-submission-inquiry.png\" width=\"200\"/></a></p>\n<p> </p>\n<p> </p>",
    "id": "customblock-submission",
    "title": "Submission",
