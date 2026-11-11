@@ -23,16 +23,19 @@ on:
     branches: [main]
 
 env:
-  # OJS 3.3 -> 3.5 upgrade freeze. From this date (UTC) the SCHEDULED daily
+  # Update freeze for an OJS upgrade. EMPTY = no freeze (normal daily updates).
+  # To freeze, set a date (YYYY-MM-DD, UTC): from then on the SCHEDULED daily
   # updates are skipped, so the live site keeps showing the last good build
   # until it has been checked against the upgraded OJS. To resume: set the
   # repository variable MIRROR_RESUME to "true" (Settings > Secrets and
-  # variables > Actions > Variables) or move this date. While frozen:
+  # variables > Actions > Variables) or clear this date. While frozen:
   #   - scheduled runs do nothing,
   #   - pushes still deploy, but from the committed data (OJS isn't contacted),
   #   - manual runs still contact OJS - start with "dry_run" to see the check
   #     report, then run once with "accept_ojs_upgrade".
-  FREEZE_FROM: "2026-11-09"
+  # (The planned 3.3 -> 3.5 upgrade of 2026-11-09 was called off, so the
+  # freeze was lifted on 2026-11-11.)
+  FREEZE_FROM: ""
 
 permissions:
   contents: write   # commit refreshed data/ and assets/
@@ -56,7 +59,7 @@ jobs:
         run: |
           today=$(date -u +%F)
           frozen=false
-          if [[ ! "$today" < "$FREEZE_FROM" && "${{ vars.MIRROR_RESUME }}" != "true" ]]; then
+          if [[ -n "$FREEZE_FROM" && ! "$today" < "$FREEZE_FROM" && "${{ vars.MIRROR_RESUME }}" != "true" ]]; then
             frozen=true
           fi
           echo "frozen=$frozen" >> "$GITHUB_OUTPUT"

@@ -56,13 +56,12 @@ def _rebase(value):
 
 
 # Site-wide notice banner (dark red strip above the header on every page);
-# set to None for no banner. "until" (inclusive, YYYY-MM-DD) hides it in the
+# None = no banner (e.g. the OJS-upgrade notice of 9-13 November 2026, whose
+# text was: "Please note that no submissions will be accepted from 9 to 13
+# November due to the OJS system upgrade!"). "until" (inclusive, YYYY-MM-DD) hides it in the
 # visitor's browser after that day even if the site hasn't been rebuilt.
-BANNER = {
-    "text": "Please note that no submissions will be accepted from 9 to 13 "
-            "November due to the OJS system upgrade!",
-    "until": "2026-11-13",
-}
+BANNER = None
+# BANNER = {"text": "...", "until": "YYYY-MM-DD"}
 
 FURTHER_PROJECTS = [
     {

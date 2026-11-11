@@ -107,12 +107,14 @@ anchors and inlining local images/CSS as it goes.
 
 ## OJS upgrade (3.3 → 3.5): freeze and safe switch-over
 
-**Daily updates are frozen from 2026-11-09** (`FREEZE_FROM` in
-`.github/workflows/build.yml`): scheduled runs do nothing, so the live site
-keeps showing the last good build. Pushes still deploy, but from the data
-already in the repo (OJS is not contacted). To lift the freeze set the
+**Update freeze (currently off).** Setting `FREEZE_FROM` in
+`.github/workflows/build.yml` to a date freezes the daily updates from that day
+on (it is empty at the moment, so the daily updates run normally; the planned
+2026-11-09 upgrade was called off). While frozen, scheduled runs do nothing, so
+the live site keeps showing the last good build. Pushes still deploy, but from
+the data already in the repo (OJS is not contacted). To lift a freeze set the
 repository **variable** `MIRROR_RESUME` to `true` (Settings → Secrets and
-variables → Actions → Variables) or move the date.
+variables → Actions → Variables) or clear the date.
 
 After the upgrade, check the new OJS before going live again:
 
