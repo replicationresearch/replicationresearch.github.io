@@ -8,13 +8,13 @@
   "belongsTo": null,
   "date": "2026-11-06",
   "doi": "10.5281/zenodo.24003823",
-  "downloads": 6,
+  "downloads": 7,
   "fullTitle": "Replication Research Review Report for: Mental Timing in Locomotion: Walking Across Real and Imagined Distances",
   "kind": "review",
   "recordId": "24003822",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24003823",
-  "views": 4
+  "views": 5
  },
  {
   "authors": [
@@ -30,7 +30,7 @@
   },
   "date": "2026-08-26",
   "doi": "10.5281/zenodo.22111340",
-  "downloads": 64,
+  "downloads": 65,
   "fullTitle": "R2 Reproducibility Certificate (Human + AI) for: Debunking decreases mistaken causal inferences: A direct replication of Irving et al. (2022)",
   "kind": "certificate",
   "recordId": "22111340",
