@@ -4,6 +4,25 @@
   "authors": [
    {
     "affiliation": "",
+    "name": "Hilmar Brohmer",
+    "orcid": "0000-0001-7763-4229"
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "22",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.5281/zenodo.24164064",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.5281-zenodo.24164064/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Assessment",
+  "submissionDate": "2026-11-12",
+  "title": "No reliable evidence for conspiracy beliefs being associated with emotion granularity – A re-analysis of Wabnegger et al. (2024) in line with the preregistration"
+ },
+ {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
     "name": "Volmer",
     "orcid": ""
    }
