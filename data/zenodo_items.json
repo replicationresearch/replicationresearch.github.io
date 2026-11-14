@@ -14,7 +14,7 @@
   "recordId": "24003822",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24003823",
-  "views": 6
+  "views": 7
  },
  {
   "authors": [
@@ -77,7 +77,7 @@
   },
   "date": "2026-08-13",
   "doi": "10.5281/zenodo.21807707",
-  "downloads": 42,
+  "downloads": 43,
   "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "certificate",
   "recordId": "21807707",
@@ -103,7 +103,7 @@
   },
   "date": "2026-08-05",
   "doi": "10.5281/zenodo.21807854",
-  "downloads": 43,
+  "downloads": 44,
   "fullTitle": "R2 Review Report for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "review",
   "recordId": "21807854",
