@@ -515,6 +515,8 @@ def main():
             "monthlyChart": submissions_stacked_chart(
                 submissions.get("monthlyByStatus"), submissions["monthly"],
                 items=submissions.get("items"),
+                stages={str(r.get("id")): _stage_key(r.get("status"))
+                        for r in under_review},
                 links=_submission_links(submissions.get("items"), articles,
                                         under_review)),
             "statusBar": status_stacked_bar(submissions["statusCounts"]),
@@ -817,11 +819,37 @@ def stats_chart(stats, min_month=None, width=256, height=96):
             '%s</svg>' % (width, height, "".join(parts)))
 
 
+# Bottom-to-top stacking order and colours (style.css) of the submissions
+# chart. "Under review" is split by the stage the editors show publicly.
 STACK_STATUSES = (("published", "status-published", "Published"),
-                  ("underReview", "status-underreview", "Under review"),
+                  ("copyEditing", "status-copyedit", "Copy-editing"),
+                  ("withAuthors", "status-withauthor", "With author(s)"),
+                  ("inReview", "status-inreview", "Under review / inviting reviewers"),
+                  ("assessment", "status-assessment", "Initial editorial assessment"),
                   ("declined", "status-declined", "Declined"),
                   ("withdrawn", "status-withdrawn", "Withdrawn"),
                   ("submissions", "status-unknown", "Submissions"))
+
+
+def _stage_key(stage):
+    """Chart class for an under-review submission from its public "Stage
+    website" text ("Copy-Editing", "With authors (1st revision)", "Pre-Review
+    Revision", "Under review (2nd round)", "Inviting Reviewers", "Initial
+    Editorial Assessment", ...)."""
+    s = (stage or "").lower()
+    if "copy" in s:
+        return "copyEditing"
+    if "author" in s or "revision" in s:
+        return "withAuthors"
+    if "assessment" in s:
+        return "assessment"
+    return "inReview"
+
+
+def _chart_class(item, stages):
+    if item["status"] == "underReview":
+        return stages.get(item["id"], "inReview")
+    return item["status"]          # published / declined / withdrawn
 
 
 # Typos in the OJS source text, corrected at build time so the daily
@@ -886,7 +914,7 @@ def _short_authors(names):
 
 
 def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190,
-                              items=None, links=None):
+                              items=None, links=None, stages=None):
     """Stacked column chart of new submissions per month: one column per
     month since launch (empty months stay as gaps), every submission one
     block coloured by its current status (the same colours the status bar
@@ -901,10 +929,18 @@ def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190,
     article or Under Review entry, with a title card on hover/focus.
     """
     links = links or {}
+    stages = stages or {}
     by_month = {}
     for item in items or []:
+        item = dict(item, cls=_chart_class(item, stages))
         by_month.setdefault(item["month"], []).append(item)
-    if monthly_by_status:
+    if items:
+        data = {ym: {} for ym in (monthly_by_status or monthly or {})}
+        for ym, its in by_month.items():
+            for item in its:
+                counts = data.setdefault(ym, {})
+                counts[item["cls"]] = counts.get(item["cls"], 0) + 1
+    elif monthly_by_status:
         data = {ym: {k: v for k, v in counts.items() if v}
                 for ym, counts in monthly_by_status.items()}
     else:
@@ -930,7 +966,7 @@ def submissions_stacked_chart(monthly_by_status, monthly, plot_h=190,
             n = data[ym].get(key, 0)
             if not n:
                 continue
-            singles = [i for i in by_month.get(ym, []) if i["status"] == key]
+            singles = [i for i in by_month.get(ym, []) if i["cls"] == key]
             if len(singles) == n:
                 segs.extend(_submission_block(i, css, label, full, unit,
                                               links.get(i["id"]))
@@ -983,17 +1019,16 @@ def _submission_block(item, css, label, month, unit, link):
     style = 'style="height:%.2fpx;--u:%.2fpx"' % (unit, unit)
     if not link:
         return ('<span class="stack-seg %s" %s tabindex="0">'
-                '<span class="stack-tooltip">%s &middot; submitted %s</span></span>'
+                '<span class="stack-tooltip">%s &middot; %s</span></span>'
                 % (css, style, label, month))
     authors = _short_authors(link["authors"])
+    # The card is framed in the block's own colour (--c, see style.css).
     card = ('<span class="stack-tooltip stack-card">'
-            '<span class="stack-card-status"><i class="%s"></i>%s</span>'
-            '<span class="stack-card-title">%s</span>%s'
-            '<span class="stack-card-meta">Submitted %s</span>'
-            '<span class="stack-card-cta">%s &rarr;</span></span>'
-            % (css, esc(link["detail"] or label), esc(link["title"]),
+            '<span class="stack-card-status">%s</span>'
+            '<span class="stack-card-title">%s</span>%s</span>'
+            % (esc(link["detail"] or label), esc(link["title"]),
                '<span class="stack-card-authors">%s</span>' % esc(authors)
-               if authors else "", month, esc(link["cta"])))
+               if authors else ""))
     return ('<a class="stack-seg stack-link %s" %s href="%s" aria-label="%s: %s">%s</a>'
             % (css, style, esc(link["url"]), label, esc(link["title"]), card))
 
