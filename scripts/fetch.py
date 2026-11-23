@@ -21,6 +21,17 @@ the site root; build.py replaces it with the configured base URL.
 Exits non-zero if the harvest looks broken (empty issue list, missing content
 containers, ...) so a failed run never wipes the published site.
 
+OJS blocked or unreachable (the university's fail2ban/bot protection drops
+connections from IPs that send "too many" requests, and GitHub's runners are
+easy to catch): the first connection timeout / 429 / challenge page from the
+OJS host trips a circuit breaker - no further OJS request is made in that run -
+and the run goes on in degraded mode: everything that comes from the editors'
+sheet or Zenodo is refreshed, everything that comes from OJS keeps its last
+good data, the run is green, and an "OJS not reachable" notice is raised (see
+build.yml). OJS requests are paced (R2_OJS_DELAY seconds, default 5) and kept
+to a minimum: PDFs, citation texts and announcements already harvested are
+reused; once a week (Monday, or R2_FULL_REFRESH=1) everything is re-fetched.
+
 OJS upgrades (3.3 -> 3.5): the harvest is also compared with the previous one
 (scripts/harvest_guard.py) and refused if something that used to be there is
 gone or much shorter, and a change of the OJS major.minor version is refused
@@ -30,6 +41,7 @@ R2_ACCEPT_OJS_UPGRADE=1 accepts a new OJS version, R2_ACCEPT_CHANGES=1 accepts
 content that shrank on purpose.
 """
 
+import datetime
 import hashlib
 import json
 import os
@@ -55,7 +67,36 @@ DATA_DIR = os.path.join(ROOT, "data")
 PDF_DIR = os.path.join(ROOT, "assets", "pdf")
 IMG_DIR = os.path.join(ROOT, "assets", "img")
 
-REQUEST_DELAY = 0.7  # politeness delay between requests to the OJS server
+REQUEST_DELAY = 0.7  # politeness delay between requests to other hosts
+# OJS sits behind rate limiting / fail2ban: far fewer, far slower requests.
+OJS_HOST = urllib.parse.urlparse(SITE).hostname
+OJS_DELAY = float(os.environ.get("R2_OJS_DELAY") or 5)
+FULL_REFRESH = (os.environ.get("R2_FULL_REFRESH") == "1"
+                or datetime.datetime.now(datetime.timezone.utc).weekday() == 0)   # Mondays
+
+
+class OJSUnavailable(RuntimeError):
+    """The OJS host is blocking or not answering; no more requests this run."""
+
+
+_ojs_breaker = {"tripped": False, "reason": ""}
+
+
+def _is_ojs(url):
+    return urllib.parse.urlparse(url).hostname == OJS_HOST
+
+
+def _trip_ojs(reason):
+    if not _ojs_breaker["tripped"]:
+        _ojs_breaker.update(tripped=True, reason=reason)
+        print("OJS UNREACHABLE - no further OJS requests this run: %s" % reason,
+              file=sys.stderr)
+    raise OJSUnavailable(_ojs_breaker["reason"])
+
+
+def _guard_ojs(url):
+    if _is_ojs(url) and _ojs_breaker["tripped"]:
+        raise OJSUnavailable(_ojs_breaker["reason"])
 
 session = requests.Session()
 session.headers.update({
@@ -66,8 +107,9 @@ session.headers.update({
 _last_request = [0.0]
 
 
-def _throttle():
-    wait = REQUEST_DELAY - (time.time() - _last_request[0])
+def _throttle(url=""):
+    delay = OJS_DELAY if _is_ojs(url) else REQUEST_DELAY
+    wait = delay - (time.time() - _last_request[0])
     if wait > 0:
         time.sleep(wait)
     _last_request[0] = time.time()
@@ -77,12 +119,23 @@ def get(url, **kw):
     """Polite GET with retries. Returns a Response or raises."""
     last = None
     for attempt in range(3):
-        _throttle()
+        _guard_ojs(url)
+        _throttle(url)
         try:
-            r = session.get(url, timeout=60, **kw)
+            r = session.get(url, timeout=(10, 60), **kw)
             if r.status_code == 200:
+                if _is_ojs(url) and "anubis" in r.text[:4000].lower():
+                    _trip_ojs("bot-protection challenge page (Anubis) instead "
+                              "of content for %s" % url)
                 return r
             last = "HTTP %s" % r.status_code
+            if r.status_code == 429 and _is_ojs(url):
+                _trip_ojs("HTTP 429 (rate limited) for %s" % url)
+        except (requests.ConnectTimeout, requests.ConnectionError) as e:
+            if _is_ojs(url):
+                _trip_ojs("no connection to %s (%s) - IP probably blocked"
+                          % (OJS_HOST, type(e).__name__))
+            last = str(e)
         except requests.RequestException as e:
             last = str(e)
         time.sleep(2 * (attempt + 1))
@@ -131,12 +184,18 @@ def api_get(path, params=None, retries=3, _allow_fallback=True):
         else:
             headers["Authorization"] = "Bearer " + API_KEY
         url = API_BASE + path + ("?" + urllib.parse.urlencode(q) if q else "")
-        _throttle()
+        if _ojs_breaker["tripped"]:
+            return None
+        _throttle(url)
         try:
-            r = session.get(url, headers=headers, timeout=60)
+            r = session.get(url, headers=headers, timeout=(10, 60))
             if r.status_code == 200:
                 return r.json()
             last = "HTTP %s | %s" % (r.status_code, r.text[:200])
+            if r.status_code == 429:
+                print("API rate limited (429): stopping OJS requests.", file=sys.stderr)
+                _ojs_breaker.update(tripped=True, reason="HTTP 429 from the OJS API")
+                return None
             if r.status_code in (401, 403):
                 print("API auth error:", last, file=sys.stderr)
                 if r.status_code == 403 and not USE_QUERY_TOKEN and _allow_fallback:
@@ -148,6 +207,11 @@ def api_get(path, params=None, retries=3, _allow_fallback=True):
                         return result
                     USE_QUERY_TOKEN = False
                 return None
+        except (requests.ConnectTimeout, requests.ConnectionError) as e:
+            print("API: no connection to %s (%s): stopping OJS requests."
+                  % (OJS_HOST, type(e).__name__), file=sys.stderr)
+            _ojs_breaker.update(tripped=True, reason="no connection to the OJS API")
+            return None
         except requests.RequestException as e:
             last = str(e)
         time.sleep(2 * (attempt + 1))
@@ -490,6 +554,9 @@ def scrape_issues():
     return issues
 
 
+_previous = {"articles": {}, "announcements": {}}   # filled by main()
+
+
 def scrape_article(url_path, issue):
     url = JOURNAL + "/article/view/" + url_path
     print("Scraping article %s ..." % url_path)
@@ -570,11 +637,18 @@ def scrape_article(url_path, issue):
             # clipboard directly instead of linking to a file download -
             # best-effort: a transient failure here just falls back to the
             # download link, it doesn't need to abort the whole scrape.
+            # Reused from the previous harvest unless this is a full refresh:
+            # it never changes for a published article, and every request to
+            # OJS counts against its rate limit.
+            old = _previous["articles"].get(url_path, {}).get(fmt + "Text")
+            if old and not FULL_REFRESH:
+                art[fmt + "Text"] = old
+                continue
             try:
                 text = get(art[fmt + "Url"]).text
                 art[fmt + "Text"] = _format_bibtex(text) if fmt == "bibtex" else text
             except Exception:
-                art[fmt + "Text"] = ""
+                art[fmt + "Text"] = old or ""
 
     for sub in det.select(".item.issue .sub_item"):
         label = text_of(sub.find("h2")).lower()
@@ -698,6 +772,10 @@ def scrape_announcements():
     announcements = []
     for item in items:
         url = JOURNAL + "/announcement/view/" + item["id"]
+        old = _previous["announcements"].get(item["id"])
+        if old and not FULL_REFRESH:        # saves a request per announcement
+            announcements.append(old)
+            continue
         doc = soup_of(url)
         full = doc.select_one(".obj_announcement_full")
         if full is None:
@@ -724,6 +802,8 @@ def mirror_pdfs(articles):
             if not galley["localPdf"]:
                 continue
             target = os.path.join(PDF_DIR, galley["localPdf"])
+            if os.path.exists(target) and not FULL_REFRESH:
+                continue                    # already mirrored; re-checked on full refreshes
             try:
                 r = get(galley["downloadUrl"])
                 if not r.content.startswith(b"%PDF"):
@@ -1410,13 +1490,21 @@ def main():
     for d in (DATA_DIR, PDF_DIR, IMG_DIR):
         os.makedirs(d, exist_ok=True)
     previous = _load_previous()
+    _previous["articles"] = {a["urlPath"]: a for a in previous["articles"]}
+    _previous["announcements"] = {str(a["id"]): a for a in previous["announcements"]}
+    print("OJS request pacing: %.1f s%s" % (OJS_DELAY,
+          "; full refresh (PDFs, citations, announcements re-fetched)"
+          if FULL_REFRESH else ""))
 
     # Every scrape_* call below is isolated with try/except: a single broken
     # selector (e.g. after OJS is upgraded and a theme class gets renamed)
     # should degrade that one item, not crash the whole harvest. The sanity
     # checks further down are what actually block publishing, by looking at
     # the aggregate result rather than any individual exception.
-    journal = scrape_journal()
+    try:
+        journal = scrape_journal()
+    except OJSUnavailable:
+        journal = {"nav": []}   # blocked: everything below fails fast, see degraded mode
     page_paths = discover_page_paths(journal["nav"])
     PAGE_SLUGS.update(page_paths)
 
@@ -1465,7 +1553,56 @@ def main():
     submission_stats = fetch_submission_stats()
     under_review = fetch_under_review()
     published_extras = fetch_published_extras()
-    zenodo_items = fetch_zenodo_items(articles, under_review)
+    zenodo_items = fetch_zenodo_items(
+        previous["articles"] if _ojs_breaker["tripped"] else articles, under_review)
+
+    def write_sheet_based():
+        """The datasets that don't come from OJS (editors' sheet, Zenodo)."""
+        if submission_stats is not None:
+            write_json("submissions.json", submission_stats)
+        else:
+            print("Keeping previous submissions.json (fetch unavailable).")
+        if under_review is not None:
+            write_json("under_review.json", under_review)
+        else:
+            print("Keeping previous under_review.json (fetch unavailable).")
+        if published_extras is not None:
+            write_json("published_extras.json", published_extras)
+        else:
+            print("Keeping previous published_extras.json (fetch unavailable).")
+        if zenodo_items is not None:
+            write_json("zenodo_items.json", zenodo_items)
+        else:
+            print("Keeping previous zenodo_items.json (fetch unavailable).")
+
+    if _ojs_breaker["tripped"]:
+        # Degraded mode: OJS blocked/unreachable. Keep every OJS-derived file as
+        # it is, refresh the rest, and let the run succeed so the site is
+        # rebuilt with the fresh sheet/Zenodo data. A partial OJS harvest is
+        # thrown away on purpose: mixing new and old OJS data would be worse.
+        msg = ("OJS is not reachable from this run (%s). The OJS-derived data "
+               "(articles, issues, pages, announcements, statistics) is left "
+               "unchanged; sheet and Zenodo data were refreshed."
+               % _ojs_breaker["reason"])
+        print("::warning::" + msg)
+        if not previous["articles"]:
+            print("HARVEST FAILED: OJS unreachable and there is no earlier "
+                  "harvest to fall back to.", file=sys.stderr)
+            sys.exit(1)
+        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary_path:
+            with open(summary_path, "a", encoding="utf-8") as fh:
+                fh.write("## OJS not reachable\n\n%s\n" % msg)
+        out_path = os.environ.get("GITHUB_OUTPUT")
+        if out_path:
+            with open(out_path, "a", encoding="utf-8") as fh:
+                fh.write("ojs_unreachable=true\n")
+        if os.environ.get("R2_DRY_RUN") == "1":
+            print("DRY RUN: nothing was written.")
+            sys.exit(0)
+        write_sheet_based()
+        print("Done (degraded): OJS data unchanged.")
+        return
 
     # Sanity checks: never publish an obviously broken harvest.
     problems = []
@@ -1528,22 +1665,7 @@ def main():
         write_json("stats.json", stats)
     else:
         print("Keeping previous stats.json (stats fetch unavailable).")
-    if submission_stats is not None:
-        write_json("submissions.json", submission_stats)
-    else:
-        print("Keeping previous submissions.json (fetch unavailable).")
-    if under_review is not None:
-        write_json("under_review.json", under_review)
-    else:
-        print("Keeping previous under_review.json (fetch unavailable).")
-    if published_extras is not None:
-        write_json("published_extras.json", published_extras)
-    else:
-        print("Keeping previous published_extras.json (fetch unavailable).")
-    if zenodo_items is not None:
-        write_json("zenodo_items.json", zenodo_items)
-    else:
-        print("Keeping previous zenodo_items.json (fetch unavailable).")
+    write_sheet_based()
 
     print("Done: %d issues, %d articles, %d pages, %d announcements, %d PDFs."
           % (len(issues), len(articles), len(pages), len(announcements),

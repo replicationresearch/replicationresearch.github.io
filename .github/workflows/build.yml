@@ -19,6 +19,10 @@ on:
         description: "Accept content that shrank on purpose (regression check overridden)"
         type: boolean
         default: false
+      full_refresh:
+        description: "Re-fetch everything from OJS (PDFs, citation texts, announcements), not just what changed"
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -71,7 +75,11 @@ jobs:
     needs: gate
     # Frozen: the scheduled daily run is skipped entirely.
     if: ${{ !(needs.gate.outputs.frozen == 'true' && github.event_name == 'schedule') }}
-    runs-on: ubuntu-latest
+    # GitHub's own runners come from IP ranges the university's fail2ban may
+    # block. If the server admins allow-list a fixed address, run a self-hosted
+    # runner there and set the repository variable MIRROR_RUNNER to its label
+    # (see README, "OJS blocks the harvest"); unset = GitHub's runners.
+    runs-on: ${{ vars.MIRROR_RUNNER || 'ubuntu-latest' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -102,6 +110,7 @@ jobs:
       # Frozen pushes skip OJS and build from the data already in the repo;
       # manual runs (dry run or real) always contact OJS.
       - name: Fetch content from OJS
+        id: fetch
         if: ${{ needs.gate.outputs.frozen != 'true' || github.event_name == 'workflow_dispatch' }}
         env:
           OJS_API_KEY: ${{ secrets.OJS_API_KEY }}
@@ -110,6 +119,10 @@ jobs:
           R2_DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
           R2_ACCEPT_OJS_UPGRADE: ${{ inputs.accept_ojs_upgrade && '1' || '' }}
           R2_ACCEPT_CHANGES: ${{ inputs.accept_changes && '1' || '' }}
+          R2_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '' }}
+          # Seconds between requests to OJS (the university's rate limiting is
+          # strict); set the repository variable R2_OJS_DELAY to change it.
+          R2_OJS_DELAY: ${{ vars.R2_OJS_DELAY }}
         run: python scripts/fetch.py
 
       - name: Commit refreshed content if changed
@@ -194,6 +207,55 @@ jobs:
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+
+      # OJS blocking GitHub (fail2ban / bot protection): the run still succeeds -
+      # sheet and Zenodo data are refreshed, OJS data stays as it was - but this
+      # keeps a visible issue open until OJS answers again.
+      - name: Open/update "OJS not reachable" issue
+        if: ${{ steps.fetch.outputs.ojs_unreachable == 'true' && inputs.dry_run != true }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "OJS not reachable from the mirror build";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `On ${new Date().toISOString().slice(0, 10)} the mirror build could not reach the OJS server ` +
+              "(connection timeout or rate limit - probably the university's fail2ban/bot protection blocking GitHub's runners).\n\n" +
+              `Run: ${runUrl}\n\n` +
+              "The site was rebuilt with fresh submission-sheet and Zenodo data; articles, pages, announcements and OJS statistics keep their last good state. " +
+              "Fix: ask the server admins to allow-list a stable source for the harvest (see README, \"OJS blocks the harvest\").";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 50,
+            });
+            const existing = issues.find(i => i.title === title && !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+
+      - name: Close "OJS not reachable" issue once OJS answers again
+        if: ${{ steps.fetch.conclusion == 'success' && steps.fetch.outputs.ojs_unreachable != 'true' && inputs.dry_run != true }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "OJS not reachable from the mirror build";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 50,
+            });
+            const existing = issues.find(i => i.title === title && !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number,
+                body: "OJS is reachable again; the mirror build harvested it normally.",
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: "closed",
               });
             }
 

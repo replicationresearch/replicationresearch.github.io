@@ -164,6 +164,39 @@ GitHub switches off scheduled workflows after 60 days without repository
 activity; a long freeze with no commits can therefore also disable the daily
 schedule — re-enable it from the Actions tab (or push anything) when resuming.
 
+## OJS blocks the harvest (fail2ban / bot protection)
+
+After a bot attack the university's server (fail2ban, Anubis) started dropping
+connections from IP addresses that send more than a few requests. GitHub's
+runners are caught: after two or three answers every further request to
+`ejournals.uni-muenster.de` just times out, and the daily run used to fail.
+What the harvest does now (`scripts/fetch.py`):
+
+- **Circuit breaker.** The first connection timeout, `429` or challenge page
+  from OJS stops all further OJS requests of that run (no waiting through
+  dozens of timeouts, no extra hits on a blocked address).
+- **Degraded mode instead of a failed run.** The sheet-driven data (submissions
+  chart, Under Review list, review reports / certificates from Zenodo, extras)
+  is refreshed, everything that comes from OJS (articles, issues, pages,
+  announcements, statistics) keeps its last good state, the run is green, the
+  site is rebuilt, and an issue "OJS not reachable from the mirror build" stays
+  open until OJS answers again.
+- **Far fewer, slower requests.** `R2_OJS_DELAY` (repository variable, default
+  5 seconds) spaces OJS requests; PDFs, citation texts and announcements that
+  were harvested before are reused. Once a week (Monday), or with the manual
+  run's `full_refresh` option, everything is re-fetched.
+
+What only the server admins can fix: the runners' addresses change all the time,
+so the clean solution is an allow-list for **one fixed address**. Ask them
+to exempt it from fail2ban/Anubis and either (a) tell you its address and run a
+**self-hosted runner** there - set the repository variable `MIRROR_RUNNER` to the
+runner's label and the whole workflow runs from it - or (b) allow-list the
+address of a machine that runs `python scripts/fetch.py` and pushes the result.
+Useful facts for them: one harvest is roughly 50 requests (about 25 on normal
+days), spaced 5 seconds apart, user agent
+`R2-mirror-bot/1.0 (GitHub Pages mirror; contact@replicationresearch.org)`,
+plus calls to `/api/v1/stats/...` with an API key; it reads only public pages.
+
 ## Notes
 
 - GitHub disables scheduled workflows after ~60 days without repository
