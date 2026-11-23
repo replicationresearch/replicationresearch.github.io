@@ -38,5 +38,15 @@
   "preregisteredUrl": "",
   "reproCertUrl": "",
   "submissionDate": "2026-04-21"
+ },
+ "10.17879/replicationresearch-2026-9615": {
+  "codeUrl": "https://doi.org/10.17605/OSF.IO/XJFPU",
+  "dataUrl": "https://doi.org/10.17605/OSF.IO/XJFPU",
+  "laySummary": "This study repeated an earlier experiment testing whether words or labels help people learn to distinguish between similar categories of objects (for example, two types of aliens being described as \"leebish\" or \"grecious\"). Unlike in the original study, the researchers found that such labels did not help adults learn the categories faster, suggesting that their benefit for learning fine differences between objects may be limited.",
+  "materialsUrl": "https://doi.org/10.17605/OSF.IO/XJFPU",
+  "peerReviewUrl": "https://doi.org/10.5281/zenodo.24292040",
+  "preregisteredUrl": "https://doi.org/10.17605/OSF.IO/RKTC6",
+  "reproCertUrl": "https://doi.org/10.5281/zenodo.24292480",
+  "submissionDate": "2026-05-02"
  }
 }

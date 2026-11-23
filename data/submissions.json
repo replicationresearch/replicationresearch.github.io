@@ -67,8 +67,8 @@
    "date": "2026-05-02",
    "id": "9",
    "month": "2026-05",
-   "publishedDoi": "",
-   "status": "underReview"
+   "publishedDoi": "10.17879/replicationresearch-2026-9615",
+   "status": "published"
   },
   {
    "date": "2026-05-22",
@@ -160,6 +160,27 @@
    "month": "2026-11",
    "publishedDoi": "",
    "status": "underReview"
+  },
+  {
+   "date": "2026-11-15",
+   "id": "23",
+   "month": "2026-11",
+   "publishedDoi": "",
+   "status": "declined"
+  },
+  {
+   "date": "2026-11-17",
+   "id": "24",
+   "month": "2026-11",
+   "publishedDoi": "",
+   "status": "underReview"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "25",
+   "month": "2026-11",
+   "publishedDoi": "",
+   "status": "underReview"
   }
  ],
  "monthly": {
@@ -176,7 +197,7 @@
   "2026-08": 0,
   "2026-09": 2,
   "2026-10": 6,
-  "2026-11": 2
+  "2026-11": 5
  },
  "monthlyByStatus": {
   "2025-10": {
@@ -223,8 +244,8 @@
   },
   "2026-05": {
    "declined": 1,
-   "published": 0,
-   "underReview": 1,
+   "published": 1,
+   "underReview": 0,
    "withdrawn": 0
   },
   "2026-06": {
@@ -258,17 +279,17 @@
    "withdrawn": 0
   },
   "2026-11": {
-   "declined": 0,
+   "declined": 1,
    "published": 0,
-   "underReview": 2,
+   "underReview": 4,
    "withdrawn": 0
   }
  },
  "statusCounts": {
-  "declined": 4,
-  "published": 4,
-  "underReview": 14,
+  "declined": 5,
+  "published": 5,
+  "underReview": 15,
   "withdrawn": 1
  },
- "total": 23
+ "total": 26
 }

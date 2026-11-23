@@ -1,5 +1,43 @@
 [
  {
+  "abstractHtml": "<p>Simmons, Nelson, and Simonsohn (2011) proposed disclosure-based practices — a priori power analyses, full reporting of conditions and exclusions, results reported with and without exclusions applied — as a remedy for the replication crisis. Following these practices explicitly, our lab attempted to publish an online replication and extension of our earlier PNAS findings on image size and memory, expecting that doing so would make publication straightforward. It did not. Nine submissions over 2.5 years were unsuccessful (eight rejections and one withdrawal), largely on the grounds that a transparent, successful replication lacked sufficient theoretical novelty to warrant publication on its own; it was accepted only after this framing was substantially minimized in favor of additional analyses and an alternative theoretical framework. Here, I reflect on this experience, raise open questions about whether the field's evaluation of replications has kept pace with its stated commitment to them, and offer recommendations for future practices.</p>",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Sharon Gilaie-Dotan",
+    "orcid": "https://orcid.org/0000-0002-8375-2173"
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "25",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.31234/osf.io/yrdc2_v2",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-yrdc2_v2/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Assignment to AE pending",
+  "submissionDate": "2026-11-19",
+  "title": "To replicate or not to replicate? My nine failures to publish a successful replication"
+ },
+ {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Shinskey",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "24",
+  "laySummary": "",
+  "preprintUrl": "https://doi.org/10.5281/zenodo.24321381",
+  "prereviewUrl": "https://prereview.org/preprints/doi-10.5281-zenodo.24321381/write-a-prereview",
+  "pubpeerUrl": "",
+  "status": "Pre-Review Revision",
+  "submissionDate": "2026-11-17",
+  "title": "Shinskey Decalage"
+ },
+ {
   "abstractHtml": "",
   "authors": [
    {
@@ -14,7 +52,7 @@
   "preprintUrl": "https://doi.org/10.5281/zenodo.24164064",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.5281-zenodo.24164064/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Initial Editorial Assessment",
+  "status": "Assignment to AE pending",
   "submissionDate": "2026-11-12",
   "title": "No reliable evidence for conspiracy beliefs being associated with emotion granularity – A re-analysis of Wabnegger et al. (2024) in line with the preregistration"
  },
@@ -152,7 +190,7 @@
   "preprintUrl": "https://doi.org/10.31234/osf.io/erp9w_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-erp9w_v1/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Inviting Reviewers",
+  "status": "Under review (1st round)",
   "submissionDate": "2026-10-28",
   "title": "Visual search with many targets in mind: A successful replication of Drew, Boettcher, and Wolfe (2017)"
  },
@@ -254,7 +292,7 @@
   "preprintUrl": "https://doi.org/10.23668/psycharchives.22555",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.23668-psycharchives.22555/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Initial Editorial Assessment",
+  "status": "Pre-Review Revision",
   "submissionDate": "2026-10-08",
   "title": "The Different Meanings of Response Variability: A Preregistered Replication and Extension"
  },
@@ -297,7 +335,7 @@
   "preprintUrl": "https://doi.org/10.31235/osf.io/zh56a_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-zh56a_v1/write-a-prereview",
   "pubpeerUrl": "https://pubpeer.com/publications/6EE269B0528B79963B933DF41DC335",
-  "status": "With authors (2nd revision)",
+  "status": "Under review (2nd round)",
   "submissionDate": "2026-06-04",
   "title": "Re-analyzing ``I Hope to Hell Nothing Goes Back to The Way It Was Before'': COVID-19, Marginalization, and Native Nations"
  },
