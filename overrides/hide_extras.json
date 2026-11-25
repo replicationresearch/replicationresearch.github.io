@@ -1,0 +1,4 @@
+{
+ "_comment": "Per article (urlPath): sheet columns whose badge/link must NOT be shown, although the editors sheet has a value. Keys: preregisteredUrl, materialsUrl, dataUrl, codeUrl, reproCertUrl, peerReviewUrl.",
+ "9615": ["preregisteredUrl"]
+}
