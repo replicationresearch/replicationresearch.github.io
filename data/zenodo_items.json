@@ -6,10 +6,12 @@
    "Lukas Röseler"
   ],
   "belongsTo": {
-   "categories": [],
-   "section": "",
-   "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, & McClelland (2007)",
-   "urlPath": ""
+   "categories": [
+    "Psychology"
+   ],
+   "section": "Replications (different data)",
+   "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, and McClelland (2007)",
+   "urlPath": "9615"
   },
   "date": "2026-11-16",
   "doi": "10.5281/zenodo.24292480",
@@ -19,7 +21,7 @@
   "recordId": "24292480",
   "title": "Reproducibility Certificate for Kaicher et al., 2026",
   "url": "https://zenodo.org/records/24292480",
-  "views": 10
+  "views": 11
  },
  {
   "authors": [
@@ -31,10 +33,12 @@
    "Lukas Röseler"
   ],
   "belongsTo": {
-   "categories": [],
-   "section": "",
-   "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, & McClelland (2007)",
-   "urlPath": ""
+   "categories": [
+    "Psychology"
+   ],
+   "section": "Replications (different data)",
+   "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, and McClelland (2007)",
+   "urlPath": "9615"
   },
   "date": "2026-11-16",
   "doi": "10.5281/zenodo.24292040",
@@ -44,7 +48,7 @@
   "recordId": "24292040",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24292040",
-  "views": 10
+  "views": 12
  },
  {
   "authors": [
@@ -61,7 +65,7 @@
   "recordId": "24003822",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24003823",
-  "views": 13
+  "views": 15
  },
  {
   "authors": [
@@ -83,7 +87,7 @@
   "recordId": "22111340",
   "title": "R2 Reproducibility Certificate (Human + AI)",
   "url": "https://zenodo.org/records/22111340",
-  "views": 58
+  "views": 59
  },
  {
   "authors": [
@@ -108,7 +112,7 @@
   "recordId": "22111148",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/22111148",
-  "views": 78
+  "views": 79
  },
  {
   "authors": [
@@ -124,13 +128,13 @@
   },
   "date": "2026-08-13",
   "doi": "10.5281/zenodo.21807707",
-  "downloads": 51,
+  "downloads": 52,
   "fullTitle": "R2 Reproducibility Certificate (AI) for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "certificate",
   "recordId": "21807707",
   "title": "R2 Reproducibility Certificate (AI)",
   "url": "https://zenodo.org/records/21807707",
-  "views": 77
+  "views": 78
  },
  {
   "authors": [
@@ -156,6 +160,6 @@
   "recordId": "21807854",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/21807854",
-  "views": 101
+  "views": 102
  }
 ]

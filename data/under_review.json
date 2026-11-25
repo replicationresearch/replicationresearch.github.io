@@ -340,35 +340,6 @@
   "title": "Re-analyzing ``I Hope to Hell Nothing Goes Back to The Way It Was Before'': COVID-19, Marginalization, and Native Nations"
  },
  {
-  "abstractHtml": "<p>Labels are often advantageous for category learning. However, this may not be true for children as they learn subordinate, fine-grained object categories. In preparation for future research on subordinate category learning in children, we aimed to refine a procedure investigating the label advantage during subordinate category learning in adults. Thus, we conducted an online replication of Experiment 2 from Lupyan, Rakison, & McClelland (2007), which compares category learning under an auditory or written label condition versus a no label and non-linguistic cue condition in adults. We failed to replicate the key result, that those who received labels learned the categories faster.</p>",
-  "authors": [
-   {
-    "affiliation": "",
-    "name": "Caroline Kaicher",
-    "orcid": "https://orcid.org/0009-0007-4628-7165"
-   },
-   {
-    "affiliation": "",
-    "name": "Ellen Markman",
-    "orcid": ""
-   },
-   {
-    "affiliation": "",
-    "name": "Laura Gwilliams",
-    "orcid": "https://orcid.org/0000-0002-9213-588X"
-   }
-  ],
-  "handlingEditor": "Lydia Riedl",
-  "id": "9",
-  "laySummary": "This study repeated an earlier experiment testing whether words or labels help people learn to distinguish between similar categories of objects (for example, two types of aliens being described as \"leebish\" or \"grecious\"). Unlike in the original study, the researchers found that such labels did not help adults learn the categories faster, suggesting that their benefit for learning fine differences between objects may be limited.",
-  "preprintUrl": "https://doi.org/10.31234/osf.io/5e8mz_v1",
-  "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-5e8mz_v1/write-a-prereview",
-  "pubpeerUrl": "https://pubpeer.com/publications/236832147E61591BDAE2284C462BA7",
-  "status": "Copy-Editing",
-  "submissionDate": "2026-05-02",
-  "title": "Are Redundant Labels Helpful during Category Learning? Replication of Lupyan, Rakison, & McClelland (2007)"
- },
- {
   "abstractHtml": "<p>Replication studies play an important role in scientific knowledge generation, but researchers lack a coherent account of how to conclude whether a finding has been replicated. This paper provides such an account by connecting methodological falsificationism and the Neyman-Pearson approach to statistical inferences in the context of the analysis of replication studies. From this perspective, the goal of a replication study is to examine whether the same basic statement that was made in an original study can also be made when new data are collected in a faithful empirical realization of the original test. If the original study made an ordinal claim based on a statistical decision rule, the replication study should evaluate whether the same claim can be made using the same inferential criterion. We argue that the original effect size estimate should also be treated as part of the original claim, and therefore that replication studies should additionally examine whether the effect size differs meaningfully from the original estimate. We illustrate how such comparisons can be performed for correlations by using equivalence tests and point out the importance of reflecting on which difference between replication studies is large enough to matter. More broadly, we argue that researchers should choose an analysis strategy for replication studies where their philosophy of science and statistical framework are coherently aligned.</p>",
   "authors": [
    {
