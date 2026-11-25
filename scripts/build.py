@@ -536,11 +536,6 @@ def main():
     if os.path.exists(team_path):
         team = team_with_photos(load("team.json"))
 
-    hide_extras = {}
-    hide_path = os.path.join(ROOT, "overrides", "hide_extras.json")
-    if os.path.exists(hide_path):
-        with open(hide_path, encoding="utf-8") as fh:
-            hide_extras = {k: v for k, v in json.load(fh).items() if not k.startswith("_")}
     published_extras = {}
     published_extras_path = os.path.join(DATA, "published_extras.json")
     if os.path.exists(published_extras_path):
@@ -566,9 +561,7 @@ def main():
         a["stats"] = normalize_article_stats(stats.get(a["submissionId"]))
         pub_month = a["datePublished"][:7] if a.get("datePublished") else None
         a["statsChart"] = stats_chart(a["stats"], pub_month) if a["stats"] else ""
-        extras = dict(published_extras.get((a.get("doi") or "").strip().lower()) or {})
-        for key in hide_extras.get(a["urlPath"], []):   # overrides/hide_extras.json
-            extras.pop(key, None)
+        extras = published_extras.get((a.get("doi") or "").strip().lower()) or {}
         # Data/Materials/Code often point at the same deposit (e.g. one
         # GitHub repo that doubles as both the materials and the code) -
         # merge those specific rows instead of repeating an identical link
