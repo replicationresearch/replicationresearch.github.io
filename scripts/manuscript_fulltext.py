@@ -425,6 +425,11 @@ def build_fulltext(md_text, fig_url_prefix=""):
         parts.append('<section class="fulltext-footnotes" aria-label="Footnotes"><ol>%s</ol></section>' % items)
 
     html_out = "".join(parts)
+    # footnote markers inside table cells (tables are rendered by
+    # manuscript_override, which knows nothing about footnotes)
+    html_out = re.sub(r"\[\^(\d+)\]",
+                      lambda m: _footref(m.group(1), footnotes) if m.group(1) in footnotes else m.group(0),
+                      html_out)
     try:
         from pdf_fulltext import _autolink_urls
         html_out = _autolink_urls(html_out)
