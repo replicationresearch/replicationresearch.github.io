@@ -29,6 +29,9 @@ MIN_TABLE_W, MIN_TABLE_H = 100, 40
 # happens to start with "Table 3 reports..." doesn't get mistaken for the
 # caption "Table 3.".
 CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s*\d+[a-zA-Z]?\s*[.:]", re.IGNORECASE)
+# APA-style captions: a bold line holding only "Table 1" / "Figure 2", with the
+# italic title on the next line(s) and, for figures, the image BELOW it.
+BARE_CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s*\d+[a-zA-Z]?$", re.IGNORECASE)
 PAGE_NUM_RE = re.compile(r"^\d{1,3}$")
 MATH_FONT_RE = re.compile(r"CM[A-Z]|Math|Symbol|MSAM|MSBM|MJX")
 BOLD_FLAG = 16
@@ -177,6 +180,61 @@ def _line_raw_text(line):
     _block_text(), needed because _split_block_segments() inspects lines
     individually rather than a whole block's assembled text."""
     return re.sub(r"\s+", " ", _plain_join(line["spans"])).strip()
+
+
+def _is_bare_caption(block):
+    """True for an APA-style caption block: the first line is just the bold
+    label ("Table 1", "Figure 2")."""
+    lines = [l for l in block["lines"] if _line_raw_text(l)]     # skip blank lines
+    if not lines:
+        return False
+    sp = _block_first_span(block)
+    return bool(sp and sp["flags"] & BOLD_FLAG
+                and BARE_CAPTION_RE.match(_line_raw_text(lines[0])))
+
+
+def _caption_match(block):
+    """Match object (group 1 = Figure/Fig./Table) if `block` is a caption in
+    either style, else None."""
+    text = _block_text(block)
+    m = CAPTION_RE.match(text)
+    if m:
+        return m
+    if _is_bare_caption(block):
+        return re.match(r"^(Figure|Fig\.|Table)", text, re.IGNORECASE)
+    return None
+
+
+def _caption_text(block):
+    """Caption text for display: "Table 1 Title" (APA) becomes "Table 1. Title"."""
+    text = _block_text(block)
+    if CAPTION_RE.match(text) or not _is_bare_caption(block):
+        return text
+    lines = [l for l in block["lines"] if _line_raw_text(l)]
+    label = _line_raw_text(lines[0])
+    rest = _block_text({"lines": lines[1:]})
+    return "%s. %s" % (label, rest) if rest else label
+
+
+def _merge_bare_caption_titles(blocks, body_size):
+    """An APA caption's italic title is often its own block right under the
+    label block - fold it back into the label's block."""
+    out = []
+    for b in blocks:
+        prev = out[-1] if out else None
+        if (prev is not None and _is_bare_caption(prev)
+                and len([l for l in prev["lines"] if _line_raw_text(l)]) == 1
+                and not _caption_match(b)):
+            sp, psp = _block_first_span(b), _block_first_span(prev)
+            if (sp is not None and psp is not None
+                    and abs(sp["size"] - psp["size"]) <= 0.5
+                    and not sp["flags"] & BOLD_FLAG
+                    and 0 <= b["bbox"][1] - prev["bbox"][3] <= psp["size"] * 2.2):
+                prev["lines"] = prev["lines"] + b["lines"]
+                prev["bbox"] = tuple(fitz.Rect(prev["bbox"]) | fitz.Rect(b["bbox"]))
+                continue
+        out.append(b)
+    return out
 
 
 def _is_heading_line(line, body_size, toc_titles):
@@ -444,10 +502,10 @@ def _merge_line_blocks(blocks, body_size, toc_titles, left, pitch, right):
         # first line is indented (and a double-spaced caption's lines are
         # further apart than single-spaced ones).
         if (prev is not None and sp is not None and pfirst0 is not None
-                and CAPTION_RE.match(_block_text(prev))
+                and _caption_match(prev)
                 and not _is_body_block(prev, body_size)
                 and abs(sp["size"] - pfirst0["size"]) <= 0.3
-                and not CAPTION_RE.match(_block_text(b))
+                and not _caption_match(b)
                 and left - 3 <= b["bbox"][0] <= prev["lines"][0]["bbox"][0] + 3
                 and 0 < _baseline_y(b["lines"][0]) - _baseline_y(prev["lines"][-1])
                     <= pfirst0["size"] * 2.3):
@@ -771,6 +829,35 @@ def _figure_rect_above(page, caption_rect, text_blocks, furniture):
     return padded
 
 
+def _figure_rect_below(page, caption_rect, caption_tops):
+    """Figure region for an APA caption (label + title ABOVE the image): the
+    image blocks / larger drawings under the caption, down to the next caption.
+    Must start close under the caption, or it is some other figure's image."""
+    bottom = page.rect.y1
+    for y in caption_tops:
+        if caption_rect.y1 + 4 < y < bottom:
+            bottom = y
+    band = fitz.Rect(page.rect.x0, caption_rect.y1 + 1, page.rect.x1, bottom)
+    pieces = [fitz.Rect(b["bbox"]) & band for b in page.get_text("dict")["blocks"]
+              if b["type"] == 1 and fitz.Rect(b["bbox"]).intersects(band)]
+    for drawing in page.get_drawings():
+        r = drawing["rect"]
+        if r.width >= 40 and r.height >= 25 and r.intersects(band):
+            pieces.append(r & band)
+    if not pieces:
+        return None
+    rect = pieces[0]
+    for r in pieces[1:]:
+        rect |= r
+    if (rect.width < MIN_FIG_W or rect.height < MIN_FIG_H
+            or rect.y0 - caption_rect.y1 > 60):
+        return None
+    padded = rect + (-4, -4, 4, 4)
+    padded.y0 = max(padded.y0, caption_rect.y1 + 1)
+    padded.y1 = min(padded.y1, bottom)
+    return padded
+
+
 def _table_rect_below(page, caption_rect, text_blocks, all_blocks, furniture,
                        body_size, caption_tops, stop_at_body_text=False):
     """The table region belonging to a caption: unlike Figures (image above,
@@ -985,6 +1072,8 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
             continues_prev_page = bool(first_body)                 and first_body["lines"][0]["bbox"][0] <= layout_left + 10                 and _block_first_span(first_body)["flags"] & BOLD_FLAG == 0                 and not LIST_MARKER_RE.match(_block_text(first_body).lstrip())
             continuation_block = first_body
 
+        text_blocks = _merge_bare_caption_titles(text_blocks, body_size)
+
         # Pass 1: find captions and their figure/table regions, and
         # standalone large images, so pass 2 can skip any text living
         # inside one (axis labels, legends, table cells) - those are
@@ -994,10 +1083,9 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
         fig_rects = {}                 # caption block index -> clip rect
         table_rects = {}                # caption block index -> clip rect
         caption_tops = sorted(fitz.Rect(b["bbox"]).y0 for b in text_blocks
-                               if CAPTION_RE.match(_block_text(b)))
+                               if _caption_match(b))
         for i, block in enumerate(text_blocks):
-            text = _block_text(block)
-            m = CAPTION_RE.match(text)
+            m = _caption_match(block)
             if not m:
                 continue
             if m.group(1).lower().startswith("table"):
@@ -1008,8 +1096,12 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                 if rect is not None:
                     table_rects[i] = rect
             else:
-                rect = _figure_rect_above(page, fitz.Rect(block["bbox"]),
-                                          text_blocks, furniture)
+                if _is_bare_caption(block):      # APA: image below its caption
+                    rect = _figure_rect_below(page, fitz.Rect(block["bbox"]),
+                                              caption_tops)
+                else:
+                    rect = _figure_rect_above(page, fitz.Rect(block["bbox"]),
+                                              text_blocks, furniture)
                 if rect is not None:
                     fig_rects[i] = rect
 
@@ -1091,7 +1183,7 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     fig_n += 1
                     name = "fig-%d.png" % fig_n
                     figures.append((name, png))
-                    parts.append(_figure_html(fig_url_prefix + name, text))
+                    parts.append(_figure_html(fig_url_prefix + name, _caption_text(block)))
                     continue
                 # fall through: keep the caption as plain text
 
@@ -1107,7 +1199,7 @@ def _extract(pdf_path, fig_url_prefix, ignore_toc):
                     # (just above) or a following heading (just below)
                     # can't be pulled in as a stray extra "row".
                     copy_text = _table_plain_text(page, table_rects[i] + (4, 4, -4, -4))
-                    parts.append(_figure_html(fig_url_prefix + name, text,
+                    parts.append(_figure_html(fig_url_prefix + name, _caption_text(block),
                                               caption_first=True,
                                               copy_text=copy_text))
                     continue

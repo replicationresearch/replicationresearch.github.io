@@ -490,6 +490,11 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
   font-size: .85rem; color: var(--ink-soft); margin-top: .6rem; text-align: left;
 }
 .fulltext-table figcaption { margin-top: 0; margin-bottom: .6rem; }
+/* Markdown-built full text: notes under tables/figures, display equations. */
+.table-note { font-size: .88rem; color: var(--ink-soft); }
+.fulltext-equation-block { position: relative; margin: 1.1rem 0; text-align: center; overflow-x: auto; }
+.fulltext-equation-block math { font-size: 1.08em; }
+.fulltext-equation-block .eq-number { position: absolute; right: 0; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
 /* Real (override-supplied) tables: the body's overflow-wrap:anywhere would
    break short cells mid-word ("Simil|arity"); keep words whole and let the
    table scroll sideways instead. */

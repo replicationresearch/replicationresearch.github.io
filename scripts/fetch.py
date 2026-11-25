@@ -1268,6 +1268,8 @@ def fetch_under_review():
         sub_id = (row.get("ID") or "").strip()
         if not status or not sub_id.isdigit() or terminal.search(status):
             continue
+        if (row.get("Published DOI") or "").strip():
+            continue        # published: no longer "under review", whatever the stage text says
 
         folder = (row.get("GDrive Folder") or "").strip().strip("—-")
         fallback_title = re.sub(r"^\d+\s*", "", folder).strip() or folder

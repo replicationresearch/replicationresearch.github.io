@@ -27,6 +27,7 @@ except ImportError:  # pymupdf not installed - build without full-text sections
         return {"html": "", "figures": []}
     print("pymupdf not available - skipping PDF full-text extraction.")
 from manuscript_override import load_override, apply_table_overrides
+from manuscript_fulltext import build_fulltext
 from sitemap import write_sitemap_and_robots
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -265,8 +266,13 @@ def _reference_entries(references_html):
             if not m3:
                 continue
             author_segment, year = m3.group(1), m3.group(2)
-            names = [n for n in _ACL_SPLIT_RE.split(author_segment) if n.strip()]
-            surnames = [_acl_surname(n) for n in names]
+            names = [n.strip() for n in _ACL_SPLIT_RE.split(author_segment) if n.strip()]
+            if len(names) >= 2 and " " not in names[0]:
+                # ASA/Chicago style: "Aigner, Dennis J., and Glen G. Cain" - the
+                # first author is inverted (surname, given names), the rest are not.
+                surnames = [names[0]] + [_acl_surname(n) for n in names[2:]]
+            else:
+                surnames = [_acl_surname(n) for n in names]
         if surnames:
             entries.append((_reference_html(p), surnames, year))
     return entries
@@ -329,7 +335,8 @@ def link_citations(fulltext_html, references_html):
             # the shared parens).
             for surface in ("%s (%s)" % (who_amp, year),
                             "%s, %s" % (who_amp, year),
-                            "%s %s" % (who_amp, year)):
+                            "%s %s" % (who_amp, year),
+                            "%s (%s" % (who_amp, year)):     # "Smith (2024: 895)"
                 lookup.setdefault(surface, full)
 
     if not lookup:
@@ -609,9 +616,26 @@ def main():
             pdf_path = os.path.join(ROOT, "assets", "pdf", pdf["localPdf"])
             if os.path.exists(pdf_path):
                 prefix = BASE + "assets/fulltext/" + a["urlPath"] + "-"
-                result = extract_fulltext(pdf_path, prefix)
+                # overrides/<id>.fulltext-md next to overrides/<id>.md: build
+                # the HTML view from the manuscript's Markdown instead of the
+                # PDF (see scripts/manuscript_fulltext.py).
+                slug = os.path.basename(a["urlPath"])
+                md_path = os.path.join(OVERRIDES, slug + ".md")
+                from_md = (os.path.exists(os.path.join(OVERRIDES, slug + ".fulltext-md"))
+                           and os.path.exists(md_path))
+                result = None
+                if from_md:
+                    try:
+                        with open(md_path, encoding="utf-8") as fh:
+                            result = build_fulltext(fh.read(), prefix)
+                    except Exception as e:  # noqa: BLE001 - fall back to the PDF
+                        print("  %s: Markdown full text failed (%s), using the PDF"
+                              % (a["urlPath"], e), file=sys.stderr)
+                        from_md = False
+                if result is None:
+                    result = extract_fulltext(pdf_path, prefix)
                 full_html = result["html"]
-                if full_html and override and override.get("tables"):
+                if full_html and not from_md and override and override.get("tables"):
                     full_html = apply_table_overrides(full_html, override["tables"],
                                                        a["urlPath"])
                 if full_html and a.get("referencesHtml"):
