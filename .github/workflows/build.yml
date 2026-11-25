@@ -82,7 +82,7 @@ jobs:
     runs-on: ${{ vars.MIRROR_RUNNER || 'ubuntu-latest' }}
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment_retry.outputs.page_url || steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -192,6 +192,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         if: ${{ inputs.dry_run != true }}
+        continue-on-error: true      # retried once below (artifact lookup flake)
+        uses: actions/deploy-pages@v4
+
+      - name: Pause before the deploy retry
+        if: ${{ inputs.dry_run != true && steps.deployment.outcome == 'failure' }}
+        run: sleep 45
+
+      - name: Deploy to GitHub Pages (retry)
+        id: deployment_retry
+        if: ${{ inputs.dry_run != true && steps.deployment.outcome == 'failure' }}
         uses: actions/deploy-pages@v4
 
       # Fallback notification: GitHub already emails repo owners on a failed
