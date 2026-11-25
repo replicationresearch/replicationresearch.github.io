@@ -174,6 +174,21 @@ jobs:
         with:
           path: _site
 
+      # The artifact is sometimes not yet listed by the API a second after the
+      # upload, and deploy-pages then fails with 'No artifacts named
+      # "github-pages"' (seen 2026-11-24/25). Wait until it shows up.
+      - name: Wait until the Pages artifact is listed
+        if: ${{ inputs.dry_run != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 12); do
+            n=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"                   --jq '[.artifacts[] | select(.name == "github-pages")] | length' || echo 0)
+            if [ "${n:-0}" -ge 1 ]; then echo "artifact listed"; exit 0; fi
+            sleep 5
+          done
+          echo "artifact still not listed after 60 s, deploying anyway"
+
       - name: Deploy to GitHub Pages
         id: deployment
         if: ${{ inputs.dry_run != true }}
