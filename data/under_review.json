@@ -1,5 +1,24 @@
 [
  {
+  "abstractHtml": "",
+  "authors": [
+   {
+    "affiliation": "",
+    "name": "Klünter",
+    "orcid": ""
+   }
+  ],
+  "handlingEditor": "not yet assigned",
+  "id": "26",
+  "laySummary": "",
+  "preprintUrl": "",
+  "prereviewUrl": "",
+  "pubpeerUrl": "",
+  "status": "Initial Editorial Assessment",
+  "submissionDate": "2026-11-25",
+  "title": "Untitled submission"
+ },
+ {
   "abstractHtml": "<p>Simmons, Nelson, and Simonsohn (2011) proposed disclosure-based practices — a priori power analyses, full reporting of conditions and exclusions, results reported with and without exclusions applied — as a remedy for the replication crisis. Following these practices explicitly, our lab attempted to publish an online replication and extension of our earlier PNAS findings on image size and memory, expecting that doing so would make publication straightforward. It did not. Nine submissions over 2.5 years were unsuccessful (eight rejections and one withdrawal), largely on the grounds that a transparent, successful replication lacked sufficient theoretical novelty to warrant publication on its own; it was accepted only after this framing was substantially minimized in favor of additional analyses and an alternative theoretical framework. Here, I reflect on this experience, raise open questions about whether the field's evaluation of replications has kept pace with its stated commitment to them, and offer recommendations for future practices.</p>",
   "authors": [
    {
@@ -377,35 +396,6 @@
   "status": "With authors (1st revision)",
   "submissionDate": "2026-04-30",
   "title": "How to analyze a replication study"
- },
- {
-  "abstractHtml": "<p>This replication study critically examines the findings and conclusions of Forster and Neugebauer (2024), who question the external validity of factorial surveys in capturing real-world behavior. Using the publicly available data from the original study, we reassess the effects of educational signals and ethnic origin. Our analyses show that the original results do not withstand all robustness checks and that theoretically derived effect heterogeneities across occupational fields provide more nuanced explanations. These findings challenge the general claim that factorial surveys are unsuitable for studying hiring processes and instead underscore the importance of context-sensitive modeling. We argue that factorial surveys remain a valuable methodological tool, particularly when heterogeneity is explicitly addressed in both design and analysis.</p>",
-  "authors": [
-   {
-    "affiliation": "",
-    "name": "Benjamin Schimke",
-    "orcid": "https://orcid.org/0000-0002-9399-3229"
-   },
-   {
-    "affiliation": "",
-    "name": "Silvia Annen",
-    "orcid": ""
-   },
-   {
-    "affiliation": "",
-    "name": "Melanie Hochmuth",
-    "orcid": ""
-   }
-  ],
-  "handlingEditor": "Susanne Adler",
-  "id": "7",
-  "laySummary": "",
-  "preprintUrl": "https://doi.org/10.31235/osf.io/zk2ar_v2",
-  "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-zk2ar_v2/write-a-prereview",
-  "pubpeerUrl": "",
-  "status": "Copy-Editing",
-  "submissionDate": "2026-04-22",
-  "title": "Too Soon to Dismiss? A Reanalysis of Forster and Neugebauer (2024) Highlighting the Role of Effect Heterogeneity in Evaluating Factorial Surveys"
  },
  {
   "abstractHtml": "<p>Bol and van de Werfhorst’s article published in 2013 represents a milestone for researchers studying the effect of educational institutions on micro-level outcomes. In the above-mentioned article, tracking and other concepts, like vocational enrolment and vocational specificity, have been operationalized into numerical indicators and then used in regression models in order to establish their associations with individual outcomes. This article points out that Bol and van de Werfhorst’s analyses contain two errors. First, their model specifications disregard the role played by a confounder i.e., political orientation of policy makers. Second, their analytical strategy does not adequately correct for the fact that the dependent variables are estimated from external data. I replicate their analyses regarding social inequality of educational attainment (OE) and educational gradient in occupational attainment (ED) correcting for both errors. These new findings do not support the existence of a trade-off between labour market allocation and equality of educational opportunity when it comes to educational and occupational attainment.</p>",
