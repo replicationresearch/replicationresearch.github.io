@@ -753,9 +753,14 @@ def _autolink_urls(html_text):
     tags = _TAG_SPLIT_RE.findall(html_text)
     parts = _TAG_SPLIT_RE.split(html_text)
     out = [linkify(parts[0])]
+    depth = 0                         # inside an existing <a>: never link again
     for tag, part in zip(tags, parts[1:]):
         out.append(tag)
-        out.append(linkify(part))
+        if re.match(r"<a[\s>]", tag, re.I):
+            depth += 1
+        elif re.match(r"</a\s*>", tag, re.I):
+            depth = max(0, depth - 1)
+        out.append(part if depth else linkify(part))
     return "".join(out)
 
 

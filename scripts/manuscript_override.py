@@ -45,12 +45,13 @@ def _md_inline(text):
     autolinking bare URLs after _LINK_RE has already run risks matching
     the URL sitting inside an just-inserted href="..." attribute and
     double-wrapping it."""
+    text = text.replace("\\*", "\x01")        # an escaped "G\*Power" must not open italics
     text = _ESCAPE_RE.sub(r"\1", text)
     text = html.escape(text)
     text = _LINK_RE.sub(lambda m: '<a href="%s">%s</a>' % (m.group(2), m.group(1)), text)
     text = _BOLD_RE.sub(r"<strong>\1</strong>", text)
     text = _ITALIC_RE.sub(r"<em>\1</em>", text)
-    return text
+    return text.replace("\x01", "*")
 
 
 # ---------------------------------------------------------------------------

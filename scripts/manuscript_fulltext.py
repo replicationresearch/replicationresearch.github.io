@@ -248,8 +248,20 @@ def _body_range(lines):
     return first, end
 
 
-def build_fulltext(md_text, fig_url_prefix=""):
-    """{"html": str, "figures": [(filename, bytes)]} for the manuscript body."""
+RUNIN_RE = re.compile(r"^\*\*([^*]{2,80}?)\*\*\s*(.*)$")
+
+
+def build_fulltext(md_text, fig_url_prefix="", jats=False):
+    """{"html": str, "figures": [(filename, bytes)]} for the manuscript body.
+
+    jats=True (scripts/jats.py) keeps the document structure the HTML view
+    flattens: headings carry their real Markdown level (data-level), a heading
+    that swallowed its whole first paragraph ("### **Title.** Text ...") is
+    split into heading + paragraph, and a paragraph that starts with a bold
+    run-in title ("**Title.** Text ...", or a bold line on its own) becomes a
+    sub-heading (data-runin) - the JATS builder nests those under the section
+    they appear in.
+    """
     lines = md_text.splitlines()
     images, footnotes = {}, {}
     for line in lines:
@@ -344,11 +356,24 @@ def build_fulltext(md_text, fig_url_prefix=""):
         m = re.match(r"^(#{1,6})\s+(.*)$", line)
         if m:
             flush_all()
-            text = _plain_heading(m.group(2))
+            raw = m.group(2)
+            rest = ""
+            if jats:
+                raw = re.sub(r"^(?:#{1,6}\s*)+", "", raw)        # "# ## **X**": nested markers
+                rm = re.match(r"^\*\*(.+?)\*\*\s+(\S.{30,})$", raw)
+                if rm:                                          # heading swallowed its paragraph
+                    raw, rest = rm.group(1), rm.group(2)
+                    raw = raw.strip().rstrip(".").rstrip("\\").rstrip(".")
+            text = _plain_heading(raw)
             if text and not TABLE_CAPTION_RE.match(stripped) and not FIG_CAPTION_RE.match(stripped):
                 level = 3 if len(m.group(1)) == 1 else 4
-                parts.append('<h%d id="%s">%s</h%d>' % (level, _heading_id(text, seen),
-                                                       html.escape(text), level))
+                extra = (' data-level="%d"%s' % (len(m.group(1)), ' data-blob="1"' if rest else "")
+                         if jats else "")
+                parts.append('<h%d id="%s"%s>%s</h%d>' % (level, _heading_id(text, seen), extra,
+                                                         html.escape(text), level))
+                if rest:
+                    para.append(rest)
+                    flush_para()
                 i += 1
                 continue
             if not text:
@@ -404,6 +429,19 @@ def build_fulltext(md_text, fig_url_prefix=""):
             continue
         if bullets:
             flush_bullets()
+        if jats:
+            rm = RUNIN_RE.match(stripped)
+            if rm and not NOTE_RE.match(stripped) and not re.match(r"(?i)^(figure|table)\b|^(h|hypothesis\s?)\d+\W*$", rm.group(1).strip()):
+                title = _plain_heading(rm.group(1)).rstrip(" .")
+                rest = rm.group(2).strip()
+                if title and (not rest or rm.group(1).rstrip().rstrip("\\").endswith(".")):
+                    flush_all()
+                    parts.append('<h4 id="%s" data-runin="1">%s</h4>'
+                                 % (_heading_id(title, seen), html.escape(title)))
+                    if not rest:
+                        i += 1
+                        continue
+                    line = rest
         # a pending figure caption that no image followed: show it as text
         if pending.get("caption"):
             para.append(pending.pop("caption"))

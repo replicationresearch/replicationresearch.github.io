@@ -657,7 +657,7 @@ def main():
             try:
                 jslug = os.path.basename(a["urlPath"])
                 body, jfigs, jsource = pick_body(jslug, OVERRIDES, a["fullTextHtml"], jslug + "-")
-                jxml, jnames = build_jats(a, body, SITE_URL, journal, jsource)
+                jxml, jnames = build_jats(a, body, SITE_URL, journal, jsource, link=link_citations)
                 problems = jats_check(jxml, jnames, {jslug + "-" + n for n, _ in jfigs})
                 if problems:
                     print("  %s: JATS XML has problems (%s), not published"
