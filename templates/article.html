@@ -256,6 +256,7 @@
           {% endif %}
 
           <div class="aside-section">
+            {% if article.jatsUrl %}<p class="meta jats-link">JATS XML <span title="Work in progress: derived from the manuscript, not the version of record">(WIP)</span>: <a href="{{ article.jatsUrl }}" download>{{ article.urlPath }}.xml</a></p>{% endif %}
             <p class="meta">Canonical version: <a href="{{ article.ojsUrl }}">journal website (OJS)</a></p>
           </div>
         </div>

@@ -7,7 +7,6 @@
     {% if issue.cover %}<img class="issue-cover-lg" src="{{ issue.cover }}" alt="Cover of {{ issue.title }}">{% endif %}
     <div>
       <h1 class="page-heading">{{ issue.title }}</h1>
-      {% if issue.datePublished %}<p class="meta">Published {{ issue.datePublished }}</p>{% endif %}
       {% if issue.descriptionHtml %}<div class="prose">{{ issue.descriptionHtml | safe }}</div>{% endif %}
     </div>
   </div>

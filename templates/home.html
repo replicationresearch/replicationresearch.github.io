@@ -34,7 +34,6 @@
       {% endif %}
       <div class="issue-feature-body">
         <h3><a href="{{ base }}issues/{{ issue.id }}/">{{ issue.title }}</a></h3>
-        {% if issue.datePublished %}<p class="meta">Published {{ issue.datePublished }}</p>{% endif %}
         <ul class="article-list">
           {% for section in issue.sections %}
             {% for path in section.articles %}

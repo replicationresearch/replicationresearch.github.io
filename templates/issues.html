@@ -14,7 +14,6 @@
       {% endif %}
       <div class="issue-feature-body">
         <h2><a href="{{ base }}issues/{{ issue.id }}/">{{ issue.title }}</a></h2>
-        {% if issue.datePublished %}<p class="meta">Published {{ issue.datePublished }}</p>{% endif %}
         <details class="issue-articles" open>
           <summary>{{ count }} {{ "article" if count == 1 else "articles" }}</summary>
           <ul class="article-list">

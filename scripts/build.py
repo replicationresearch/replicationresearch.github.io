@@ -28,6 +28,7 @@ except ImportError:  # pymupdf not installed - build without full-text sections
     print("pymupdf not available - skipping PDF full-text extraction.")
 from manuscript_override import load_override, apply_table_overrides
 from manuscript_fulltext import build_fulltext
+from jats import build_jats, check as jats_check, pick_body
 from sitemap import write_sitemap_and_robots
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -546,6 +547,7 @@ def main():
     # Figure PNGs extracted from PDFs, held in memory until after the
     # assets/static copytree calls (their destination must not exist yet).
     fulltext_figures = []
+    jats_outputs = []            # (urlPath, xml bytes, [(figure name, bytes)])
     for a in articles:
         # A hand-curated Markdown export of the copy-edited manuscript, if
         # one exists for this article, supplies cleaner tables/references
@@ -646,6 +648,25 @@ def main():
                         (a["urlPath"] + "-" + name, png))
         else:
             a["pdfLocalUrl"] = a["viewerUrl"] = ""
+
+        # overrides/<id>.jats: also publish a JATS XML version (scripts/jats.py;
+        # WIP, derived - the PDF stays canonical). Body from the Markdown if
+        # there is one, else from the PDF-derived HTML.
+        a["jatsUrl"] = ""
+        if os.path.exists(os.path.join(OVERRIDES, os.path.basename(a["urlPath"]) + ".jats")):
+            try:
+                jslug = os.path.basename(a["urlPath"])
+                body, jfigs, jsource = pick_body(jslug, OVERRIDES, a["fullTextHtml"], jslug + "-")
+                jxml, jnames = build_jats(a, body, SITE_URL, journal, jsource)
+                problems = jats_check(jxml, jnames, {jslug + "-" + n for n, _ in jfigs})
+                if problems:
+                    print("  %s: JATS XML has problems (%s), not published"
+                          % (a["urlPath"], "; ".join(problems)), file=sys.stderr)
+                else:
+                    a["jatsUrl"] = BASE + "articles/%s/jats/%s.xml" % (jslug, jslug)
+                    jats_outputs.append((jslug, jxml, jfigs))
+            except Exception as e:  # noqa: BLE001 - the JATS file is optional
+                print("  %s: JATS XML failed (%s)" % (a["urlPath"], e), file=sys.stderr)
 
     # Navigation: group nav entries that share a top-level dropdown in OJS.
     nav = build_nav(journal["nav"], pages)
@@ -755,6 +776,14 @@ def main():
         for name, png in fulltext_figures:
             with open(os.path.join(fig_dir, name), "wb") as fh:
                 fh.write(png)
+    for jslug, jxml, jfigs in jats_outputs:
+        jdir = os.path.join(OUT, "articles", jslug, "jats")
+        os.makedirs(jdir, exist_ok=True)
+        with open(os.path.join(jdir, jslug + ".xml"), "wb") as fh:
+            fh.write(jxml)
+        for name, data in jfigs:
+            with open(os.path.join(jdir, jslug + "-" + name), "wb") as fh:
+                fh.write(data)
     open(os.path.join(OUT, ".nojekyll"), "w").close()
     # Files that must sit in the site root as they are (search-console
     # verification files, ...): everything in site_root/.
