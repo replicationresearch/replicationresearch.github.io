@@ -253,11 +253,36 @@
   "title": "A comment on “A Mother's Voice: Impacts of Spousal Communication Training on Child Health Investments”"
  },
  {
-  "abstractHtml": "",
+  "abstractHtml": "<p>Response variability in questionnaires may reflect substantive differences, stable response tendencies, as well as careless responding, yet these interpretations are rarely examined together. In a preregistered laboratory study, 67 participants completed the same questionnaire under two truthful, an overtly careless, and a covertly careless instruction while adherence was monitored. We examined whether corrected response variability generalized across four content-diverse measures and how well common careless-responding indicators distinguished truthful from careless records. For the preregistered item-set operationalization, cross-measure correlations averaged r = .40 and .45 across the two truthful conditions, whereas the corresponding strict Baird-style correlations averaged r = .20 and .26. Overall corrected variability was highly stable across truthful assessments (item-set r = .92; strict r = .83) and remained moderately stable between truthful and careless conditions. Overall raw item-set variability was lower under careless instructions, whereas strict Baird-style variability was highest under covert carelessness. For carelessness in adherence-confirmed analyses, page time showed the strongest discrimination (AUCs = .85~.88), followed by retest correspondence, attention checks, and fake-adjective accuracy; longstring performed weakly. These findings indicate that response variability contains stable individual differences while also being sensitive to task engagement.</p>",
   "authors": [
    {
     "affiliation": "",
-    "name": "Leistner",
+    "name": "Leistner, Moritz",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Balcerzak, Laura",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Erhardt, Moritz",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Wiedenroth, Anne",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Wetzel, Eunike",
+    "orcid": ""
+   },
+   {
+    "affiliation": "",
+    "name": "Leising, Daniel",
     "orcid": ""
    }
   ],
@@ -269,7 +294,7 @@
   "pubpeerUrl": "",
   "status": "Pre-Review Revision",
   "submissionDate": "2026-10-08",
-  "title": "Leistner Response Variability"
+  "title": "The Different Meanings of Response Variability: A Preregistered Replication and Extension"
  },
  {
   "abstractHtml": "<p>In two experiments, Eitam, Hassin, and Schul (2008) found evidence that priming of nonconscious goal pursuit could extend beyond reproductions of past associations and facilitate novel learning, specifically implicit learning. Given the implications of such findings and dearth of subsequent investigations of this phenomenon, we conducted a direct replication of their second experiment using materials graciously shared by the original authors. Despite using a sample size that provided .80 power to detect the original effect size, we failed to find evidence that priming of nonconscious goal pursuit facilitated implicit learning. Our replication was conducted as part of the Reproducibility Project: Psychology (Open Science Collaboration, 2015) and study preregistration, materials, and data are available online (https://osf.io/edcr7).</p>",
