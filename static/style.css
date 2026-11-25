@@ -742,7 +742,6 @@ h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.25; color: var(--ink)
 .aside-section { padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--rule); }
 .aside-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .aside-section h2 { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .6rem; }
-.aside-actions .altmetric-embed { margin-top: .7rem; }
 
 /* Sits on .article-layout, not inside .article-aside, so it stays visible
    (and clickable) even when the sidebar itself is display:none - otherwise
