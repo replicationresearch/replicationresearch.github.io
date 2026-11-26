@@ -16,7 +16,7 @@
   "pubpeerUrl": "",
   "status": "Initial Editorial Assessment",
   "submissionDate": "2026-11-25",
-  "title": "Untitled submission"
+  "title": "Klünter Like Me"
  },
  {
   "abstractHtml": "<p>Simmons, Nelson, and Simonsohn (2011) proposed disclosure-based practices — a priori power analyses, full reporting of conditions and exclusions, results reported with and without exclusions applied — as a remedy for the replication crisis. Following these practices explicitly, our lab attempted to publish an online replication and extension of our earlier PNAS findings on image size and memory, expecting that doing so would make publication straightforward. It did not. Nine submissions over 2.5 years were unsuccessful (eight rejections and one withdrawal), largely on the grounds that a transparent, successful replication lacked sufficient theoretical novelty to warrant publication on its own; it was accepted only after this framing was substantially minimized in favor of additional analyses and an alternative theoretical framework. Here, I reflect on this experience, raise open questions about whether the field's evaluation of replications has kept pace with its stated commitment to them, and offer recommendations for future practices.</p>",
@@ -27,13 +27,13 @@
     "orcid": "https://orcid.org/0000-0002-8375-2173"
    }
   ],
-  "handlingEditor": "not yet assigned",
+  "handlingEditor": "Thomas Rhys Evans",
   "id": "25",
   "laySummary": "",
   "preprintUrl": "https://doi.org/10.31234/osf.io/yrdc2_v2",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-yrdc2_v2/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Assignment to AE pending",
+  "status": "Inviting Reviewers",
   "submissionDate": "2026-11-19",
   "title": "To replicate or not to replicate? My nine failures to publish a successful replication"
  },
@@ -267,7 +267,7 @@
   "preprintUrl": "https://doi.org/10.31235/osf.io/7qgtj_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-7qgtj_v1/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Pre-Review Revision",
+  "status": "Editorial Assignment",
   "submissionDate": "2026-10-12",
   "title": "A comment on “A Mother's Voice: Impacts of Spousal Communication Training on Child Health Investments”"
  },

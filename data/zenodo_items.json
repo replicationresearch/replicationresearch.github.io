@@ -21,7 +21,7 @@
   "recordId": "24292480",
   "title": "Reproducibility Certificate for Kaicher et al., 2026",
   "url": "https://zenodo.org/records/24292480",
-  "views": 12
+  "views": 16
  },
  {
   "authors": [
@@ -42,13 +42,13 @@
   },
   "date": "2026-11-16",
   "doi": "10.5281/zenodo.24292040",
-  "downloads": 4,
+  "downloads": 5,
   "fullTitle": "Replication Research Review Report for: Are Redundant Labels Helpful during Category Learning?",
   "kind": "review",
   "recordId": "24292040",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24292040",
-  "views": 13
+  "views": 23
  },
  {
   "authors": [
@@ -160,6 +160,6 @@
   "recordId": "21807854",
   "title": "R2 Review Report",
   "url": "https://zenodo.org/records/21807854",
-  "views": 102
+  "views": 103
  }
 ]
