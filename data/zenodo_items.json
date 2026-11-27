@@ -21,7 +21,7 @@
   "recordId": "24292480",
   "title": "Reproducibility Certificate for Kaicher et al., 2026",
   "url": "https://zenodo.org/records/24292480",
-  "views": 16
+  "views": 19
  },
  {
   "authors": [
@@ -48,7 +48,7 @@
   "recordId": "24292040",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24292040",
-  "views": 23
+  "views": 26
  },
  {
   "authors": [
@@ -134,7 +134,7 @@
   "recordId": "21807707",
   "title": "R2 Reproducibility Certificate (AI)",
   "url": "https://zenodo.org/records/21807707",
-  "views": 78
+  "views": 79
  },
  {
   "authors": [
@@ -154,7 +154,7 @@
   },
   "date": "2026-08-05",
   "doi": "10.5281/zenodo.21807854",
-  "downloads": 48,
+  "downloads": 49,
   "fullTitle": "R2 Review Report for: Reproduction and Replication of an Adversarial Stylometry Experiment",
   "kind": "review",
   "recordId": "21807854",
