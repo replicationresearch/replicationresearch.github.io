@@ -1,6 +1,29 @@
 [
  {
   "authors": [
+   "Susanne Adler",
+   "Brynja Olafsdottir",
+   "Claudia Traini",
+   "Emilia Lorusso Verdon",
+   "Kay Offmann",
+   "Samuel Muehlemann",
+   "Miriam Müller",
+   "Matilda Wechsler",
+   "Lukas Röseler"
+  ],
+  "belongsTo": null,
+  "date": "2026-11-25",
+  "doi": "10.5281/zenodo.24528298",
+  "downloads": 2,
+  "fullTitle": "Replication Research Review Report for:  Too Soon to Dismiss? A Reanalysis of Forster and Neugebauer (2024) Highlighting the Role of Effect Heterogeneity in Evaluating Factorial Surveys",
+  "kind": "review",
+  "recordId": "24528298",
+  "title": "Replication Research Review Report",
+  "url": "https://zenodo.org/records/24528298",
+  "views": 4
+ },
+ {
+  "authors": [
    "Miriam Müller",
    "Victoria Moser",
    "Lukas Röseler"
@@ -21,7 +44,7 @@
   "recordId": "24292480",
   "title": "Reproducibility Certificate for Kaicher et al., 2026",
   "url": "https://zenodo.org/records/24292480",
-  "views": 19
+  "views": 21
  },
  {
   "authors": [
@@ -48,7 +71,7 @@
   "recordId": "24292040",
   "title": "Replication Research Review Report",
   "url": "https://zenodo.org/records/24292040",
-  "views": 26
+  "views": 29
  },
  {
   "authors": [
@@ -59,7 +82,7 @@
   "belongsTo": null,
   "date": "2026-11-06",
   "doi": "10.5281/zenodo.24003823",
-  "downloads": 10,
+  "downloads": 11,
   "fullTitle": "Replication Research Review Report for: Mental Timing in Locomotion: Walking Across Real and Imagined Distances",
   "kind": "review",
   "recordId": "24003822",

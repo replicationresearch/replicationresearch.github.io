@@ -33,7 +33,7 @@
   "preprintUrl": "https://doi.org/10.31234/osf.io/yrdc2_v2",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-yrdc2_v2/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Inviting Reviewers",
+  "status": "Under review (1st round)",
   "submissionDate": "2026-11-19",
   "title": "To replicate or not to replicate? My nine failures to publish a successful replication"
  },
@@ -243,7 +243,7 @@
   "preprintUrl": "https://doi.org/10.31234/osf.io/wkcgf_v5",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31234-osf.io-wkcgf_v5/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Inviting Reviewers",
+  "status": "Under review (1st round)",
   "submissionDate": "2026-10-15",
   "title": "No evidence that positive outcomes elicit a stronger sense of agency once correcting for publication bias: a commentary on, and re-analysis of, Mariano et al. (2025)"
  },
@@ -261,13 +261,13 @@
     "orcid": "https://orcid.org/0000-0003-0216-7050"
    }
   ],
-  "handlingEditor": "not yet assigned",
+  "handlingEditor": "Susanne Adler",
   "id": "17",
   "laySummary": "",
   "preprintUrl": "https://doi.org/10.31235/osf.io/7qgtj_v1",
   "prereviewUrl": "https://prereview.org/preprints/doi-10.31235-osf.io-7qgtj_v1/write-a-prereview",
   "pubpeerUrl": "",
-  "status": "Editorial Assignment",
+  "status": "Under review (1st round)",
   "submissionDate": "2026-10-12",
   "title": "A comment on “A Mother's Voice: Impacts of Spousal Communication Training on Child Health Investments”"
  },
